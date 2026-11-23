@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2563eb">
+<title>مديونياتي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --primary:#2563eb;--primary-light:#eff6ff;
+  --success:#059669;--success-light:#ecfdf5;
+  --danger:#dc2626;--danger-light:#fef2f2;
+  --warning:#d97706;--warning-light:#fffbeb;
+  --bg:#f1f5f9;--surface:#fff;
+  --text:#1e293b;--text2:#64748b;--text3:#94a3b8;
+  --border:#e2e8f0;
+  --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 6px rgba(0,0,0,.07);
+  --radius:12px;--bottom-h:65px;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;position:relative;}
+
+/* Loading */
+#loading{position:fixed;inset:0;background:var(--primary);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;z-index:9999;}
+#loading i{font-size:3.5rem;color:#fff;}
+#loading p{color:rgba(255,255,255,.8);font-size:1.1rem;font-weight:600;}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-top:.5rem;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Screen */
+.screen{display:none;min-height:100vh;flex-direction:column;padding-bottom:var(--bottom-h);animation:fadeIn .2s ease;}
+.screen.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.scroll{overflow-y:auto;flex:1;}
+
+/* Topbar */
+.topbar{background:var(--primary);padding:1rem 1.2rem .9rem;color:#fff;position:sticky;top:0;z-index:100;}
+.topbar h1{font-size:1.1rem;font-weight:700;}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;}
+.topbar-sub{font-size:.75rem;opacity:.7;margin-top:.1rem;}
+.topbar-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18);border:none;color:#fff;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.topbar-btn:active{background:rgba(255,255,255,.3);}
+
+/* Balance Card */
+.balance-card{background:linear-gradient(135deg,#1d4ed8,#2563eb,#3b82f6);color:#fff;margin:1rem;border-radius:20px;padding:1.5rem;box-shadow:0 8px 25px rgba(37,99,235,.4);position:relative;overflow:hidden;transition:all .3s;}
+.balance-card::before{content:'';position:absolute;top:-40px;left:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.07);}
+.balance-card::after{content:'';position:absolute;bottom:-30px;right:-20px;width:160px;height:100px;border-radius:50%;background:rgba(255,255,255,.05);}
+.balance-label{font-size:.82rem;opacity:.8;margin-bottom:.3rem;}
+.balance-amount{font-size:2.4rem;font-weight:800;letter-spacing:-.5px;position:relative;z-index:1;}
+.balance-amount small{font-size:1rem;font-weight:500;opacity:.8;margin-right:.4rem;}
+.balance-row{display:flex;gap:.6rem;margin-top:1.2rem;position:relative;z-index:1;}
+.balance-mini{flex:1;background:rgba(255,255,255,.13);border-radius:10px;padding:.6rem .7rem;backdrop-filter:blur(10px);}
+.balance-mini-label{font-size:.68rem;opacity:.75;margin-bottom:.2rem;}
+.balance-mini-value{font-size:.88rem;font-weight:700;}
+
+/* Quick Actions */
+.quick-actions{display:flex;gap:.6rem;margin:0 1rem 1rem;}
+.quick-btn{flex:1;padding:.75rem .4rem;border-radius:var(--radius);border:none;background:var(--surface);box-shadow:var(--shadow);font-family:'Cairo',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.35rem;color:var(--text2);transition:transform .15s;}
+.quick-btn:active{transform:scale(.93);}
+.quick-btn i{font-size:1.15rem;}
+.quick-btn.in i{color:var(--success);}
+.quick-btn.out i{color:var(--danger);}
+.quick-btn.dbt i{color:var(--warning);}
+.quick-btn.exp i{color:var(--primary);}
+
+/* Section Header */
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem .4rem;}
+.section-title{font-size:.9rem;font-weight:700;}
+.section-link{font-size:.8rem;color:var(--primary);cursor:pointer;}
+
+/* Transaction Item */
+.tx-list{padding:0 1rem;}
+.tx-item{display:flex;align-items:center;gap:.8rem;background:var(--surface);border-radius:var(--radius);padding:.9rem 1rem;margin-bottom:.5rem;box-shadow:var(--shadow);}
+.tx-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.tx-icon.income{background:var(--success-light);color:var(--success);}
+.tx-icon.expense{background:var(--danger-light);color:var(--danger);}
+.tx-icon.warning{background:var(--warning-light);color:var(--warning);}
+.tx-icon.blue{background:var(--primary-light);color:var(--primary);}
+.tx-info{flex:1;min-width:0;}
+.tx-name{font-size:.87rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tx-date{font-size:.72rem;color:var(--text3);margin-top:.1rem;}
+.tx-amount{font-size:.93rem;font-weight:700;white-space:nowrap;}
+.tx-amount.plus{color:var(--success);}
+.tx-amount.minus{color:var(--danger);}
+
+/* Tabs */
+.tabs{display:flex;background:var(--bg);border-radius:10px;margin:1rem;padding:3px;}
+.tab{flex:1;padding:.55rem;border:none;background:none;border-radius:8px;font-family:'Cairo',sans-serif;font-size:.87rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s;}
+.tab.active{background:var(--surface);color:var(--primary);box-shadow:var(--shadow);}
+
+/* Debt Cards */
+.debt-list{padding:0 1rem;}
+.debt-card{background:var(--surface);border-radius:var(--radius);padding:1rem;margin-bottom:.7rem;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s;border-right:4px solid transparent;}
+.debt-card:active{transform:scale(.98);}
+.debt-card.creditor{border-right-color:var(--success);}
+.debt-card.debtor{border-right-color:var(--danger);}
+.debt-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;}
+.debt-name{font-size:.95rem;font-weight:700;}
+.debt-badge{font-size:.7rem;font-weight:600;padding:.2rem .55rem;border-radius:20px;}
+.debt-badge.creditor{background:var(--success-light);color:var(--success);}
+.debt-badge.debtor{background:var(--danger-light);color:var(--danger);}
+.debt-row{display:flex;gap:.4rem;margin-top:.5rem;}
+.debt-mini{flex:1;text-align:center;}
+.debt-mini-label{font-size:.66rem;color:var(--text3);display:block;margin-bottom:.1rem;}
+.debt-mini-value{font-size:.87rem;font-weight:700;}
+.debt-mini-value.paid{color:var(--success);}
+.debt-mini-value.remaining{color:var(--danger);}
+.progress-bar{height:4px;background:var(--border);border-radius:4px;margin-top:.7rem;overflow:hidden;}
+.progress-fill{height:100%;border-radius:4px;transition:width .4s;}
+.progress-fill.creditor{background:var(--success);}
+.progress-fill.debtor{background:var(--danger);}
+
+/* Expense */
+.expense-summary{margin:1rem;background:var(--surface);border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow);}
+.expense-list{padding:0 1rem;}
+.expense-date-group{margin-bottom:1rem;}
+.expense-date-label{font-size:.78rem;font-weight:600;color:var(--text2);padding:.4rem 0;border-bottom:1px solid var(--border);margin-bottom:.5rem;display:flex;justify-content:space-between;}
+.expense-item{display:flex;align-items:center;gap:.7rem;background:var(--surface);border-radius:10px;padding:.8rem;margin-bottom:.4rem;box-shadow:var(--shadow);}
+.expense-cat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.expense-info{flex:1;}
+.expense-note{font-size:.85rem;font-weight:600;}
+.expense-cat{font-size:.72rem;color:var(--text3);}
+.expense-amount{font-size:.93rem;font-weight:700;color:var(--danger);}
+
+/* FAB */
+.fab{position:fixed;bottom:calc(var(--bottom-h) + 1rem);left:1rem;width:52px;height:52px;border-radius:50%;background:var(--primary);color:#fff;border:none;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 15px rgba(37,99,235,.4);display:flex;align-items:center;justify-content:center;transition:transform .2s;z-index:200;}
+.fab:active{transform:scale(.88);}
+
+/* Bottom Nav */
+#bottom-nav{position:fixed;bottom:0;right:0;left:0;max-width:430px;margin:0 auto;background:var(--surface);border-top:1px solid var(--border);display:flex;height:var(--bottom-h);z-index:300;box-shadow:0 -2px 10px rgba(0,0,0,.07);}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;border:none;background:none;cursor:pointer;padding:.5rem;color:var(--text3);transition:color .2s;}
+.nav-btn.active{color:var(--primary);}
+.nav-btn i{font-size:1.3rem;}
+.nav-btn span{font-size:.62rem;font-weight:600;}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:none;align-items:flex-end;backdrop-filter:blur(2px);}
+.modal-overlay.active{display:flex;}
+.modal{background:var(--surface);border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:430px;margin:0 auto;max-height:88vh;overflow-y:auto;animation:slideUp .25s ease;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 1.3rem;}
+.modal-title{font-size:1.1rem;font-weight:800;margin-bottom:1.2rem;}
+
+/* Form */
+.form-group{margin-bottom:1rem;}
+.form-label{font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:.4rem;display:block;}
+.form-input,.form-select{width:100%;padding:.72rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-family:'Cairo',sans-serif;font-size:.9rem;color:var(--text);background:var(--bg);outline:none;direction:rtl;transition:border-color .2s;}
+.form-input:focus,.form-select:focus{border-color:var(--primary);}
+.form-select{cursor:pointer;appearance:none;}
+
+/* Type Toggle */
+.type-toggle{display:flex;gap:.5rem;margin-bottom:1.1rem;}
+.type-btn{flex:1;padding:.7rem;border-radius:10px;border:2px solid var(--border);background:none;font-family:'Cairo',sans-serif;font-size:.87rem;font-weight:700;cursor:pointer;transition:all .2s;color:var(--text2);}
+.type-btn.sel-creditor{border-color:var(--success);background:var(--success-light);color:var(--success);}
+.type-btn.sel-debtor{border-color:var(--danger);background:var(--danger-light);color:var(--danger);}
+
+/* Categories */
+.cat-grid{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.5rem;}
+.cat-btn{display:flex;align-items:center;gap:.35rem;padding:.42rem .75rem;border-radius:20px;border:1.5px solid var(--border);background:none;font-family:'Cairo',sans-serif;font-size:.8rem;cursor:pointer;color:var(--text2);transition:all .2s;}
+.cat-btn.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary);}
+
+/* Buttons */
+.btn{width:100%;padding:.85rem;border-radius:12px;border:none;font-family:'Cairo',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:opacity .15s;}
+.btn:active{opacity:.82;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-success{background:var(--success);color:#fff;}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--text2);}
+.btn+.btn{margin-top:.5rem;}
+
+/* Payment row */
+.payment-item{display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--border);}
+.payment-item:last-child{border-bottom:none;}
+.payment-date{font-size:.8rem;color:var(--text2);}
+.payment-ref{font-size:.72rem;color:var(--text3);}
+.payment-amt{font-size:.95rem;font-weight:700;color:var(--success);}
+
+/* Filter */
+.filter-row{display:flex;gap:.5rem;padding:.5rem 1rem 1rem;overflow-x:auto;scrollbar-width:none;}
+.filter-row::-webkit-scrollbar{display:none;}
+.filter-chip{white-space:nowrap;padding:.35rem .8rem;border-radius:20px;border:1.5px solid var(--border);background:none;font-family:'Cairo',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text2);}
+.filter-chip.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary);}
+
+/* Empty */
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text3);}
+.empty-state i{font-size:2.8rem;margin-bottom:.8rem;display:block;}
+.empty-state p{font-size:.9rem;}
+
+/* Chip */
+.chip{display:inline-flex;align-items:center;gap:.25rem;padding:.22rem .55rem;border-radius:20px;font-size:.72rem;font-weight:600;}
+.chip.green{background:var(--success-light);color:var(--success);}
+.chip.red{background:var(--danger-light);color:var(--danger);}
+
+/* Toast */
+.toast{position:fixed;bottom:calc(var(--bottom-h) + 1rem);right:50%;transform:translateX(50%);background:#1e293b;color:#fff;padding:.6rem 1.3rem;border-radius:8px;font-size:.85rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;}
+
+/* Confirm dialog */
+.confirm-box{background:var(--surface);border-radius:var(--radius);padding:1.5rem;text-align:center;}
+.confirm-box p{margin-bottom:1.2rem;font-size:.95rem;color:var(--text);}
+.confirm-row{display:flex;gap:.6rem;}
+</style>
+</head>
+<body>
+
+<div id="loading"><i class="fas fa-wallet"></i><p>مديونياتي</p><div class="spinner"></div></div>
+<div class="toast" id="toast"></div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="screen active" id="screen-home">
+  <div class="topbar">
+    <div class="topbar-row">
+      <div><div class="topbar-sub">إدارة</div><h1>مديونياتي 💰</h1></div>
+      <button class="topbar-btn" onclick="openDeposit()"><i class="fas fa-plus"></i></button>
+    </div>
+  </div>
+  <div class="scroll">
+    <div class="balance-card" id="balance-card">
+      <div class="balance-label">رصيد الحساب الحالي</div>
+      <div class="balance-amount"><small>ج.م</small><span id="balance-display">0.00</span></div>
+      <div class="balance-row">
+        <div class="balance-mini">
+          <div class="balance-mini-label">💚 ليا (دائن)</div>
+          <div class="balance-mini-value" id="total-creditor-display">0.00</div>
+        </div>
+        <div class="balance-mini">
+          <div class="balance-mini-label">❤️ عليا (مدين)</div>
+          <div class="balance-mini-value" id="total-debtor-display">0.00</div>
+        </div>
+        <div class="balance-mini">
+          <div class="balance-mini-label">💰 صافي الديون</div>
+          <div class="balance-mini-value" id="net-display">0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <button class="quick-btn in" onclick="openDeposit()"><i class="fas fa-arrow-down"></i><span>إيداع</span></button>
+      <button class="quick-btn out" onclick="openWithdraw()"><i class="fas fa-arrow-up"></i><span>سحب</span></button>
+      <button class="quick-btn dbt" onclick="showScreen('debts');openModal('modal-add-debt')"><i class="fas fa-handshake"></i><span>دين</span></button>
+      <button class="quick-btn exp" onclick="showScreen('expenses');openModal('modal-add-expense')"><i class="fas fa-receipt"></i><span>مصروف</span></button>
+    </div>
+
+    <div class="section-header">
+      <span class="section-title">آخر المعاملات</span>
+      <span class="section-link" onclick="showScreen('history')">عرض الكل</span>
+    </div>
+    <div class="tx-list" id="recent-tx-list">
+      <div class="empty-state"><i class="fas fa-clock-rotate-left"></i><p>لا توجد معاملات بعد</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DEBTS ===== -->
+<div class="screen" id="screen-debts">
+  <div class="topbar"><div class="topbar-row"><h1>الديون</h1></div></div>
+  <div class="tabs">
+    <button class="tab active" id="tab-creditor" onclick="switchDebtTab('creditor',this)">💚 ليا (دائن)</button>
+    <button class="tab" id="tab-debtor" onclick="switchDebtTab('debtor',this)">❤️ عليا (مدين)</button>
+  </div>
+  <div class="scroll">
+    <div class="debt-list" id="debt-list">
+      <div class="empty-state"><i class="fas fa-handshake"></i><p>لا توجد ديون</p></div>
+    </div>
+  </div>
+  <button class="fab" onclick="openModal('modal-add-debt')"><i class="fas fa-plus"></i></button>
+</div>
+
+<!-- ===== EXPENSES ===== -->
+<div class="screen" id="screen-expenses">
+  <div class="topbar"><div class="topbar-row"><h1>المصروفات اليومية</h1></div></div>
+  <div class="expense-summary">
+    <div style="font-size:.8rem;color:var(--text2);margin-bottom:.3rem;">مصروف اليوم</div>
+    <div style="font-size:1.7rem;font-weight:800;color:var(--danger);">
+      <span style="font-size:.9rem;color:var(--text3);">ج.م </span><span id="today-exp-display">0.00</span>
+    </div>
+    <div style="font-size:.78rem;color:var(--text3);margin-top:.3rem;">إجمالي الشهر: ج.م <span id="month-exp-display">0.00</span></div>
+  </div>
+  <div class="scroll">
+    <div class="expense-list" id="expense-list">
+      <div class="empty-state"><i class="fas fa-receipt"></i><p>لا توجد مصروفات</p></div>
+    </div>
+  </div>
+  <button class="fab" onclick="openModal('modal-add-expense')"><i class="fas fa-plus"></i></button>
+</div>
+
+<!-- ===== HISTORY ===== -->
+<div class="screen" id="screen-history">
+  <div class="topbar"><div class="topbar-row"><h1>سجل المعاملات</h1></div></div>
+  <div class="filter-row">
+    <button class="filter-chip active" onclick="filterHistory('all',this)">الكل</button>
+    <button class="filter-chip" onclick="filterHistory('deposit',this)">إيداع</button>
+    <button class="filter-chip" onclick="filterHistory('withdraw',this)">سحب</button>
+    <button class="filter-chip" onclick="filterHistory('expense',this)">مصروفات</button>
+    <button class="filter-chip" onclick="filterHistory('debt_payment',this)">سداد دين</button>
+    <button class="filter-chip" onclick="filterHistory('debt_receive',this)">استلام دين</button>
+  </div>
+  <div class="scroll">
+    <div class="tx-list" id="history-list">
+      <div class="empty-state"><i class="fas fa-history"></i><p>لا توجد معاملات</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav id="bottom-nav">
+  <button class="nav-btn active" onclick="showScreen('home')"><i class="fas fa-house"></i><span>الرئيسية</span></button>
+  <button class="nav-btn" onclick="showScreen('debts')"><i class="fas fa-handshake"></i><span>الديون</span></button>
+  <button class="nav-btn" onclick="showScreen('expenses')"><i class="fas fa-receipt"></i><span>المصروفات</span></button>
+  <button class="nav-btn" onclick="showScreen('history')"><i class="fas fa-clock-rotate-left"></i><span>السجل</span></button>
+</nav>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Add Debt -->
+<div class="modal-overlay" id="modal-add-debt">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">إضافة دين جديد</div>
+    <div class="type-toggle">
+      <button class="type-btn sel-creditor" id="dtype-creditor" onclick="selectDebtType('creditor')">💚 ليا (دائن)</button>
+      <button class="type-btn" id="dtype-debtor" onclick="selectDebtType('debtor')">❤️ عليا (مدين)</button>
+    </div>
+    <div class="form-group"><label class="form-label">اسم الشخص</label><input type="text" class="form-input" id="debt-name" placeholder="مثال: أحمد محمد"></div>
+    <div class="form-group"><label class="form-label">إجمالي المبلغ (ج.م)</label><input type="number" class="form-input" id="debt-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">تاريخ الدين</label><input type="date" class="form-input" id="debt-date"></div>
+    <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="debt-note" placeholder="وصف أو سبب الدين"></div>
+    <button class="btn btn-primary" onclick="saveDebt()">حفظ الدين</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-add-debt')">إلغاء</button>
+  </div>
+</div>
+
+<!-- Debt Detail -->
+<div class="modal-overlay" id="modal-debt-detail">
+  <div class="modal"><div id="debt-detail-content"></div></div>
+</div>
+
+<!-- Add Payment -->
+<div class="modal-overlay" id="modal-add-payment">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="payment-modal-title">إضافة دفعة</div>
+    <div class="form-group"><label class="form-label">مبلغ الدفعة (ج.م)</label><input type="number" class="form-input" id="payment-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">تاريخ الدفعة</label><input type="date" class="form-input" id="payment-date"></div>
+    <div class="form-group"><label class="form-label">رقم الوصل / مرجع (اختياري)</label><input type="text" class="form-input" id="payment-ref" placeholder="رقم الإيصال أو الحوالة"></div>
+    <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="payment-note" placeholder=""></div>
+    <button class="btn btn-success" id="payment-btn" onclick="savePayment()">تسجيل الدفعة</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-add-payment')">إلغاء</button>
+  </div>
+</div>
+
+<!-- Add Expense -->
+<div class="modal-overlay" id="modal-add-expense">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">إضافة مصروف</div>
+    <div class="form-group">
+      <label class="form-label">الفئة</label>
+      <div class="cat-grid" id="cat-grid"></div>
+    </div>
+    <div class="form-group"><label class="form-label">المبلغ (ج.م)</label><input type="number" class="form-input" id="expense-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">التاريخ</label><input type="date" class="form-input" id="expense-date"></div>
+    <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="expense-note" placeholder="وصف المصروف"></div>
+    <button class="btn btn-primary" onclick="saveExpense()">حفظ المصروف</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-add-expense')">إلغاء</button>
+  </div>
+</div>
+
+<!-- Deposit / Withdraw -->
+<div class="modal-overlay" id="modal-deposit">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="dep-modal-title">إيداع رصيد</div>
+    <div class="form-group"><label class="form-label">المبلغ (ج.م)</label><input type="number" class="form-input" id="dep-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">التاريخ</label><input type="date" class="form-input" id="dep-date"></div>
+    <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="dep-note" placeholder=""></div>
+    <button class="btn" id="dep-btn" onclick="saveDeposit()">إيداع</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-deposit')">إلغاء</button>
+  </div>
+</div>
+
+<!-- Edit Debt -->
+<div class="modal-overlay" id="modal-edit-debt">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">تعديل بيانات الدين</div>
+    <div class="form-group"><label class="form-label">اسم الشخص</label><input type="text" class="form-input" id="edit-debt-name" placeholder="اسم الشخص"></div>
+    <div class="form-group"><label class="form-label">إجمالي المبلغ (ج.م)</label><input type="number" class="form-input" id="edit-debt-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">تاريخ الدين</label><input type="date" class="form-input" id="edit-debt-date"></div>
+    <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="edit-debt-note" placeholder="وصف أو سبب الدين"></div>
+    <button class="btn btn-primary" onclick="saveEditDebt()">حفظ التعديلات</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-edit-debt')">إلغاء</button>
+  </div>
+</div>
+
+<!-- Confirm -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="confirm-box">
+      <i class="fas fa-trash" style="font-size:2rem;color:var(--danger);margin-bottom:.8rem;display:block;"></i>
+      <p id="confirm-msg">هل تريد الحذف؟</p>
+      <div class="confirm-row">
+        <button class="btn btn-outline" style="flex:1" onclick="closeModal('modal-confirm')">لا</button>
+        <button class="btn btn-danger" style="flex:1" id="confirm-yes-btn">نعم، احذف</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== Firebase =====
+const firebaseConfig = {
+  apiKey: "AIzaSyB2WVBRuxop55kOJ0i7iSHBjrkxDsm__cM",
+  authDomain: "mhfazte.firebaseapp.com",
+  projectId: "mhfazte",
+  storageBucket: "mhfazte.firebasestorage.app",
+  messagingSenderId: "770888739081",
+  appId: "1:770888739081:web:17c30d2034d49ac47a0bd8"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ===== State =====
+let currentDebtType = 'creditor';
+let currentDebtTab  = 'creditor';
+let currentDebtId   = null;
+let currentDebtData = null;
+let depMode         = 'deposit';
+let selectedCat     = 'أخرى';
+let histFilter      = 'all';
+let allTxs          = [];
+
+const CATS = [
+  {name:'مواصلات',icon:'🚌',color:'#3b82f6'},
+  {name:'أكل وشرب',icon:'🍽️',color:'#f97316'},
+  {name:'فواتير',icon:'💡',color:'#eab308'},
+  {name:'تسوق',icon:'🛍️',color:'#ec4899'},
+  {name:'صحة',icon:'💊',color:'#10b981'},
+  {name:'ترفيه',icon:'🎬',color:'#8b5cf6'},
+  {name:'تعليم',icon:'📚',color:'#06b6d4'},
+  {name:'أخرى',icon:'📌',color:'#64748b'},
+];
+
+const TX_INFO = {
+  deposit:      {icon:'fa-arrow-down',cls:'income', label:'إيداع رصيد'},
+  withdraw:     {icon:'fa-arrow-up',  cls:'expense',label:'سحب رصيد'},
+  expense:      {icon:'fa-receipt',   cls:'expense',label:'مصروف'},
+  debt_payment: {icon:'fa-hand-holding-dollar',cls:'warning',label:'سداد دين'},
+  debt_receive: {icon:'fa-money-bill-wave',    cls:'income', label:'استلام دين'},
+};
+
+// ===== Init =====
+async function init() {
+  buildCatGrid();
+  setTodayDates();
+  try { await Promise.all([loadBalance(), loadRecentTxs()]); }
+  catch(e){ console.error(e); showToast('تحقق من اتصال الإنترنت'); }
+  document.getElementById('loading').style.display = 'none';
+}
+
+function buildCatGrid() {
+  document.getElementById('cat-grid').innerHTML = CATS.map(c =>
+    `<button class="cat-btn${c.name==='أخرى'?' active':''}" onclick="selectCat('${c.name}',this)">
+      ${c.icon} ${c.name}
+    </button>`
+  ).join('');
+}
+
+function setTodayDates() {
+  const today = new Date().toISOString().split('T')[0];
+  ['debt-date','payment-date','expense-date','dep-date'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = today;
+  });
+}
+
+// ===== Balance =====
+async function loadBalance() {
+  const doc = await db.collection('account').doc('main').get();
+  const bal = doc.exists ? (doc.data().balance || 0) : 0;
+  renderBalance(bal);
+
+  const snap = await db.collection('debts').get();
+  let tc=0, td=0;
+  snap.forEach(d => {
+    const r = d.data().remaining || 0;
+    if(d.data().type==='creditor') tc += r; else td += r;
+  });
+  document.getElementById('total-creditor-display').textContent = fmt(tc);
+  document.getElementById('total-debtor-display').textContent   = fmt(td);
+  document.getElementById('net-display').textContent = fmt(tc - td);
+}
+
+function renderBalance(bal) {
+  document.getElementById('balance-display').textContent = fmt(bal);
+  const card = document.getElementById('balance-card');
+  if(bal < 0){
+    card.style.background = 'linear-gradient(135deg,#991b1b,#dc2626,#ef4444)';
+    card.style.boxShadow  = '0 8px 25px rgba(220,38,38,.4)';
+  } else {
+    card.style.background = '';
+    card.style.boxShadow  = '';
+  }
+}
+
+async function getBalance() {
+  const doc = await db.collection('account').doc('main').get();
+  return doc.exists ? (doc.data().balance || 0) : 0;
+}
+
+async function setBalance(b) {
+  await db.collection('account').doc('main').set({balance:b, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+  renderBalance(b);
+}
+
+// ===== Transactions =====
+async function addTx(type, amount, note, ref='') {
+  const bal = await getBalance();
+  const isPlus = ['deposit','debt_receive'].includes(type);
+  const newBal = isPlus ? bal + amount : bal - amount;
+  await db.collection('transactions').add({
+    type, amount, note, ref, balance: newBal,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await setBalance(newBal);
+  return newBal;
+}
+
+async function loadRecentTxs() {
+  const snap = await db.collection('transactions').orderBy('createdAt','desc').limit(6).get();
+  const list = document.getElementById('recent-tx-list');
+  if(snap.empty){
+    list.innerHTML = '<div class="empty-state"><i class="fas fa-clock-rotate-left"></i><p>لا توجد معاملات بعد</p></div>';
+    return;
+  }
+  list.innerHTML = snap.docs.map(d => txHTML(d.data())).join('');
+}
+
+async function loadAllTxs() {
+  const snap = await db.collection('transactions').orderBy('createdAt','desc').limit(200).get();
+  allTxs = snap.docs.map(d => ({id:d.id,...d.data()}));
+  renderHistory();
+}
+
+function txHTML(tx) {
+  const info = TX_INFO[tx.type] || {icon:'fa-circle',cls:'blue',label:tx.type};
+  const isPlus = ['deposit','debt_receive'].includes(tx.type);
+  const date = tx.createdAt?.toDate ? fmtDate(tx.createdAt.toDate()) : '';
+  return `<div class="tx-item">
+    <div class="tx-icon ${info.cls}"><i class="fas ${info.icon}"></i></div>
+    <div class="tx-info">
+      <div class="tx-name">${tx.note || info.label}</div>
+      <div class="tx-date">${info.label} • ${date}</div>
+    </div>
+    <div class="tx-amount ${isPlus?'plus':'minus'}">${isPlus?'+':'-'}${fmt(tx.amount)} ج.م</div>
+  </div>`;
+}
+
+function filterHistory(type, el) {
+  histFilter = type;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  const txs = histFilter==='all' ? allTxs : allTxs.filter(t => t.type===histFilter);
+  if(!txs.length){
+    list.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>لا توجد معاملات</p></div>';
+    return;
+  }
+  list.innerHTML = txs.map(txHTML).join('');
+}
+
+// ===== Debts =====
+async function loadDebts(type) {
+  currentDebtTab = type;
+  document.getElementById('tab-creditor').classList.toggle('active', type==='creditor');
+  document.getElementById('tab-debtor').classList.toggle('active', type==='debtor');
+  const snap = await db.collection('debts').where('type','==',type).get();
+  const list = document.getElementById('debt-list');
+  if(snap.empty){
+    list.innerHTML = `<div class="empty-state"><i class="fas fa-handshake"></i><p>لا توجد ديون ${type==='creditor'?'ليك':'عليك'}</p></div>`;
+    return;
+  }
+  const docs = snap.docs.sort((a,b)=>{
+    const ta=a.data().createdAt?.toMillis?.()||0;
+    const tb=b.data().createdAt?.toMillis?.()||0;
+    return tb-ta;
+  });
+  list.innerHTML = docs.map(d => debtCardHTML({id:d.id,...d.data()})).join('');
+}
+
+function debtCardHTML(d) {
+  const paid = d.paidAmount||0, total = d.totalAmount||0;
+  const rem  = d.remaining!==undefined ? d.remaining : total-paid;
+  const pct  = total>0 ? Math.min(100,(paid/total)*100) : 0;
+  const isC  = d.type==='creditor';
+  const date = d.createdAt?.toDate ? fmtDate(d.createdAt.toDate()) : (d.date||'');
+  return `<div class="debt-card ${d.type}" onclick="showDebtDetail('${d.id}')">
+    <div class="debt-card-header">
+      <span class="debt-name">${d.name}</span>
+      <span class="debt-badge ${d.type}">${isC?'💚 ليا':'❤️ عليا'}</span>
+    </div>
+    ${d.note?`<div style="font-size:.76rem;color:var(--text3);margin-bottom:.4rem;">${d.note}</div>`:''}
+    <div class="debt-row">
+      <div class="debt-mini"><span class="debt-mini-label">إجمالي</span><span class="debt-mini-value">${fmt(total)}</span></div>
+      <div class="debt-mini"><span class="debt-mini-label">مدفوع</span><span class="debt-mini-value paid">${fmt(paid)}</span></div>
+      <div class="debt-mini"><span class="debt-mini-label">الباقي</span><span class="debt-mini-value remaining">${fmt(rem)}</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill ${d.type}" style="width:${pct}%"></div></div>
+    <div style="font-size:.68rem;color:var(--text3);margin-top:.35rem;text-align:left;">${date}</div>
+  </div>`;
+}
+
+function switchDebtTab(type, el) {
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  loadDebts(type);
+}
+
+function selectDebtType(type) {
+  currentDebtType = type;
+  const bc = document.getElementById('dtype-creditor');
+  const bd = document.getElementById('dtype-debtor');
+  bc.className = 'type-btn' + (type==='creditor'?' sel-creditor':'');
+  bd.className = 'type-btn' + (type==='debtor'?' sel-debtor':'');
+}
+
+async function saveDebt() {
+  const name   = document.getElementById('debt-name').value.trim();
+  const amount = parseFloat(document.getElementById('debt-amount').value);
+  const date   = document.getElementById('debt-date').value;
+  const note   = document.getElementById('debt-note').value.trim();
+  if(!name){ showToast('أدخل الاسم'); return; }
+  if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
+  await db.collection('debts').add({
+    name, type:currentDebtType, totalAmount:amount, paidAmount:0, remaining:amount,
+    date, note, createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  closeModal('modal-add-debt');
+  clearInputs(['debt-name','debt-amount','debt-note']);
+  showToast('تم إضافة الدين ✓');
+  showScreen('debts');
+  loadDebts(currentDebtType);
+  loadBalance();
+}
+
+async function showDebtDetail(debtId) {
+  const doc = await db.collection('debts').doc(debtId).get();
+  if(!doc.exists) return;
+  currentDebtId   = debtId;
+  currentDebtData = {id:debtId,...doc.data()};
+  const d   = currentDebtData;
+  const isC = d.type==='creditor';
+  const paid  = d.paidAmount||0, total = d.totalAmount||0;
+  const rem   = d.remaining!==undefined ? d.remaining : total-paid;
+  const pct   = total>0 ? Math.min(100,(paid/total)*100) : 0;
+
+  const paymentsSnap = await db.collection('payments').where('debtId','==',debtId).get();
+  const sortedPmts = paymentsSnap.docs.sort((a,b)=>{
+    const ta=a.data().createdAt?.toMillis?.()||0;
+    const tb=b.data().createdAt?.toMillis?.()||0;
+    return tb-ta;
+  });
+  const paymentsHTML = paymentsSnap.empty
+    ? '<p style="color:var(--text3);font-size:.85rem;text-align:center;padding:1rem 0;">لا توجد دفعات بعد</p>'
+    : sortedPmts.map(p=>{
+        const pd=p.data();
+        const pd2=pd.createdAt?.toDate?fmtDate(pd.createdAt.toDate()):(pd.date||'');
+        return `<div class="payment-item">
+          <div>
+            <div class="payment-date">${pd2}</div>
+            ${pd.ref?`<div class="payment-ref">وصل: ${pd.ref}</div>`:''}
+            ${pd.note?`<div class="payment-ref">${pd.note}</div>`:''}
+          </div>
+          <div class="payment-amt">+${fmt(pd.amount)} ج.م</div>
+        </div>`;
+      }).join('');
+
+  document.getElementById('debt-detail-content').innerHTML = `
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:1.2rem;font-weight:800;">${d.name}</div>
+        <span class="chip ${isC?'green':'red'}">${isC?'💚 ليا (دائن)':'❤️ عليا (مدين)'}</span>
+        ${d.note?`<div style="font-size:.78rem;color:var(--text3);margin-top:.3rem;">${d.note}</div>`:''}
+      </div>
+      <div style="display:flex;gap:.5rem;">
+        <button onclick="openEditDebt()" style="border:none;background:var(--primary-light);color:var(--primary);border-radius:8px;padding:.5rem .75rem;cursor:pointer;" title="تعديل">
+          <i class="fas fa-pen"></i>
+        </button>
+        <button onclick="confirmDelete('${debtId}')" style="border:none;background:var(--danger-light);color:var(--danger);border-radius:8px;padding:.5rem .75rem;cursor:pointer;" title="حذف">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
+      <div style="flex:1;text-align:center;background:var(--bg);border-radius:10px;padding:.8rem;">
+        <div style="font-size:.68rem;color:var(--text3);">إجمالي</div>
+        <div style="font-weight:700;font-size:.95rem;">${fmt(total)}</div>
+      </div>
+      <div style="flex:1;text-align:center;background:var(--success-light);border-radius:10px;padding:.8rem;">
+        <div style="font-size:.68rem;color:var(--text3);">مدفوع</div>
+        <div style="font-weight:700;font-size:.95rem;color:var(--success);">${fmt(paid)}</div>
+      </div>
+      <div style="flex:1;text-align:center;background:var(--danger-light);border-radius:10px;padding:.8rem;">
+        <div style="font-size:.68rem;color:var(--text3);">الباقي</div>
+        <div style="font-weight:700;font-size:.95rem;color:var(--danger);">${fmt(rem)}</div>
+      </div>
+    </div>
+    <div class="progress-bar" style="height:6px;margin-bottom:1.2rem;">
+      <div class="progress-fill ${d.type}" style="width:${pct}%"></div>
+    </div>
+    ${rem>0
+      ? `<button class="btn btn-success" style="margin-bottom:1rem;" onclick="openAddPayment()">
+           <i class="fas fa-plus"></i> إضافة دفعة ${isC?'(استلام)':'(سداد)'}
+         </button>`
+      : `<div style="text-align:center;padding:.8rem;background:var(--success-light);border-radius:10px;color:var(--success);font-weight:700;margin-bottom:1rem;">✅ تم السداد الكامل</div>`
+    }
+    <div style="font-size:.85rem;font-weight:700;color:var(--text2);margin-bottom:.5rem;">سجل الدفعات</div>
+    ${paymentsHTML}
+    <button class="btn btn-outline" style="margin-top:1rem;" onclick="closeModal('modal-debt-detail')">إغلاق</button>
+  `;
+  openModal('modal-debt-detail');
+}
+
+function openAddPayment() {
+  if(!currentDebtData) return;
+  closeModal('modal-debt-detail');
+  const isC = currentDebtData.type==='creditor';
+  document.getElementById('payment-modal-title').textContent =
+    isC ? `استلام دفعة من ${currentDebtData.name}` : `سداد دفعة لـ ${currentDebtData.name}`;
+  document.getElementById('payment-btn').className = isC ? 'btn btn-success' : 'btn btn-danger';
+  clearInputs(['payment-amount','payment-ref','payment-note']);
+  document.getElementById('payment-date').value = new Date().toISOString().split('T')[0];
+  openModal('modal-add-payment');
+}
+
+async function savePayment() {
+  const amount = parseFloat(document.getElementById('payment-amount').value);
+  const date   = document.getElementById('payment-date').value;
+  const ref    = document.getElementById('payment-ref').value.trim();
+  const note   = document.getElementById('payment-note').value.trim();
+  if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
+  if(!currentDebtId) return;
+
+  const d       = currentDebtData;
+  const newPaid = (d.paidAmount||0) + amount;
+  const newRem  = Math.max(0,(d.totalAmount||0) - newPaid);
+
+  await db.collection('payments').add({
+    debtId:currentDebtId, debtName:d.name, amount, date, ref, note,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await db.collection('debts').doc(currentDebtId).update({paidAmount:newPaid, remaining:newRem});
+
+  const txType = d.type==='creditor' ? 'debt_receive' : 'debt_payment';
+  const txNote = d.type==='creditor'
+    ? `استلام دفعة من ${d.name}`
+    : `سداد دفعة لـ ${d.name}`;
+  await addTx(txType, amount, note||txNote, ref);
+
+  closeModal('modal-add-payment');
+  showToast('تم تسجيل الدفعة ✓');
+  loadDebts(d.type);
+  loadBalance();
+  loadRecentTxs();
+}
+
+function openEditDebt() {
+  if(!currentDebtData) return;
+  closeModal('modal-debt-detail');
+  const d = currentDebtData;
+  document.getElementById('edit-debt-name').value   = d.name || '';
+  document.getElementById('edit-debt-amount').value = d.totalAmount || '';
+  document.getElementById('edit-debt-date').value   = d.date || '';
+  document.getElementById('edit-debt-note').value   = d.note || '';
+  openModal('modal-edit-debt');
+}
+
+async function saveEditDebt() {
+  const name   = document.getElementById('edit-debt-name').value.trim();
+  const amount = parseFloat(document.getElementById('edit-debt-amount').value);
+  const date   = document.getElementById('edit-debt-date').value;
+  const note   = document.getElementById('edit-debt-note').value.trim();
+  if(!name){ showToast('أدخل الاسم'); return; }
+  if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
+  const d = currentDebtData;
+  const newRemaining = Math.max(0, amount - (d.paidAmount||0));
+  await db.collection('debts').doc(currentDebtId).update({
+    name, totalAmount:amount, date, note, remaining:newRemaining
+  });
+  currentDebtData = {...d, name, totalAmount:amount, date, note, remaining:newRemaining};
+  closeModal('modal-edit-debt');
+  showToast('تم التعديل ✓');
+  loadDebts(d.type);
+  loadBalance();
+}
+
+function confirmDelete(debtId) {
+  closeModal('modal-debt-detail');
+  document.getElementById('confirm-msg').textContent = 'هل تريد حذف هذا الدين وكل دفعاته؟';
+  document.getElementById('confirm-yes-btn').onclick = async () => {
+    closeModal('modal-confirm');
+    const pmts = await db.collection('payments').where('debtId','==',debtId).get();
+    const batch = db.batch();
+    batch.delete(db.collection('debts').doc(debtId));
+    pmts.forEach(p => batch.delete(p.ref));
+    await batch.commit();
+    showToast('تم الحذف');
+    loadDebts(currentDebtTab);
+    loadBalance();
+  };
+  openModal('modal-confirm');
+}
+
+// ===== Expenses =====
+async function loadExpenses() {
+  const snap = await db.collection('expenses').orderBy('createdAt','desc').limit(100).get();
+  if(snap.empty){
+    document.getElementById('expense-list').innerHTML =
+      '<div class="empty-state"><i class="fas fa-receipt"></i><p>لا توجد مصروفات</p></div>';
+    document.getElementById('today-exp-display').textContent = '0.00';
+    document.getElementById('month-exp-display').textContent = '0.00';
+    return;
+  }
+  const expenses = snap.docs.map(d=>({id:d.id,...d.data()}));
+  const todayStr = new Date().toISOString().split('T')[0];
+  const thisMonth = new Date().toISOString().slice(0,7);
+
+  let todayTotal=0, monthTotal=0;
+  expenses.forEach(e=>{
+    const eDate = e.createdAt?.toDate ? e.createdAt.toDate().toISOString().split('T')[0] : (e.date||'');
+    if(eDate===todayStr) todayTotal += (e.amount||0);
+    if(eDate.startsWith(thisMonth)) monthTotal += (e.amount||0);
+  });
+
+  document.getElementById('today-exp-display').textContent = fmt(todayTotal);
+  document.getElementById('month-exp-display').textContent = fmt(monthTotal);
+
+  // Group by date
+  const groups = {};
+  expenses.forEach(e=>{
+    const key = e.createdAt?.toDate ? e.createdAt.toDate().toISOString().split('T')[0] : (e.date||'?');
+    if(!groups[key]) groups[key]=[];
+    groups[key].push(e);
+  });
+
+  document.getElementById('expense-list').innerHTML = Object.entries(groups).map(([date,items])=>{
+    const dayTotal = items.reduce((s,e)=>s+(e.amount||0),0);
+    const label = date===todayStr ? 'اليوم' : fmtDateStr(date);
+    return `<div class="expense-date-group">
+      <div class="expense-date-label"><span>${label}</span><span style="color:var(--danger);">${fmt(dayTotal)} ج.م</span></div>
+      ${items.map(e=>expHTML(e)).join('')}
+    </div>`;
+  }).join('');
+}
+
+function expHTML(e) {
+  const cat = CATS.find(c=>c.name===e.category)||CATS[7];
+  return `<div class="expense-item">
+    <div class="expense-cat-icon" style="background:${cat.color}22;">${cat.icon}</div>
+    <div class="expense-info">
+      <div class="expense-note">${e.note||e.category}</div>
+      <div class="expense-cat">${e.category}</div>
+    </div>
+    <div class="expense-amount">-${fmt(e.amount)} ج.م</div>
+  </div>`;
+}
+
+function selectCat(name, el) {
+  selectedCat = name;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function saveExpense() {
+  const amount = parseFloat(document.getElementById('expense-amount').value);
+  const date   = document.getElementById('expense-date').value;
+  const note   = document.getElementById('expense-note').value.trim();
+  if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
+  await db.collection('expenses').add({
+    amount, date, note, category:selectedCat,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await addTx('expense', amount, note||`مصروف: ${selectedCat}`);
+  closeModal('modal-add-expense');
+  clearInputs(['expense-amount','expense-note']);
+  showToast('تم تسجيل المصروف ✓');
+  loadExpenses();
+  loadBalance();
+  loadRecentTxs();
+}
+
+// ===== Deposit / Withdraw =====
+function openDeposit() {
+  depMode = 'deposit';
+  document.getElementById('dep-modal-title').textContent = 'إيداع رصيد';
+  const btn = document.getElementById('dep-btn');
+  btn.className = 'btn btn-primary';
+  btn.textContent = 'إيداع';
+  clearInputs(['dep-amount','dep-note']);
+  document.getElementById('dep-date').value = new Date().toISOString().split('T')[0];
+  openModal('modal-deposit');
+}
+
+function openWithdraw() {
+  depMode = 'withdraw';
+  document.getElementById('dep-modal-title').textContent = 'سحب رصيد';
+  const btn = document.getElementById('dep-btn');
+  btn.className = 'btn btn-danger';
+  btn.textContent = 'سحب';
+  clearInputs(['dep-amount','dep-note']);
+  document.getElementById('dep-date').value = new Date().toISOString().split('T')[0];
+  openModal('modal-deposit');
+}
+
+async function saveDeposit() {
+  const amount = parseFloat(document.getElementById('dep-amount').value);
+  const note   = document.getElementById('dep-note').value.trim();
+  if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
+  if(depMode==='withdraw'){
+    const bal = await getBalance();
+    if(amount>bal){ showToast('الرصيد غير كافٍ'); return; }
+    await addTx('withdraw', amount, note||'سحب رصيد');
+    showToast('تم السحب ✓');
+  } else {
+    await addTx('deposit', amount, note||'إيداع رصيد');
+    showToast('تم الإيداع ✓');
+  }
+  closeModal('modal-deposit');
+  loadBalance();
+  loadRecentTxs();
+}
+
+// ===== Navigation =====
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(`screen-${name}`).classList.add('active');
+  const map = {home:0,debts:1,expenses:2,history:3};
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{
+    b.classList.toggle('active', i===map[name]);
+  });
+  if(name==='history')  loadAllTxs();
+  if(name==='debts')    loadDebts(currentDebtTab);
+  if(name==='expenses') loadExpenses();
+  if(name==='home')    { loadBalance(); loadRecentTxs(); }
+}
+
+// ===== Modals =====
+function openModal(id)  { document.getElementById(id).classList.add('active'); document.body.style.overflow='hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow=''; }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target===o){ o.classList.remove('active'); document.body.style.overflow=''; }});
+});
+
+// ===== Helpers =====
+function fmt(n){ return (n||0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDate(d){ return d.toLocaleDateString('ar-EG',{year:'numeric',month:'short',day:'numeric'}); }
+function fmtDateStr(s){ if(!s||s==='?') return s; return fmtDate(new Date(s+'T00:00:00')); }
+function clearInputs(ids){ ids.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; }); }
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+init();
+</script>
+</body>
+</html>
