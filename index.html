@@ -16,6 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
@@ -373,6 +374,64 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 .google-btn img{width:22px;height:22px;flex-shrink:0;}
 .login-note{margin-top:1.2rem;font-size:.78rem;color:#475569;}
 
+/* ===== Light Mode ===== */
+#app.light-mode{--bg:#f1f5f9;--surface:#fff;--text:#1e293b;--text2:#475569;--text3:#94a3b8;--border:rgba(0,0,0,.1);--shadow-md:0 4px 10px rgba(0,0,0,.1);}
+#app.light-mode .balance-card{background:#1e293b;}
+body.light-bg{background:#f1f5f9!important;}
+#app.light-mode .tx-item{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.1);}
+#app.light-mode .debt-card{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.1);}
+#app.light-mode .expense-item{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.1);}
+#app.light-mode .modal{background:#f8fafc;}
+#app.light-mode .page-header{background:#f1f5f9;}
+#app.light-mode .tabs{background:#e2e8f0;}
+#app.light-mode .tab{color:#64748b;}
+#app.light-mode .tab.active{background:#fff;color:var(--primary);}
+#app.light-mode .form-input,#app.light-mode .form-select{background:#f1f5f9;color:#1e293b;border-color:rgba(0,0,0,.12);}
+#app.light-mode .report-stat-card{background:#f1f5f9;border-color:rgba(0,0,0,.08);}
+#app.light-mode .filter-chip{color:#64748b;border-color:rgba(0,0,0,.15);}
+#app.light-mode .currency-btn,#app.light-mode .curr-btn{color:#475569;border-color:rgba(0,0,0,.12);}
+#app.light-mode .balance-mini{background:rgba(0,0,0,.04);}
+#app.light-mode .confirm-box{background:#fff;}
+#app.light-mode .cat-btn{border-color:rgba(0,0,0,.12);}
+#app.light-mode .type-btn{border-color:rgba(0,0,0,.12);color:#475569;}
+#app.light-mode .payment-item{border-color:rgba(0,0,0,.08);}
+#app.light-mode .quick-btn{background:#fff;}
+#app.light-mode .modal-handle{background:rgba(0,0,0,.12);}
+#app.light-mode .recur-item,#app.light-mode .reminder-item,#app.light-mode .budget-cat-row{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+
+/* ===== Budget Feature ===== */
+.budget-cat-row{display:flex;align-items:center;gap:.6rem;background:var(--surface);border-radius:var(--radius);padding:.85rem;margin-bottom:.5rem;box-shadow:0 2px 8px rgba(0,0,0,.18);}
+.budget-cat-info{flex:1;min-width:0;}
+.budget-cat-name{font-size:.85rem;font-weight:700;}
+.budget-cat-amount{font-size:.72rem;color:var(--text2);margin-top:.15rem;}
+.budget-progress{height:6px;background:var(--border);border-radius:4px;margin-top:.45rem;overflow:hidden;}
+.budget-progress-fill{height:100%;border-radius:4px;transition:width .4s;background:var(--primary);}
+.budget-progress-fill.warn{background:var(--warning);}
+.budget-progress-fill.over{background:var(--danger);}
+.budget-set-btn{flex-shrink:0;border:none;background:rgba(37,99,235,.12);color:var(--primary);border-radius:8px;padding:.4rem .7rem;font-size:.75rem;cursor:pointer;font-family:'Cairo',sans-serif;}
+
+/* ===== Reminders Feature ===== */
+.reminder-item{display:flex;align-items:center;gap:.7rem;background:var(--surface);border-radius:var(--radius);padding:.8rem .9rem;margin-bottom:.45rem;border-right:3px solid var(--warning);box-shadow:0 2px 8px rgba(0,0,0,.18);}
+.reminder-item.overdue{border-right-color:var(--danger);}
+.reminder-item.done{border-right-color:var(--success);opacity:.65;}
+.reminder-info{flex:1;min-width:0;}
+.reminder-title{font-size:.85rem;font-weight:700;}
+.reminder-date{font-size:.7rem;color:var(--text3);margin-top:.1rem;}
+.reminder-del-btn{flex-shrink:0;width:28px;height:28px;border-radius:8px;border:none;background:rgba(239,68,68,.12);color:#ef4444;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem;}
+.nav-badge{position:absolute;top:6px;right:8px;width:8px;height:8px;border-radius:50%;background:#ef4444;}
+
+/* ===== Recurring Feature ===== */
+.recur-item{display:flex;align-items:center;gap:.8rem;background:var(--surface);border-radius:var(--radius);padding:.8rem .9rem;margin-bottom:.45rem;border-right:3px solid var(--primary);box-shadow:0 2px 8px rgba(0,0,0,.18);}
+.recur-info{flex:1;min-width:0;}
+.recur-name{font-size:.85rem;font-weight:700;}
+.recur-details{font-size:.7rem;color:var(--text2);margin-top:.1rem;}
+.recur-del-btn{flex-shrink:0;width:28px;height:28px;border-radius:8px;border:none;background:rgba(239,68,68,.12);color:#ef4444;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem;}
+
+/* ===== Charts ===== */
+.chart-container{padding:.5rem .8rem 1rem;}
+.chart-title{font-size:.82rem;font-weight:700;color:var(--text2);margin-bottom:.6rem;padding-right:.2rem;}
+.chart-wrap{background:var(--surface);border-radius:var(--radius);padding:.8rem;margin-bottom:.8rem;box-shadow:0 2px 8px rgba(0,0,0,.18);}
+
 /* ===== User Avatar in Header ===== */
 #user-avatar-wrap{
   display:none;align-items:center;gap:.5rem;cursor:pointer;
@@ -409,9 +468,14 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
       <div class="header-sup">إدارة</div>
       <div class="header-main">محفظتي 👛</div>
     </div>
+    <div style="display:flex;align-items:center;gap:.5rem;">
+    <button id="theme-toggle-btn" onclick="toggleTheme()" class="header-fab" title="تبديل المظهر">
+      <i class="fas fa-sun"></i>
+    </button>
     <div id="user-avatar-wrap" onclick="confirmSignOut()" title="تسجيل الخروج">
       <span id="user-name-short"></span>
       <img id="user-avatar" src="" alt="">
+    </div>
     </div>
   </div>
 
@@ -452,6 +516,20 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
       </button>
       <button class="rnav-btn" id="rnav-reports" onclick="showSection('reports')" style="color:rgba(255,255,255,.45);">
         <i class="fas fa-chart-bar" style="color:#a78bfa;"></i><span>تقارير</span>
+      </button>
+
+      <div class="rnav-sep"></div>
+
+      <button class="rnav-btn" id="rnav-budget" onclick="showSection('budget')" style="color:rgba(255,255,255,.45);">
+        <i class="fas fa-bullseye" style="color:#fbbf24;"></i><span>الميزانية</span>
+      </button>
+      <button class="rnav-btn" id="rnav-reminders" onclick="showSection('reminders')" style="color:rgba(255,255,255,.45);position:relative;">
+        <i class="fas fa-bell" style="color:#34d399;"></i>
+        <div class="nav-badge" id="reminder-nav-badge" style="display:none;"></div>
+        <span>تذكير</span>
+      </button>
+      <button class="rnav-btn" id="rnav-recurring" onclick="showSection('recurring')" style="color:rgba(255,255,255,.45);">
+        <i class="fas fa-rotate" style="color:#a78bfa;"></i><span>متكرر</span>
       </button>
     </nav>
 
@@ -564,7 +642,12 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
             <i class="fas fa-print"></i>
           </button>
         </div>
+        <div class="tabs" style="margin:.5rem .8rem .3rem;">
+          <button class="tab active" id="rtab-transactions" onclick="switchReportTab('transactions',this)">المعاملات</button>
+          <button class="tab" id="rtab-charts" onclick="switchReportTab('charts',this)">مخططات 📊</button>
+        </div>
 
+        <div id="report-tx-panel">
         <!-- Date Filter -->
         <div style="padding:.6rem .8rem .3rem;">
           <div style="font-size:.72rem;color:#94a3b8;margin-bottom:.4rem;font-weight:600;">الفترة الزمنية</div>
@@ -616,6 +699,58 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
         <!-- Results list -->
         <div class="tx-list" id="report-list" style="padding-top:.2rem;">
           <div class="empty-state"><i class="fas fa-chart-bar"></i><p>اختر الفلتر لعرض التقرير</p></div>
+        </div>
+        <div style="height:1.5rem;"></div>
+        </div><!-- end report-tx-panel -->
+
+        <!-- Charts Panel -->
+        <div id="report-chart-panel" style="display:none;">
+          <div class="chart-container">
+            <div class="chart-title">المصروفات حسب الفئة (هذا الشهر)</div>
+            <div class="chart-wrap" style="height:230px;"><canvas id="chart-donut"></canvas></div>
+            <div class="chart-title">الوارد والصادر (آخر 6 أشهر)</div>
+            <div class="chart-wrap" style="height:210px;"><canvas id="chart-bar"></canvas></div>
+          </div>
+        </div>
+      </div><!-- end reports section -->
+
+      <!-- BUDGET SECTION -->
+      <div class="section" id="section-budget">
+        <div class="page-header">
+          <span class="page-header-title">🎯 الميزانية الشهرية</span>
+        </div>
+        <div style="padding:.5rem .8rem .2rem;font-size:.75rem;color:var(--text2);font-weight:600;" id="budget-month-label"></div>
+        <div style="padding:.5rem .8rem;" id="budget-list">
+          <div class="empty-state"><i class="fas fa-bullseye"></i><p>لم تحدد ميزانية بعد</p></div>
+        </div>
+        <div style="height:1.5rem;"></div>
+      </div>
+
+      <!-- REMINDERS SECTION -->
+      <div class="section" id="section-reminders">
+        <div class="page-header">
+          <span class="page-header-title">🔔 التذكيرات</span>
+          <button class="page-header-btn" onclick="openAddReminder()" title="إضافة تذكير" style="background:rgba(234,179,8,.15);color:#eab308;">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+        <div class="tx-list" id="reminders-list" style="padding-top:.4rem;">
+          <div class="empty-state"><i class="fas fa-bell-slash"></i><p>لا توجد تذكيرات</p></div>
+        </div>
+        <div style="height:1.5rem;"></div>
+      </div>
+
+      <!-- RECURRING SECTION -->
+      <div class="section" id="section-recurring">
+        <div class="page-header">
+          <span class="page-header-title">🔄 المتكررة الشهرية</span>
+          <button class="page-header-btn" onclick="openAddRecurring()" title="إضافة معاملة متكررة">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+        <div style="padding:.5rem .8rem .2rem;font-size:.75rem;color:var(--text2);">معاملات تُضاف تلقائياً كل شهر في يوم محدد</div>
+        <div style="padding:0 .8rem;" id="recurring-list">
+          <div class="empty-state"><i class="fas fa-rotate"></i><p>لا توجد معاملات متكررة</p></div>
         </div>
         <div style="height:1.5rem;"></div>
       </div>
@@ -765,7 +900,7 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title" id="edit-tx-title">تعديل المعاملة</div>
-    <div class="form-group"><label class="form-label">المبلغ (ج.م)</label><input type="number" class="form-input" id="edit-tx-amount" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">المبلغ (<span id="edit-tx-cur-label">ج.م</span>)</label><input type="number" class="form-input" id="edit-tx-amount" inputmode="decimal"></div>
     <div class="form-group"><label class="form-label">ملاحظة</label><input type="text" class="form-input" id="edit-tx-note"></div>
     <button class="btn btn-primary" onclick="saveEditTx()">حفظ التعديلات</button>
     <button class="btn btn-outline" onclick="closeModal('modal-edit-tx')">إلغاء</button>
@@ -784,6 +919,59 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
         <button class="btn btn-danger" style="flex:1" id="confirm-yes-btn">نعم، احذف</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Set Budget Modal -->
+<div class="modal-overlay" id="modal-add-budget">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">تعيين ميزانية: <span id="budget-cat-name"></span></div>
+    <div class="form-group"><label class="form-label">الميزانية الشهرية (ج.م)</label><input type="number" class="form-input" id="budget-cat-input" placeholder="0.00" inputmode="decimal"></div>
+    <div style="font-size:.78rem;color:var(--text2);margin-bottom:1rem;">اتركه فارغاً لإلغاء الميزانية لهذه الفئة</div>
+    <button class="btn btn-primary" onclick="saveBudget()">حفظ</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-add-budget')">إلغاء</button>
+  </div>
+</div>
+
+<!-- Add Reminder Modal -->
+<div class="modal-overlay" id="modal-add-reminder">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">إضافة تذكير</div>
+    <div class="form-group"><label class="form-label">العنوان</label><input type="text" class="form-input" id="reminder-title-input" placeholder="مثال: سداد إيجار الشهر"></div>
+    <div class="form-group"><label class="form-label">التاريخ</label><input type="date" class="form-input" id="reminder-date-input"></div>
+    <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="reminder-note-input" placeholder="تفاصيل إضافية"></div>
+    <button class="btn btn-primary" onclick="saveReminder()">حفظ</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-add-reminder')">إلغاء</button>
+  </div>
+</div>
+
+<!-- Add Recurring Modal -->
+<div class="modal-overlay" id="modal-add-recurring">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">إضافة معاملة متكررة</div>
+    <div class="form-group"><label class="form-label">الاسم</label><input type="text" class="form-input" id="recur-name-input" placeholder="مثال: راتب، إيجار، اشتراك نتفليكس"></div>
+    <div class="form-group">
+      <label class="form-label">النوع</label>
+      <div class="type-toggle">
+        <button class="type-btn recur-type-btn active" onclick="setRecurType('deposit',this)" style="border-color:var(--success);background:var(--success-light);color:var(--success);">💚 إيداع (وارد)</button>
+        <button class="type-btn recur-type-btn" onclick="setRecurType('expense',this)">❤️ مصروف (صادر)</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">العملة</label>
+      <div class="curr-toggle" id="recur-curr-toggle">
+        <button class="curr-btn active" onclick="setRecurCur('EGP',this)">ج.م</button>
+        <button class="curr-btn" onclick="setRecurCur('SAR',this)">ريال</button>
+        <button class="curr-btn" onclick="setRecurCur('USD',this)">دولار</button>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">المبلغ</label><input type="number" class="form-input" id="recur-amount-input" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">يوم الشهر (1-31)</label><input type="number" class="form-input" id="recur-day-input" placeholder="1" min="1" max="31" inputmode="numeric"></div>
+    <button class="btn btn-primary" onclick="saveRecurring()">حفظ</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-add-recurring')">إلغاء</button>
   </div>
 </div>
 
@@ -852,9 +1040,14 @@ async function init() {
   buildCurrencyGrid('debt-currency-grid','EGP');
   buildCurrencyGrid('edit-currency-grid','EGP');
   setTodayDates();
+  applyStoredTheme();
   try { await Promise.all([loadBalance(), loadRecentTxs()]); }
   catch(e){ console.error(e); showToast('تحقق من اتصال الإنترنت'); }
   document.getElementById('loading').style.display = 'none';
+  // Check reminders in background
+  loadReminders().catch(()=>{});
+  // Check recurring transactions due today
+  setTimeout(()=>checkRecurringDue().catch(()=>{}), 2000);
 }
 
 function buildCurrencyGrid(gridId, selectedCode='EGP') {
@@ -1643,6 +1836,8 @@ function openEditTx(id, type, amount, note, cur='EGP') {
   document.getElementById('edit-tx-title').textContent = 'تعديل: ' + (labels[type]||type);
   document.getElementById('edit-tx-amount').value = amount;
   document.getElementById('edit-tx-note').value = note;
+  const symMap3 = {EGP:'ج.م', SAR:'ريال', USD:'$', EUR:'€'};
+  document.getElementById('edit-tx-cur-label').textContent = symMap3[cur]||cur;
   openModal('modal-edit-tx');
 }
 
@@ -1881,18 +2076,22 @@ function showSection(name) {
   document.querySelectorAll('.rnav-btn').forEach(b => b.classList.remove('active'));
   const navMap = {
     home:'rnav-home', creditor:'rnav-creditor', debtor:'rnav-debtor',
-    expenses:'rnav-expenses', history:'rnav-history', reports:'rnav-reports'
+    expenses:'rnav-expenses', history:'rnav-history', reports:'rnav-reports',
+    budget:'rnav-budget', reminders:'rnav-reminders', recurring:'rnav-recurring'
   };
   if(navMap[name]) document.getElementById(navMap[name])?.classList.add('active');
 
   activeSection = name;
 
-  if(name === 'home')     loadBalance();
-  if(name === 'creditor') loadDebts('creditor');
-  if(name === 'debtor')   loadDebts('debtor');
-  if(name === 'expenses') loadExpenses();
-  if(name === 'history')  loadAllTxs();
-  if(name === 'reports')  loadReportData();
+  if(name === 'home')      loadBalance();
+  if(name === 'creditor')  loadDebts('creditor');
+  if(name === 'debtor')    loadDebts('debtor');
+  if(name === 'expenses')  loadExpenses();
+  if(name === 'history')   loadAllTxs();
+  if(name === 'reports')   loadReportData();
+  if(name === 'budget')    loadBudget();
+  if(name === 'reminders') loadReminders();
+  if(name === 'recurring') loadRecurring();
 }
 
 // ===== Modals =====
@@ -1996,6 +2195,373 @@ auth.onAuthStateChanged(user => {
 
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+
+// ===== Feature 6: Light Mode =====
+function toggleTheme() {
+  const app = document.getElementById('app');
+  const isLight = app.classList.toggle('light-mode');
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  document.body.classList.toggle('light-bg', isLight);
+  updateThemeIcon();
+}
+function updateThemeIcon() {
+  const isLight = document.getElementById('app').classList.contains('light-mode');
+  const btn = document.getElementById('theme-toggle-btn');
+  if(btn) btn.innerHTML = isLight ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+}
+function applyStoredTheme() {
+  if(localStorage.getItem('theme') === 'light') {
+    document.getElementById('app').classList.add('light-mode');
+    document.body.classList.add('light-bg');
+    updateThemeIcon();
+  }
+}
+
+// ===== Feature 1: Charts =====
+let chartsChart1 = null, chartsChart2 = null;
+function switchReportTab(tab, el) {
+  document.querySelectorAll('#section-reports .tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('report-tx-panel').style.display   = tab==='transactions' ? '' : 'none';
+  document.getElementById('report-chart-panel').style.display = tab==='charts'       ? '' : 'none';
+  if(tab==='charts') loadCharts();
+}
+
+async function loadCharts() {
+  const isLight = document.getElementById('app').classList.contains('light-mode');
+  const tickColor = isLight ? '#475569' : '#94a3b8';
+  const gridColor = isLight ? 'rgba(0,0,0,.07)' : 'rgba(255,255,255,.05)';
+
+  const month = new Date().toISOString().slice(0,7);
+  const expSnap = await userCol('expenses').get();
+  const catTotals = {};
+  expSnap.forEach(doc => {
+    const e = doc.data();
+    if(e.date && e.date.startsWith(month)) {
+      catTotals[e.category||'أخرى'] = (catTotals[e.category||'أخرى']||0) + (e.amount||0);
+    }
+  });
+
+  const catNames  = Object.keys(catTotals);
+  const catValues = catNames.map(n => catTotals[n]);
+  const catColors = catNames.map(n => CATS.find(c=>c.name===n)?.color || '#64748b');
+
+  const ctx1 = document.getElementById('chart-donut').getContext('2d');
+  if(chartsChart1) { chartsChart1.destroy(); chartsChart1=null; }
+  if(catNames.length) {
+    chartsChart1 = new Chart(ctx1, {
+      type:'doughnut',
+      data:{labels:catNames, datasets:[{data:catValues, backgroundColor:catColors, borderWidth:0, hoverOffset:6}]},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{position:'bottom', labels:{font:{family:'Cairo',size:11}, color:tickColor, padding:10}},
+          tooltip:{callbacks:{label:c=>' '+fmt(c.raw)+' ج.م'}}
+        },
+        cutout:'62%'
+      }
+    });
+  } else {
+    ctx1.clearRect(0,0,ctx1.canvas.width,ctx1.canvas.height);
+    ctx1.fillStyle=tickColor; ctx1.font='14px Cairo'; ctx1.textAlign='center';
+    ctx1.fillText('لا توجد مصروفات هذا الشهر', ctx1.canvas.width/2, ctx1.canvas.height/2);
+  }
+
+  const txSnap = await userCol('transactions').orderBy('createdAt','desc').limit(500).get();
+  const months6 = [];
+  for(let i=5;i>=0;i--) {
+    const d = new Date(); d.setDate(1); d.setMonth(d.getMonth()-i);
+    months6.push(d.toISOString().slice(0,7));
+  }
+  const inByMonth={}, outByMonth={};
+  months6.forEach(m => { inByMonth[m]=0; outByMonth[m]=0; });
+  txSnap.forEach(doc => {
+    const t = doc.data();
+    const m = t.createdAt?.toDate ? t.createdAt.toDate().toISOString().slice(0,7) : '';
+    if(!months6.includes(m)) return;
+    if(['deposit','debt_receive'].includes(t.type)) inByMonth[m]  += (t.amount||0);
+    else                                             outByMonth[m] += (t.amount||0);
+  });
+  const arMonths = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const monthLabels = months6.map(m => arMonths[parseInt(m.split('-')[1])-1]);
+
+  const ctx2 = document.getElementById('chart-bar').getContext('2d');
+  if(chartsChart2) { chartsChart2.destroy(); chartsChart2=null; }
+  chartsChart2 = new Chart(ctx2, {
+    type:'bar',
+    data:{
+      labels:monthLabels,
+      datasets:[
+        {label:'وارد', data:months6.map(m=>inByMonth[m]),  backgroundColor:'rgba(5,150,105,.75)',  borderRadius:4},
+        {label:'صادر', data:months6.map(m=>outByMonth[m]), backgroundColor:'rgba(220,38,38,.65)', borderRadius:4}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{font:{family:'Cairo',size:11},color:tickColor,padding:10}},
+        tooltip:{callbacks:{label:c=>' '+fmt(c.raw)+' ج.م'}}
+      },
+      scales:{
+        x:{grid:{display:false}, ticks:{font:{family:'Cairo',size:10},color:tickColor}},
+        y:{grid:{color:gridColor}, ticks:{font:{family:'Cairo',size:9},color:tickColor, callback:v=>fmt(v)}}
+      }
+    }
+  });
+}
+
+// ===== Feature 2: Monthly Budget =====
+let budgetData = {};
+let monthExpByCat = {};
+
+async function loadBudget() {
+  const month = new Date().toISOString().slice(0,7);
+  const arMonths = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const [y,m] = month.split('-');
+  document.getElementById('budget-month-label').textContent = arMonths[parseInt(m)-1] + ' ' + y;
+
+  const snap = await userCol('budget').doc(month).get();
+  budgetData = snap.exists ? snap.data() : {};
+
+  const expSnap = await userCol('expenses').get();
+  monthExpByCat = {};
+  expSnap.forEach(doc => {
+    const e = doc.data();
+    if(e.date && e.date.startsWith(month)) {
+      const cat = e.category||'أخرى';
+      const cur = e.currency||'EGP';
+      if(!monthExpByCat[cat]) monthExpByCat[cat] = {};
+      monthExpByCat[cat][cur] = (monthExpByCat[cat][cur]||0) + (e.amount||0);
+    }
+  });
+  renderBudget();
+}
+
+function renderBudget() {
+  const list = document.getElementById('budget-list');
+  const symMap = {EGP:'ج.م', SAR:'ريال', USD:'$'};
+  list.innerHTML = CATS.map(cat => {
+    const spentMap = monthExpByCat[cat.name] || {};
+    const spentEGP = spentMap['EGP']||0;
+    const budget = budgetData[cat.name] || 0;
+    const pct = budget>0 ? Math.min(100,(spentEGP/budget)*100) : 0;
+    const fillCls = pct>=100?'over':(pct>=75?'warn':'');
+    const spentStr = Object.entries(spentMap).map(([c,v])=>fmt(v)+' '+(symMap[c]||c)).join(' + ') || '0 ج.م';
+    const budgetStr = budget>0 ? fmt(budget)+' ج.م' : 'غير محدد';
+    return `<div class="budget-cat-row">
+      <div style="font-size:1.3rem;flex-shrink:0;">${cat.icon}</div>
+      <div class="budget-cat-info">
+        <div class="budget-cat-name">${cat.name}</div>
+        <div class="budget-cat-amount">${spentStr} من ${budgetStr}</div>
+        ${budget>0?`<div class="budget-progress"><div class="budget-progress-fill ${fillCls}" style="width:${pct.toFixed(1)}%"></div></div>`:''}
+      </div>
+      <button class="budget-set-btn" onclick="openSetBudget('${cat.name}')">تعيين</button>
+    </div>`;
+  }).join('');
+}
+
+let currentBudgetCat = '';
+function openSetBudget(catName) {
+  currentBudgetCat = catName;
+  document.getElementById('budget-cat-name').textContent = catName;
+  document.getElementById('budget-cat-input').value = budgetData[catName] || '';
+  openModal('modal-add-budget');
+}
+async function saveBudget() {
+  const amount = parseFloat(document.getElementById('budget-cat-input').value) || 0;
+  const month = new Date().toISOString().slice(0,7);
+  if(amount > 0) budgetData[currentBudgetCat] = amount;
+  else delete budgetData[currentBudgetCat];
+  await userCol('budget').doc(month).set(budgetData);
+  closeModal('modal-add-budget');
+  renderBudget();
+  showToast('تم حفظ الميزانية ✓');
+}
+
+// ===== Feature 3: Reminders =====
+let remindersList = [];
+
+async function loadReminders() {
+  const snap = await userCol('reminders').orderBy('date','asc').get();
+  remindersList = snap.docs.map(d => ({id:d.id,...d.data()}));
+  renderReminders();
+  updateReminderBadge();
+}
+
+function renderReminders() {
+  const list = document.getElementById('reminders-list');
+  if(!remindersList.length) {
+    list.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>لا توجد تذكيرات</p></div>';
+    return;
+  }
+  const today = new Date().toISOString().split('T')[0];
+  list.innerHTML = remindersList.map(r => {
+    const isOverdue = !r.done && r.date < today;
+    const cls = r.done ? 'done' : (isOverdue ? 'overdue' : '');
+    const dateStr = r.date ? fmtDateStr(r.date) : '';
+    return `<div class="reminder-item ${cls}">
+      <div class="reminder-info">
+        <div class="reminder-title">${r.title}</div>
+        <div class="reminder-date">${dateStr}${r.note?' • '+r.note:''}</div>
+      </div>
+      ${!r.done?`<button onclick="markReminderDone('${r.id}')" style="border:none;background:rgba(5,150,105,.12);color:#059669;border-radius:8px;padding:.3rem .6rem;font-size:.7rem;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;">تم ✓</button>`:''}
+      <button class="reminder-del-btn" onclick="deleteReminder('${r.id}')"><i class="fas fa-trash"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function updateReminderBadge() {
+  const today = new Date().toISOString().split('T')[0];
+  const due = remindersList.filter(r => !r.done && r.date <= today).length;
+  const badge = document.getElementById('reminder-nav-badge');
+  if(badge) badge.style.display = due>0 ? 'block' : 'none';
+}
+
+function openAddReminder() {
+  document.getElementById('reminder-title-input').value = '';
+  document.getElementById('reminder-date-input').value = new Date().toISOString().split('T')[0];
+  document.getElementById('reminder-note-input').value = '';
+  openModal('modal-add-reminder');
+}
+
+async function saveReminder() {
+  const title = document.getElementById('reminder-title-input').value.trim();
+  const date  = document.getElementById('reminder-date-input').value;
+  const note  = document.getElementById('reminder-note-input').value.trim();
+  if(!title) { showToast('أدخل عنوان التذكير'); return; }
+  await userCol('reminders').add({
+    title, date, note, done:false,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  closeModal('modal-add-reminder');
+  showToast('تم إضافة التذكير ✓');
+  loadReminders();
+}
+
+async function markReminderDone(id) {
+  await userCol('reminders').doc(id).update({done:true});
+  loadReminders();
+  showToast('تم ✓');
+}
+
+async function deleteReminder(id) {
+  await userCol('reminders').doc(id).delete();
+  remindersList = remindersList.filter(r => r.id !== id);
+  renderReminders();
+  updateReminderBadge();
+  showToast('تم الحذف ✓');
+}
+
+// ===== Feature 5: Recurring Transactions =====
+let recurringList = [];
+let recurType = 'deposit';
+let recurCurrency = 'EGP';
+
+async function loadRecurring() {
+  const snap = await userCol('recurring').orderBy('createdAt','desc').get();
+  recurringList = snap.docs.map(d => ({id:d.id,...d.data()}));
+  renderRecurring();
+}
+
+function renderRecurring() {
+  const list = document.getElementById('recurring-list');
+  if(!recurringList.length) {
+    list.innerHTML = '<div class="empty-state"><i class="fas fa-rotate"></i><p>لا توجد معاملات متكررة</p></div>';
+    return;
+  }
+  const symMap = {EGP:'ج.م', SAR:'ريال', USD:'$', EUR:'€'};
+  list.innerHTML = recurringList.map(r => {
+    const sym = symMap[r.currency||'EGP'] || r.currency;
+    const isPlus = r.type==='deposit';
+    const typeLabel = isPlus ? '💚 إيداع' : '❤️ مصروف';
+    return `<div class="recur-item" style="border-right-color:${isPlus?'var(--success)':'var(--danger)'};">
+      <div class="recur-info">
+        <div class="recur-name">${r.name}</div>
+        <div class="recur-details">${typeLabel} • ${fmt(r.amount)} ${sym} • يوم ${r.day} كل شهر</div>
+      </div>
+      <button class="recur-del-btn" onclick="deleteRecurring('${r.id}')"><i class="fas fa-trash"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function openAddRecurring() {
+  document.getElementById('recur-name-input').value = '';
+  document.getElementById('recur-amount-input').value = '';
+  document.getElementById('recur-day-input').value = new Date().getDate();
+  recurType = 'deposit'; recurCurrency = 'EGP';
+  document.querySelectorAll('.recur-type-btn').forEach((b,i) => {
+    b.classList.toggle('active', i===0);
+    if(i===0){b.style.borderColor='var(--success)';b.style.background='var(--success-light)';b.style.color='var(--success)';}
+    else{b.style.borderColor='';b.style.background='';b.style.color='';}
+  });
+  document.querySelectorAll('#recur-curr-toggle .curr-btn').forEach((b,i) => b.classList.toggle('active',i===0));
+  openModal('modal-add-recurring');
+}
+
+function setRecurType(type, el) {
+  recurType = type;
+  document.querySelectorAll('.recur-type-btn').forEach(b => {
+    b.classList.remove('active'); b.style.borderColor=''; b.style.background=''; b.style.color='';
+  });
+  el.classList.add('active');
+  if(type==='deposit'){el.style.borderColor='var(--success)';el.style.background='var(--success-light)';el.style.color='var(--success)';}
+  else{el.style.borderColor='var(--danger)';el.style.background='var(--danger-light)';el.style.color='var(--danger)';}
+}
+
+function setRecurCur(cur, el) {
+  recurCurrency = cur;
+  document.querySelectorAll('#recur-curr-toggle .curr-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function saveRecurring() {
+  const name   = document.getElementById('recur-name-input').value.trim();
+  const amount = parseFloat(document.getElementById('recur-amount-input').value);
+  const day    = parseInt(document.getElementById('recur-day-input').value)||1;
+  if(!name)              { showToast('أدخل الاسم'); return; }
+  if(!amount||amount<=0) { showToast('أدخل مبلغاً صحيحاً'); return; }
+  if(day<1||day>31)      { showToast('اليوم يجب أن يكون بين 1 و31'); return; }
+  await userCol('recurring').add({
+    name, type:recurType, amount, currency:recurCurrency, day,
+    lastProcessed:'',
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  closeModal('modal-add-recurring');
+  showToast('تم الإضافة ✓');
+  loadRecurring();
+}
+
+async function deleteRecurring(id) {
+  await userCol('recurring').doc(id).delete();
+  recurringList = recurringList.filter(r=>r.id!==id);
+  renderRecurring();
+  showToast('تم الحذف ✓');
+}
+
+async function checkRecurringDue() {
+  const snap = await userCol('recurring').get();
+  if(snap.empty) return;
+  const today = new Date();
+  const todayD   = today.getDate();
+  const todayStr = today.toISOString().slice(0,7);
+  const symMap = {EGP:'ج.م', SAR:'ريال', USD:'$'};
+  const due = [];
+  snap.forEach(doc => {
+    const r = doc.data();
+    if(r.day===todayD && (!r.lastProcessed||!r.lastProcessed.startsWith(todayStr))) {
+      due.push({id:doc.id,...r});
+    }
+  });
+  for(const r of due) {
+    const sym = symMap[r.currency||'EGP']||'';
+    const confirmMsg = `معاملة متكررة اليوم:\n${r.name}\n${fmt(r.amount)} ${sym}\nهل تريد إضافتها الآن؟`;
+    if(window.confirm(confirmMsg)) {
+      await addTx(r.type, r.amount, r.name, '', r.currency||'EGP');
+      await userCol('recurring').doc(r.id).update({lastProcessed:todayStr});
+      showToast(`تم إضافة: ${r.name} ✓`);
+    }
+  }
 }
 </script>
 </body>
