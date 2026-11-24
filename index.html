@@ -1552,9 +1552,10 @@ function showToast(msg){
 async function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   try {
-    await auth.signInWithPopup(provider);
+    await auth.signInWithRedirect(provider);
   } catch(e) {
-    if(e.code !== 'auth/popup-closed-by-user') showToast('خطأ في تسجيل الدخول');
+    showToast('خطأ في تسجيل الدخول');
+    console.error(e);
   }
 }
 
