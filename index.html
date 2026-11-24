@@ -837,7 +837,7 @@ function headerFabAction() {
 
 // ===== Balance =====
 async function loadBalance() {
-  const doc = await userCol('account').doc('main').get();
+  const doc = await userCol('account').doc('main').get({ source: 'server' });
   const bal = doc.exists ? (doc.data().balance || 0) : 0;
   renderBalance(bal);
 
@@ -880,7 +880,7 @@ function renderBalance(bal) {
 }
 
 async function getBalance() {
-  const doc = await userCol('account').doc('main').get();
+  const doc = await userCol('account').doc('main').get({ source: 'server' });
   return doc.exists ? (doc.data().balance || 0) : 0;
 }
 
@@ -1490,7 +1490,7 @@ async function saveDeposit() {
   await addTx('deposit', amount, note||'إيداع رصيد');
   showToast('تم الإيداع ✓');
   closeModal('modal-deposit');
-  loadBalance();
+  loadRecentTxs();
 }
 
 // ===== Reports =====
