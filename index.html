@@ -1177,32 +1177,45 @@ async function printDebtStatement(debtId) {
   const sym  = cur.symbol;
   const isC  = d.type === 'creditor';
 
+  // sort by payment date then entry date
   const sorted = snap.docs.sort((a,b)=>{
-    const ta=a.data().createdAt?.toMillis?.()||0;
-    const tb=b.data().createdAt?.toMillis?.()||0;
-    return ta-tb;
+    const da = a.data().date || '';
+    const db2 = b.data().date || '';
+    if(da && db2) return da.localeCompare(db2);
+    return (a.data().createdAt?.toMillis?.()||0) - (b.data().createdAt?.toMillis?.()||0);
   });
+
+  function numDate(str) {
+    if(!str) return '';
+    const d = new Date(str + 'T00:00:00');
+    if(isNaN(d)) return str;
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    return `${dd}/${mm}/${d.getFullYear()}`;
+  }
 
   let running = d.totalAmount||0;
   const rows = sorted.map((p,i)=>{
     const pd  = p.data();
-    const dt  = pd.createdAt?.toDate
-      ? pd.createdAt.toDate().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'})
-      : (pd.date||'');
+    const dt  = pd.date ? numDate(pd.date)
+              : (pd.createdAt?.toDate ? numDate(pd.createdAt.toDate().toISOString().split('T')[0]) : '');
     running = Math.max(0, running - (pd.amount||0));
+    const fmtN = n => n.toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2});
     return `<tr>
       <td>${i+1}</td>
       <td>${dt}</td>
-      <td style="font-weight:700;color:#059669;">${(pd.amount||0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})} ${sym}</td>
-      <td style="font-weight:700;color:#dc2626;">${running.toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})} ${sym}</td>
-      <td>${pd.ref ? 'وصل: '+pd.ref : ''}${pd.note ? (pd.ref?' / ':'')+pd.note : ''}${(!pd.ref&&!pd.note)?'—':''}</td>
+      <td style="font-weight:700;">${fmtN(pd.amount||0)} ${sym}</td>
+      <td style="font-weight:700;">${fmtN(running)} ${sym}</td>
+      <td style="text-align:right;">${pd.ref ? 'وصل: '+pd.ref : ''}${pd.note ? (pd.ref?' / ':'')+pd.note : ''}${(!pd.ref&&!pd.note)?'—':''}</td>
     </tr>`;
   }).join('');
 
-  const printDate = new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
-  const total  = (d.totalAmount||0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const paid   = (d.paidAmount||0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const rem    = (d.remaining||0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const now = new Date();
+  const printDate = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+  const fmtN = n => n.toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const total = fmtN(d.totalAmount||0);
+  const paid  = fmtN(d.paidAmount||0);
+  const rem   = fmtN(d.remaining||0);
 
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
@@ -1214,31 +1227,31 @@ async function printDebtStatement(debtId) {
       h1{text-align:center;font-size:15pt;color:#b91c1c;font-weight:800;margin-bottom:.8rem;}
       .info-row{display:flex;justify-content:space-between;margin-bottom:.3rem;font-size:10.5pt;}
       .info-row span{font-weight:700;}
-      .info-row .val{color:#1d4ed8;}
-      .divider{border:none;border-top:2px solid #93c5fd;margin:.7rem 0;}
+      .info-row .val{font-weight:800;}
+      .divider{border:none;border-top:2px solid #1e293b;margin:.7rem 0;}
       table{width:100%;border-collapse:collapse;font-size:10.5pt;margin-top:.5rem;}
-      th{background:#dbeafe;color:#1e293b;padding:.5rem .7rem;border:1px solid #93c5fd;text-align:center;font-weight:700;white-space:nowrap;}
-      td{padding:.45rem .7rem;border:1px solid #93c5fd;text-align:center;vertical-align:middle;}
+      th{background:#dbeafe;color:#1e293b;padding:.5rem .7rem;border:1px solid #1e293b;text-align:center;font-weight:700;white-space:nowrap;}
+      td{padding:.45rem .7rem;border:1px solid #1e293b;text-align:center;vertical-align:middle;}
       tr:nth-child(even) td{background:#f0f9ff;}
       .summary{display:flex;gap:.6rem;margin-top:.8rem;}
-      .sum{flex:1;border:1.5px solid #93c5fd;border-radius:6px;padding:.5rem;text-align:center;background:#f0f9ff;}
-      .sum-label{font-size:8pt;color:#64748b;margin-bottom:.2rem;}
+      .sum{flex:1;border:1.5px solid #1e293b;border-radius:6px;padding:.5rem;text-align:center;}
+      .sum-label{font-size:8pt;color:#475569;margin-bottom:.2rem;}
       .sum-val{font-size:11pt;font-weight:800;}
-      .footer{margin-top:1.5rem;font-size:9pt;color:#94a3b8;text-align:center;}
+      .note-box{margin-top:.7rem;border:1.5px solid #1e293b;border-radius:4px;padding:.5rem .8rem;font-size:10pt;}
+      .footer{margin-top:1.2rem;font-size:9pt;color:#64748b;text-align:center;}
       @media print{body{padding:.6cm;}@page{margin:.7cm;size:A4 portrait;}}
     </style>
   </head><body>
     <h1>كشف حساب</h1>
     <div class="info-row"><span>الاسم :</span><span class="val">${d.name}</span></div>
-    <div class="info-row"><span>نوع العملة :</span><span class="val">${cur.flag} ${cur.name} (${sym})</span></div>
     <hr class="divider">
     <table>
       <thead>
         <tr>
           <th>م</th>
           <th>تاريخ الدفعة</th>
-          <th>المبلغ المدفوع</th>
-          <th>الباقي</th>
+          <th>المبلغ المدفوع (${sym})</th>
+          <th>الباقي (${sym})</th>
           <th>البيان</th>
         </tr>
       </thead>
@@ -1251,7 +1264,7 @@ async function printDebtStatement(debtId) {
       <div class="sum"><div class="sum-label">المدفوع</div><div class="sum-val" style="color:#059669;">${paid} ${sym}</div></div>
       <div class="sum"><div class="sum-label">المتبقي</div><div class="sum-val" style="color:#dc2626;">${rem} ${sym}</div></div>
     </div>
-    ${d.note ? `<div style="margin-top:.7rem;border:1px solid #93c5fd;border-radius:6px;padding:.5rem .8rem;background:#eff6ff;font-size:10pt;"><span style="font-weight:700;color:#1d4ed8;">ملاحظة: </span>${d.note}</div>` : ''}
+    ${d.note ? `<div class="note-box"><strong>ملاحظة:</strong> ${d.note}</div>` : ''}
     <div class="footer">تاريخ الطباعة: ${printDate}</div>
     <script>window.onload=()=>{window.print();}<\/script>
   </body></html>`);
