@@ -927,8 +927,15 @@ body.light-bg{background:#f1f5f9!important;}
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">تعيين ميزانية: <span id="budget-cat-name"></span></div>
-    <div class="form-group"><label class="form-label">الميزانية الشهرية (ج.م)</label><input type="number" class="form-input" id="budget-cat-input" placeholder="0.00" inputmode="decimal"></div>
-    <div style="font-size:.78rem;color:var(--text2);margin-bottom:1rem;">اتركه فارغاً لإلغاء الميزانية لهذه الفئة</div>
+    <div class="form-group">
+      <label class="form-label">🇪🇬 ميزانية الجنيه المصري (ج.م)</label>
+      <input type="number" class="form-input" id="budget-cat-egp" placeholder="0.00" inputmode="decimal">
+    </div>
+    <div class="form-group">
+      <label class="form-label">🇸🇦 ميزانية الريال السعودي</label>
+      <input type="number" class="form-input" id="budget-cat-sar" placeholder="0.00" inputmode="decimal">
+    </div>
+    <div style="font-size:.78rem;color:var(--text2);margin-bottom:1rem;">اترك الحقل فارغاً لإلغاء الميزانية لهذه العملة</div>
     <button class="btn btn-primary" onclick="saveBudget()">حفظ</button>
     <button class="btn btn-outline" onclick="closeModal('modal-add-budget')">إلغاء</button>
   </div>
@@ -2340,21 +2347,37 @@ async function loadBudget() {
 
 function renderBudget() {
   const list = document.getElementById('budget-list');
-  const symMap = {EGP:'ج.م', SAR:'ريال', USD:'$'};
   list.innerHTML = CATS.map(cat => {
     const spentMap = monthExpByCat[cat.name] || {};
-    const spentEGP = spentMap['EGP']||0;
-    const budget = budgetData[cat.name] || 0;
-    const pct = budget>0 ? Math.min(100,(spentEGP/budget)*100) : 0;
-    const fillCls = pct>=100?'over':(pct>=75?'warn':'');
-    const spentStr = Object.entries(spentMap).map(([c,v])=>fmt(v)+' '+(symMap[c]||c)).join(' + ') || '0 ج.م';
-    const budgetStr = budget>0 ? fmt(budget)+' ج.م' : 'غير محدد';
+    const catBudget = budgetData[cat.name] || {};  // {EGP: X, SAR: Y}
+    const egpBudget = catBudget.EGP || 0;
+    const sarBudget = catBudget.SAR || 0;
+    const spentEGP  = spentMap.EGP  || 0;
+    const spentSAR  = spentMap.SAR  || 0;
+
+    function progressBar(spent, budget, label, sym) {
+      if(!budget && !spent) return '';
+      const pct = budget>0 ? Math.min(100,(spent/budget)*100) : 0;
+      const fillCls = pct>=100?'over':(pct>=75?'warn':'');
+      const budgetStr = budget>0 ? fmt(budget)+' '+sym : 'غير محدد';
+      return `<div style="margin-top:.4rem;">
+        <div style="display:flex;justify-content:space-between;font-size:.68rem;color:var(--text2);margin-bottom:.2rem;">
+          <span>${label}</span>
+          <span>${fmt(spent)} ${sym} ${budget>0?'من '+budgetStr:''}</span>
+        </div>
+        ${budget>0?`<div class="budget-progress"><div class="budget-progress-fill ${fillCls}" style="width:${pct.toFixed(1)}%"></div></div>`:''}
+      </div>`;
+    }
+
+    const hasAny = egpBudget||sarBudget||spentEGP||spentSAR;
     return `<div class="budget-cat-row">
       <div style="font-size:1.3rem;flex-shrink:0;">${cat.icon}</div>
       <div class="budget-cat-info">
         <div class="budget-cat-name">${cat.name}</div>
-        <div class="budget-cat-amount">${spentStr} من ${budgetStr}</div>
-        ${budget>0?`<div class="budget-progress"><div class="budget-progress-fill ${fillCls}" style="width:${pct.toFixed(1)}%"></div></div>`:''}
+        ${hasAny
+          ? progressBar(spentEGP, egpBudget, '🇪🇬 جنيه', 'ج.م') + progressBar(spentSAR, sarBudget, '🇸🇦 ريال', 'ريال')
+          : '<div style="font-size:.7rem;color:var(--text3);margin-top:.2rem;">لم يُحدد ميزانية</div>'
+        }
       </div>
       <button class="budget-set-btn" onclick="openSetBudget('${cat.name}')">تعيين</button>
     </div>`;
@@ -2365,13 +2388,19 @@ let currentBudgetCat = '';
 function openSetBudget(catName) {
   currentBudgetCat = catName;
   document.getElementById('budget-cat-name').textContent = catName;
-  document.getElementById('budget-cat-input').value = budgetData[catName] || '';
+  const catBudget = budgetData[catName] || {};
+  document.getElementById('budget-cat-egp').value = catBudget.EGP || '';
+  document.getElementById('budget-cat-sar').value = catBudget.SAR || '';
   openModal('modal-add-budget');
 }
 async function saveBudget() {
-  const amount = parseFloat(document.getElementById('budget-cat-input').value) || 0;
+  const egp = parseFloat(document.getElementById('budget-cat-egp').value) || 0;
+  const sar = parseFloat(document.getElementById('budget-cat-sar').value) || 0;
   const month = new Date().toISOString().slice(0,7);
-  if(amount > 0) budgetData[currentBudgetCat] = amount;
+  const catBudget = {};
+  if(egp > 0) catBudget.EGP = egp;
+  if(sar > 0) catBudget.SAR = sar;
+  if(Object.keys(catBudget).length) budgetData[currentBudgetCat] = catBudget;
   else delete budgetData[currentBudgetCat];
   await userCol('budget').doc(month).set(budgetData);
   closeModal('modal-add-budget');
