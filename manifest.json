@@ -1,7 +1,7 @@
 {
-  "name": "مديونياتي",
-  "short_name": "مديونياتي",
-  "description": "إدارة الديون والمصروفات",
+  "name": "محفظتي",
+  "short_name": "محفظتي",
+  "description": "محفظتي - إدارة المال والديون والمصروفات",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
