@@ -265,6 +265,8 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* ===== Modal ===== */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:none;align-items:flex-end;backdrop-filter:blur(2px);}
+#modal-confirm{z-index:600;}
+#modal-edit-payment{z-index:600;}
 .modal-overlay.active{display:flex;}
 .modal{background:#1e2f45;border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:430px;margin:0 auto;max-height:88vh;overflow-y:auto;animation:slideUp .25s ease;}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -1084,6 +1086,18 @@ async function savePayment() {
   loadBalance();
 }
 
+async function refreshDebtDetail() {
+  if(!currentDebtId) return;
+  const doc = await db.collection('debts').doc(currentDebtId).get();
+  if(!doc.exists) return;
+  currentDebtData = {id:currentDebtId, ...doc.data()};
+  // rebuild content inside the open modal without closing it
+  const overlay = document.getElementById('modal-debt-detail');
+  const wasOpen = overlay.classList.contains('active');
+  await showDebtDetail(currentDebtId);
+  if(wasOpen) openModal('modal-debt-detail');
+}
+
 // ===== Edit / Delete Payment =====
 let currentPaymentId = null;
 let currentPaymentOldAmount = 0;
@@ -1102,7 +1116,6 @@ async function openEditPayment(paymentId) {
   document.getElementById('edit-payment-date').value   = pd.date || pd.createdAt?.toDate?.().toISOString().split('T')[0] || '';
   document.getElementById('edit-payment-ref').value    = pd.ref  || '';
   document.getElementById('edit-payment-note').value   = pd.note || '';
-  closeModal('modal-debt-detail');
   openModal('modal-edit-payment');
 }
 
@@ -1124,12 +1137,11 @@ async function saveEditPayment() {
 
   closeModal('modal-edit-payment');
   showToast('تم تعديل الدفعة ✓');
-  showDebtDetail(currentDebtId);
+  await refreshDebtDetail();
   loadBalance();
 }
 
 async function deletePayment(paymentId) {
-  closeModal('modal-debt-detail');
   document.getElementById('confirm-msg').textContent = 'هل تريد حذف هذه الدفعة؟';
   document.getElementById('confirm-yes-btn').onclick = async () => {
     closeModal('modal-confirm');
@@ -1142,7 +1154,7 @@ async function deletePayment(paymentId) {
     await db.collection('debts').doc(currentDebtId).update({paidAmount:newPaid, remaining:newRem});
     currentDebtData = {...currentDebtData, paidAmount:newPaid, remaining:newRem};
     showToast('تم حذف الدفعة');
-    showDebtDetail(currentDebtId);
+    await refreshDebtDetail();
     loadBalance();
   };
   openModal('modal-confirm');
