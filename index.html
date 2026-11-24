@@ -199,6 +199,10 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 .tx-amount{font-size:.88rem;font-weight:700;white-space:nowrap;}
 .tx-amount.plus{color:var(--success);}
 .tx-amount.minus{color:var(--danger);}
+.tx-actions{display:flex;gap:.3rem;flex-shrink:0;}
+.tx-act-btn{width:28px;height:28px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem;}
+.tx-act-btn.edit{background:rgba(96,165,250,.15);color:#60a5fa;}
+.tx-act-btn.del{background:rgba(239,68,68,.15);color:#ef4444;}
 
 /* ===== Section Page Header (non-home) ===== */
 .page-header{
@@ -267,6 +271,7 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 /* ===== Modal ===== */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:none;align-items:flex-end;backdrop-filter:blur(2px);}
 #modal-confirm{z-index:700;}
+#modal-edit-tx{z-index:700;}
 #modal-edit-payment{z-index:600;}
 #modal-edit-debt{z-index:600;}
 #modal-add-payment{z-index:600;}
@@ -713,6 +718,18 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
 </div>
 
+<!-- Edit Transaction -->
+<div class="modal-overlay" id="modal-edit-tx">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="edit-tx-title">تعديل المعاملة</div>
+    <div class="form-group"><label class="form-label">المبلغ (ج.م)</label><input type="number" class="form-input" id="edit-tx-amount" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">ملاحظة</label><input type="text" class="form-input" id="edit-tx-note"></div>
+    <button class="btn btn-primary" onclick="saveEditTx()">حفظ التعديلات</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-edit-tx')">إلغاء</button>
+  </div>
+</div>
+
 <!-- Confirm -->
 <div class="modal-overlay" id="modal-confirm">
   <div class="modal">
@@ -923,6 +940,13 @@ function txHTML(tx) {
   const info = TX_INFO[tx.type] || {icon:'fa-circle',cls:'blue',label:tx.type};
   const isPlus = ['deposit','debt_receive'].includes(tx.type);
   const date = tx.createdAt?.toDate ? fmtDate(tx.createdAt.toDate()) : '';
+  const canEdit = tx.id && (tx.type==='deposit'||tx.type==='expense'||tx.type==='withdraw');
+  const canDelete = !!tx.id;
+  const actions = canDelete ? `
+    <div class="tx-actions">
+      ${canEdit ? `<button class="tx-act-btn edit" onclick="openEditTx('${tx.id}','${tx.type}',${tx.amount},\`${(tx.note||'').replace(/`/g,"'")}\`)"><i class="fas fa-pen"></i></button>` : ''}
+      <button class="tx-act-btn del" onclick="deleteTx('${tx.id}',${tx.amount},'${tx.type}')"><i class="fas fa-trash"></i></button>
+    </div>` : '';
   return `<div class="tx-item">
     <div class="tx-icon ${info.cls}"><i class="fas ${info.icon}"></i></div>
     <div class="tx-info">
@@ -930,6 +954,7 @@ function txHTML(tx) {
       <div class="tx-date">${info.label} • ${date}</div>
     </div>
     <div class="tx-amount ${isPlus?'plus':'minus'}">${isPlus?'+':'-'}${fmt(tx.amount)} ج.م</div>
+    ${actions}
   </div>`;
 }
 
@@ -1491,6 +1516,50 @@ async function saveDeposit() {
   showToast('تم الإيداع ✓');
   closeModal('modal-deposit');
   loadRecentTxs();
+}
+
+// ===== Edit / Delete Transactions =====
+let editTxId = null, editTxType = null, editTxOldAmount = 0;
+
+function openEditTx(id, type, amount, note) {
+  editTxId = id; editTxType = type; editTxOldAmount = amount;
+  const labels = {deposit:'إيداع رصيد', expense:'مصروف', withdraw:'سحب رصيد'};
+  document.getElementById('edit-tx-title').textContent = 'تعديل: ' + (labels[type]||type);
+  document.getElementById('edit-tx-amount').value = amount;
+  document.getElementById('edit-tx-note').value = note;
+  openModal('modal-edit-tx');
+}
+
+async function saveEditTx() {
+  const newAmount = parseFloat(document.getElementById('edit-tx-amount').value);
+  const newNote   = document.getElementById('edit-tx-note').value.trim();
+  if(!newAmount||newAmount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
+  const isPlus = ['deposit','debt_receive'].includes(editTxType);
+  const diff = newAmount - editTxOldAmount;
+  const bal = await getBalance();
+  const newBal = isPlus ? bal + diff : bal - diff;
+  await userCol('transactions').doc(editTxId).update({amount:newAmount, note:newNote, balance:newBal});
+  await setBalance(newBal);
+  closeModal('modal-edit-tx');
+  showToast('تم التعديل ✓');
+  loadAllTxs();
+  loadRecentTxs();
+}
+
+function deleteTx(txId, amount, type) {
+  document.getElementById('confirm-msg').textContent = 'هل تريد حذف هذه المعاملة؟';
+  document.getElementById('confirm-yes-btn').onclick = async () => {
+    closeModal('modal-confirm');
+    const isPlus = ['deposit','debt_receive'].includes(type);
+    const bal = await getBalance();
+    const newBal = isPlus ? bal - amount : bal + amount;
+    await userCol('transactions').doc(txId).delete();
+    await setBalance(newBal);
+    showToast('تم الحذف ✓');
+    loadAllTxs();
+    loadRecentTxs();
+  };
+  openModal('modal-confirm');
 }
 
 // ===== Reports =====
