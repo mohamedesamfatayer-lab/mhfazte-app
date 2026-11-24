@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
@@ -333,6 +334,43 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 .confirm-box{background:var(--surface);border-radius:var(--radius);padding:1.5rem;text-align:center;}
 .confirm-box p{margin-bottom:1.2rem;font-size:.95rem;color:var(--text);}
 .confirm-row{display:flex;gap:.6rem;}
+
+/* ===== Login Screen ===== */
+#login-screen{
+  position:fixed;inset:0;background:var(--bg);
+  display:none;align-items:center;justify-content:center;
+  flex-direction:column;z-index:10000;
+  padding:2rem;
+}
+.login-card{
+  background:#1e2f45;border-radius:24px;padding:2.5rem 2rem;
+  width:100%;max-width:360px;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+  border:1px solid rgba(255,255,255,.08);
+}
+.login-logo{font-size:3.5rem;margin-bottom:.5rem;line-height:1;}
+.login-title{font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:.3rem;}
+.login-subtitle{font-size:.9rem;color:#94a3b8;margin-bottom:2rem;line-height:1.5;}
+.google-btn{
+  display:flex;align-items:center;justify-content:center;gap:.75rem;
+  width:100%;padding:.9rem 1.5rem;border-radius:12px;border:none;
+  background:#fff;color:#1e293b;font-family:'Cairo',sans-serif;
+  font-size:.95rem;font-weight:700;cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+  box-shadow:0 4px 15px rgba(0,0,0,.3);
+}
+.google-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.4);}
+.google-btn:active{transform:scale(.96);}
+.google-btn img{width:22px;height:22px;flex-shrink:0;}
+.login-note{margin-top:1.2rem;font-size:.78rem;color:#475569;}
+
+/* ===== User Avatar in Header ===== */
+#user-avatar-wrap{
+  display:none;align-items:center;gap:.5rem;cursor:pointer;
+  background:rgba(255,255,255,.08);border-radius:20px;padding:.3rem .3rem .3rem .6rem;
+}
+#user-avatar{width:30px;height:30px;border-radius:50%;border:1.5px solid rgba(255,255,255,.3);flex-shrink:0;}
+#user-name-short{font-size:.7rem;color:rgba(255,255,255,.75);font-weight:600;max-width:60px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
 </style>
 </head>
 <body>
@@ -340,13 +378,31 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 <div id="loading"><i class="fas fa-wallet"></i><p>مديونياتي</p><div class="spinner"></div></div>
 <div class="toast" id="toast"></div>
 
-<div id="app">
+<!-- Login Screen -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">💰</div>
+    <div class="login-title">مديونياتي</div>
+    <div class="login-subtitle">سجّل الدخول عشان تشوف بياناتك<br>كل مستخدم بياناته خاصة بيه</div>
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      تسجيل الدخول بـ Google
+    </button>
+    <div class="login-note">🔒 بياناتك محفوظة بشكل آمن ومنفصلة عن باقي المستخدمين</div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
 
   <!-- ===== TOP HEADER ===== -->
   <div id="top-header">
     <div class="header-branding">
       <div class="header-sup">إدارة</div>
       <div class="header-main">مديونياتي 💰</div>
+    </div>
+    <div id="user-avatar-wrap" onclick="confirmSignOut()" title="تسجيل الخروج">
+      <span id="user-name-short"></span>
+      <img id="user-avatar" src="" alt="">
     </div>
   </div>
 
@@ -683,7 +739,13 @@ const firebaseConfig = {
   appId: "1:770888739081:web:17c30d2034d49ac47a0bd8"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db   = firebase.firestore();
+const auth = firebase.auth();
+let currentUser = null;
+
+function userCol(name) {
+  return db.collection('users').doc(currentUser.uid).collection(name);
+}
 
 // ===== State =====
 let currentDebtType = 'creditor';
@@ -775,11 +837,11 @@ function headerFabAction() {
 
 // ===== Balance =====
 async function loadBalance() {
-  const doc = await db.collection('account').doc('main').get();
+  const doc = await userCol('account').doc('main').get();
   const bal = doc.exists ? (doc.data().balance || 0) : 0;
   renderBalance(bal);
 
-  const snap = await db.collection('debts').get();
+  const snap = await userCol('debts').get();
   const byC = {}, byD = {};
   snap.forEach(d => {
     const r   = d.data().remaining || 0;
@@ -809,12 +871,12 @@ function renderBalance(bal) {
 }
 
 async function getBalance() {
-  const doc = await db.collection('account').doc('main').get();
+  const doc = await userCol('account').doc('main').get();
   return doc.exists ? (doc.data().balance || 0) : 0;
 }
 
 async function setBalance(b) {
-  await db.collection('account').doc('main').set({balance:b, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+  await userCol('account').doc('main').set({balance:b, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
   renderBalance(b);
 }
 
@@ -823,7 +885,7 @@ async function addTx(type, amount, note, ref='') {
   const bal = await getBalance();
   const isPlus = ['deposit','debt_receive'].includes(type);
   const newBal = isPlus ? bal + amount : bal - amount;
-  await db.collection('transactions').add({
+  await userCol('transactions').add({
     type, amount, note, ref, balance: newBal,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
@@ -832,8 +894,9 @@ async function addTx(type, amount, note, ref='') {
 }
 
 async function loadRecentTxs() {
-  const snap = await db.collection('transactions').orderBy('createdAt','desc').limit(6).get();
+  const snap = await userCol('transactions').orderBy('createdAt','desc').limit(6).get();
   const list = document.getElementById('recent-tx-list');
+  if(!list) return;
   if(snap.empty){
     list.innerHTML = '<div class="empty-state"><i class="fas fa-clock-rotate-left"></i><p>لا توجد معاملات بعد</p></div>';
     return;
@@ -842,7 +905,7 @@ async function loadRecentTxs() {
 }
 
 async function loadAllTxs() {
-  const snap = await db.collection('transactions').orderBy('createdAt','desc').limit(200).get();
+  const snap = await userCol('transactions').orderBy('createdAt','desc').limit(200).get();
   allTxs = snap.docs.map(d => ({id:d.id,...d.data()}));
   renderHistory();
 }
@@ -883,7 +946,7 @@ async function loadDebts(type) {
   currentDebtTab = type;
   const listId = type === 'creditor' ? 'creditor-list' : 'debtor-list';
   const list = document.getElementById(listId);
-  const snap = await db.collection('debts').where('type','==',type).get();
+  const snap = await userCol('debts').where('type','==',type).get();
   if(snap.empty){
     list.innerHTML = `<div class="empty-state"><i class="fas fa-handshake"></i><p>لا توجد ديون ${type==='creditor'?'ليك':'عليك'}</p></div>`;
     return;
@@ -944,7 +1007,7 @@ async function saveDebt() {
   const note   = document.getElementById('debt-note').value.trim();
   if(!name){ showToast('أدخل الاسم'); return; }
   if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
-  await db.collection('debts').add({
+  await userCol('debts').add({
     name, type:currentDebtType, currency:selectedCurrency,
     totalAmount:amount, paidAmount:0, remaining:amount,
     date, note, createdAt:firebase.firestore.FieldValue.serverTimestamp()
@@ -958,7 +1021,7 @@ async function saveDebt() {
 }
 
 async function showDebtDetail(debtId) {
-  const doc = await db.collection('debts').doc(debtId).get();
+  const doc = await userCol('debts').doc(debtId).get();
   if(!doc.exists) return;
   currentDebtId   = debtId;
   currentDebtData = {id:debtId,...doc.data()};
@@ -970,7 +1033,7 @@ async function showDebtDetail(debtId) {
   const cur   = getCurrency(d.currency||'EGP');
   const sym   = cur.symbol;
 
-  const paymentsSnap = await db.collection('payments').where('debtId','==',debtId).get();
+  const paymentsSnap = await userCol('payments').where('debtId','==',debtId).get();
   const sortedPmts = paymentsSnap.docs.sort((a,b)=>{
     const ta=a.data().createdAt?.toMillis?.()||0;
     const tb=b.data().createdAt?.toMillis?.()||0;
@@ -1070,11 +1133,11 @@ async function savePayment() {
   const newPaid = (d.paidAmount||0) + amount;
   const newRem  = Math.max(0,(d.totalAmount||0) - newPaid);
 
-  await db.collection('payments').add({
+  await userCol('payments').add({
     debtId:currentDebtId, debtName:d.name, amount, date, ref, note,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
-  await db.collection('debts').doc(currentDebtId).update({paidAmount:newPaid, remaining:newRem});
+  await userCol('debts').doc(currentDebtId).update({paidAmount:newPaid, remaining:newRem});
 
   const txType = d.type==='creditor' ? 'debt_receive' : 'debt_payment';
   const txNote = d.type==='creditor'
@@ -1100,7 +1163,7 @@ let currentPaymentId = null;
 let currentPaymentOldAmount = 0;
 
 async function openEditPayment(paymentId) {
-  const doc = await db.collection('payments').doc(paymentId).get();
+  const doc = await userCol('payments').doc(paymentId).get();
   if(!doc.exists) return;
   const pd = doc.data();
   currentPaymentId = paymentId;
@@ -1128,8 +1191,8 @@ async function saveEditPayment() {
   const newPaid  = Math.max(0, (currentDebtData.paidAmount||0) + diff);
   const newRem   = Math.max(0, (currentDebtData.totalAmount||0) - newPaid);
 
-  await db.collection('payments').doc(currentPaymentId).update({amount:newAmount, date, ref, note});
-  await db.collection('debts').doc(currentDebtId).update({paidAmount:newPaid, remaining:newRem});
+  await userCol('payments').doc(currentPaymentId).update({amount:newAmount, date, ref, note});
+  await userCol('debts').doc(currentDebtId).update({paidAmount:newPaid, remaining:newRem});
   currentDebtData = {...currentDebtData, paidAmount:newPaid, remaining:newRem};
 
   closeModal('modal-edit-payment');
@@ -1142,13 +1205,13 @@ async function deletePayment(paymentId) {
   document.getElementById('confirm-msg').textContent = 'هل تريد حذف هذه الدفعة؟';
   document.getElementById('confirm-yes-btn').onclick = async () => {
     closeModal('modal-confirm');
-    const doc = await db.collection('payments').doc(paymentId).get();
+    const doc = await userCol('payments').doc(paymentId).get();
     if(!doc.exists) return;
     const amount   = doc.data().amount || 0;
     const newPaid  = Math.max(0, (currentDebtData.paidAmount||0) - amount);
     const newRem   = Math.max(0, (currentDebtData.totalAmount||0) - newPaid);
-    await db.collection('payments').doc(paymentId).delete();
-    await db.collection('debts').doc(currentDebtId).update({paidAmount:newPaid, remaining:newRem});
+    await userCol('payments').doc(paymentId).delete();
+    await userCol('debts').doc(currentDebtId).update({paidAmount:newPaid, remaining:newRem});
     currentDebtData = {...currentDebtData, paidAmount:newPaid, remaining:newRem};
     showToast('تم حذف الدفعة');
     await refreshDebtDetail();
@@ -1178,7 +1241,7 @@ async function saveEditDebt() {
   if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
   const d = currentDebtData;
   const newRemaining = Math.max(0, amount - (d.paidAmount||0));
-  await db.collection('debts').doc(currentDebtId).update({
+  await userCol('debts').doc(currentDebtId).update({
     name, totalAmount:amount, date, note, remaining:newRemaining, currency:selectedCurrency
   });
   currentDebtData = {...d, name, totalAmount:amount, date, note, remaining:newRemaining, currency:selectedCurrency};
@@ -1194,9 +1257,9 @@ function confirmDelete(debtId) {
   document.getElementById('confirm-yes-btn').onclick = async () => {
     closeModal('modal-confirm');
     closeModal('modal-debt-detail');
-    const pmts = await db.collection('payments').where('debtId','==',debtId).get();
+    const pmts = await userCol('payments').where('debtId','==',debtId).get();
     const batch = db.batch();
-    batch.delete(db.collection('debts').doc(debtId));
+    batch.delete(userCol('debts').doc(debtId));
     pmts.forEach(p => batch.delete(p.ref));
     await batch.commit();
     showToast('تم الحذف');
@@ -1208,7 +1271,7 @@ function confirmDelete(debtId) {
 
 // ===== Expenses =====
 async function loadExpenses() {
-  const snap = await db.collection('expenses').orderBy('createdAt','desc').limit(100).get();
+  const snap = await userCol('expenses').orderBy('createdAt','desc').limit(100).get();
   if(snap.empty){
     document.getElementById('expense-list').innerHTML =
       '<div class="empty-state"><i class="fas fa-receipt"></i><p>لا توجد مصروفات</p></div>';
@@ -1270,7 +1333,7 @@ async function saveExpense() {
   const date   = document.getElementById('expense-date').value;
   const note   = document.getElementById('expense-note').value.trim();
   if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
-  await db.collection('expenses').add({
+  await userCol('expenses').add({
     amount, date, note, category:selectedCat,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
@@ -1328,7 +1391,7 @@ function setReportType(val, el) {
 
 async function loadReportData() {
   if(!reportAllTxs.length) {
-    const snap = await db.collection('transactions').orderBy('createdAt','desc').limit(500).get();
+    const snap = await userCol('transactions').orderBy('createdAt','desc').limit(500).get();
     reportAllTxs = snap.docs.map(d => ({id:d.id,...d.data()}));
   }
   applyReports();
@@ -1485,7 +1548,45 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'), 2500);
 }
 
-init();
+// ===== Auth =====
+async function signInWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    await auth.signInWithPopup(provider);
+  } catch(e) {
+    if(e.code !== 'auth/popup-closed-by-user') showToast('خطأ في تسجيل الدخول');
+  }
+}
+
+function confirmSignOut() {
+  document.getElementById('confirm-msg').textContent = 'هل تريد تسجيل الخروج؟';
+  document.getElementById('confirm-yes-btn').onclick = async () => {
+    closeModal('modal-confirm');
+    await auth.signOut();
+  };
+  openModal('modal-confirm');
+}
+
+auth.onAuthStateChanged(user => {
+  if(user) {
+    currentUser = user;
+    reportAllTxs = [];
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    const wrap = document.getElementById('user-avatar-wrap');
+    const avatar = document.getElementById('user-avatar');
+    const nameEl = document.getElementById('user-name-short');
+    if(user.photoURL){ avatar.src = user.photoURL; wrap.style.display = 'flex'; }
+    if(user.displayName){ nameEl.textContent = user.displayName.split(' ')[0]; }
+    init();
+  } else {
+    currentUser = null;
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('user-avatar-wrap').style.display = 'none';
+  }
+});
 
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
