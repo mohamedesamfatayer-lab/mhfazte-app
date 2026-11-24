@@ -1227,7 +1227,7 @@ async function printDebtStatement(debtId) {
       *{box-sizing:border-box;margin:0;padding:0;}
       body{font-family:'Cairo',sans-serif;background:#fff;color:#000;padding:1.5cm;font-size:11pt;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
       h1{text-align:center;font-size:15pt;color:#000;font-weight:900;margin-bottom:.8rem;}
-      .info-row{display:flex;justify-content:space-between;margin-bottom:.3rem;font-size:10.5pt;font-weight:700;color:#000;}
+      .info-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;font-size:10.5pt;font-weight:700;color:#000;}
       .divider{border:none;border-top:2px solid #000;margin:.7rem 0;}
       table{width:100%;border-collapse:collapse;font-size:10.5pt;margin-top:.5rem;}
       th{background:#b8cce4;color:#000;padding:.75rem .7rem;border:1.5px solid #000;text-align:center;font-weight:900;white-space:nowrap;font-size:11.5pt;}
@@ -1250,11 +1250,11 @@ async function printDebtStatement(debtId) {
     <table>
       <thead>
         <tr>
-          <th>م</th>
-          <th>تاريخ الدفعة</th>
-          <th>المبلغ المدفوع</th>
-          <th>رقم الحوالة</th>
-          <th>الباقي</th>
+          <th style="width:4%;">م</th>
+          <th style="width:13%;">تاريخ الدفعة</th>
+          <th style="width:10%;">الواصل</th>
+          <th style="width:20%;">رقم الحوالة</th>
+          <th style="width:10%;">الباقي</th>
           <th>البيان</th>
         </tr>
       </thead>
