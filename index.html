@@ -16,26 +16,73 @@
   --success:#059669;--success-light:#ecfdf5;
   --danger:#dc2626;--danger-light:#fef2f2;
   --warning:#d97706;--warning-light:#fffbeb;
-  --bg:#f1f5f9;--surface:#fff;
-  --text:#1e293b;--text2:#64748b;--text3:#94a3b8;
-  --border:#e2e8f0;
+  --bg:#1a2535;--surface:#243044;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --border:rgba(255,255,255,.08);
   --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
-  --shadow-md:0 4px 6px rgba(0,0,0,.07);
+  --shadow-md:0 4px 10px rgba(0,0,0,.08);
   --radius:12px;
-  --nav-w:68px;
+  --nav-w:62px;
+  --header-h:68px;
 }
 body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow:hidden;}
 
-/* ===== App Layout ===== */
-#app{display:flex;flex-direction:row-reverse;max-width:430px;margin:0 auto;height:100vh;overflow:hidden;background:var(--bg);}
-
-/* ===== Icon Nav (RIGHT) ===== */
-#icon-nav{
-  width:var(--nav-w);
-  min-width:var(--nav-w);
+/* ===== App Wrapper ===== */
+#app{
+  display:flex;
+  flex-direction:column;
+  max-width:430px;
+  margin:0 auto;
   height:100vh;
-  background:#fff;
-  border-left:1px solid var(--border);
+  overflow:hidden;
+  background:var(--bg);
+}
+
+/* ===== Top Header ===== */
+#top-header{
+  flex-shrink:0;
+  height:var(--header-h);
+  background:#1a2535;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 1rem 0 .8rem;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  z-index:20;
+}
+.header-branding{text-align:right;}
+.header-sup{font-size:.68rem;color:rgba(255,255,255,.75);font-weight:500;line-height:1;}
+.header-main{font-size:1.3rem;font-weight:800;color:#fff;line-height:1.3;}
+.header-fab{
+  width:40px;height:40px;
+  border-radius:50%;
+  background:rgba(255,255,255,.22);
+  border:none;
+  color:#fff;
+  font-size:1.4rem;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:background .15s;
+  flex-shrink:0;
+}
+.header-fab:hover{background:rgba(255,255,255,.35);}
+
+/* ===== Main Layout ===== */
+#main-layout{
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:row; /* RTL: first child goes to RIGHT */
+  direction:rtl;
+  overflow:hidden;
+}
+
+/* ===== Right Nav (dark sidebar) ===== */
+#right-nav{
+  width:70px;
+  min-width:70px;
+  height:100%;
+  background:#1a2535;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -43,128 +90,61 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
   gap:2px;
   overflow-y:auto;
   scrollbar-width:none;
-  box-shadow:-1px 0 6px rgba(0,0,0,.04);
   flex-shrink:0;
-  z-index:10;
+  box-shadow:-3px 0 10px rgba(0,0,0,.2);
 }
-#icon-nav::-webkit-scrollbar{display:none;}
+#right-nav::-webkit-scrollbar{display:none;}
 
-.inav-brand{
-  color:var(--primary);
-  font-size:1.4rem;
-  padding:.6rem 0 .5rem;
-  margin-bottom:.2rem;
-}
+.rnav-sep{width:40px;height:1px;background:rgba(255,255,255,.08);margin:4px 0;flex-shrink:0;}
 
-.inav-sep{width:36px;height:1px;background:var(--border);margin:3px 0;flex-shrink:0;}
-
-.inav-btn{
-  width:56px;
-  min-height:52px;
+.rnav-btn{
+  width:60px;
+  min-height:54px;
   border-radius:12px;
   border:none;
   background:none;
-  color:var(--text3);
+  color:rgba(255,255,255,.45);
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:3px;
+  gap:4px;
   cursor:pointer;
   font-family:'Cairo',sans-serif;
   transition:all .18s;
-  padding:.3rem 0;
+  padding:.35rem 0;
   flex-shrink:0;
 }
-.inav-btn i{font-size:1.05rem;}
-.inav-btn span{font-size:.48rem;font-weight:700;line-height:1;text-align:center;}
-.inav-btn:hover{background:var(--bg);}
-.inav-btn.active{background:var(--primary-light);}
-.inav-btn.active i,.inav-btn.active span{color:var(--primary);}
-.inav-btn.c-btn i{color:var(--success);}
-.inav-btn.d-btn i{color:var(--danger);}
-.inav-btn.in-btn i{color:var(--success);}
-.inav-btn.out-btn i{color:var(--danger);}
-.inav-btn.exp-btn i{color:var(--warning);}
+.rnav-btn i{font-size:1.1rem;}
+.rnav-btn span{font-size:.46rem;font-weight:700;line-height:1;text-align:center;}
+.rnav-btn:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.75);}
+.rnav-btn.active{background:rgba(37,99,235,.35);color:#fff;}
+.rnav-btn.active i{color:#60a5fa;}
+.rnav-btn.c-btn i{color:#34d399;}
+.rnav-btn.d-btn i{color:#f87171;}
+.rnav-btn.in-btn i{color:#34d399;}
+.rnav-btn.out-btn i{color:#f87171;}
+.rnav-btn.exp-btn i{color:#fbbf24;}
+.rnav-btn.hist-btn i{color:#a78bfa;}
 
-/* ===== Panel Area (LEFT) ===== */
-#panel-area{
+/* ===== Content Area ===== */
+#content-area{
   flex:1;
   min-width:0;
-  height:100vh;
-  position:relative;
-  overflow:hidden;
-  background:var(--bg);
+  height:100%;
+  overflow-y:auto;
+  overflow-x:hidden;
+  scrollbar-width:thin;
+  scrollbar-color:var(--border) transparent;
+  direction:rtl;
 }
+#content-area::-webkit-scrollbar{width:3px;}
+#content-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 
-/* Empty state */
-#empty-view{
-  position:absolute;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:.7rem;
-  color:var(--text3);
-  background:var(--bg);
-}
-#empty-view i{font-size:3rem;color:#cbd5e1;}
-#empty-view h2{font-size:1.1rem;font-weight:800;color:#94a3b8;}
-#empty-view p{font-size:.8rem;color:#b0bec5;}
-
-/* Panel */
-.panel{
-  position:absolute;
-  inset:0;
-  display:none;
-  flex-direction:column;
-  background:var(--bg);
-  animation:fadeIn .18s ease;
-}
-.panel.active{display:flex;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-
-/* Panel Header */
-.panel-header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:.8rem 1rem;
-  background:var(--primary);
-  color:#fff;
-  flex-shrink:0;
-  min-height:52px;
-}
-.panel-header-title{font-size:1rem;font-weight:800;}
-.panel-header-actions{display:flex;align-items:center;gap:.4rem;}
-
-.panel-close-btn{
-  width:32px;height:32px;
-  border-radius:50%;
-  background:rgba(255,255,255,.2);
-  border:none;color:#fff;
-  cursor:pointer;font-size:.95rem;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .15s;
-}
-.panel-close-btn:hover{background:rgba(255,255,255,.35);}
-
-.panel-add-btn{
-  width:32px;height:32px;
-  border-radius:50%;
-  background:rgba(255,255,255,.2);
-  border:none;color:#fff;
-  cursor:pointer;font-size:.9rem;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .15s;
-}
-.panel-add-btn:hover{background:rgba(255,255,255,.35);}
-
-/* Panel scroll content */
-.panel-scroll{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
-.panel-scroll::-webkit-scrollbar{width:4px;}
-.panel-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+/* ===== Sections ===== */
+.section{display:none;flex-direction:column;animation:fadeIn .18s ease;}
+.section.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
 /* ===== Loading ===== */
 #loading{position:fixed;inset:0;background:var(--primary);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;z-index:9999;}
@@ -174,35 +154,33 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ===== Balance Card ===== */
-.balance-card{background:linear-gradient(135deg,#1d4ed8,#2563eb,#3b82f6);color:#fff;margin:.6rem .7rem;border-radius:16px;padding:1rem 1.1rem;box-shadow:0 6px 18px rgba(37,99,235,.35);position:relative;overflow:hidden;transition:all .3s;}
-.balance-card::before{content:'';position:absolute;top:-30px;left:-20px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.07);}
-.balance-card::after{content:'';position:absolute;bottom:-25px;right:-15px;width:120px;height:80px;border-radius:50%;background:rgba(255,255,255,.05);}
-.balance-label{font-size:.75rem;opacity:.8;margin-bottom:.2rem;}
-.balance-amount{font-size:1.8rem;font-weight:800;letter-spacing:-.5px;position:relative;z-index:1;}
-.balance-amount small{font-size:.85rem;font-weight:500;opacity:.8;margin-right:.3rem;}
-.balance-row{display:flex;gap:.5rem;margin-top:.8rem;position:relative;z-index:1;}
-.balance-mini{flex:1;background:rgba(255,255,255,.13);border-radius:8px;padding:.5rem .4rem;backdrop-filter:blur(10px);}
-.balance-mini-label{font-size:.58rem;opacity:.75;margin-bottom:.15rem;}
-.balance-mini-value{font-size:.78rem;font-weight:700;}
+.balance-card{background:#243044;color:#e2e8f0;margin:.6rem .7rem .5rem;border-radius:14px;padding:.65rem .9rem;box-shadow:0 2px 10px rgba(0,0,0,.3);position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.07);}
+.balance-label{font-size:.65rem;color:#94a3b8;margin-bottom:.1rem;}
+.balance-amount{font-size:1.3rem;font-weight:800;letter-spacing:-.5px;color:#fff;}
+.balance-amount small{font-size:.7rem;font-weight:500;color:#94a3b8;margin-right:.2rem;}
+.balance-row{display:flex;gap:.4rem;margin-top:.5rem;}
+.balance-mini{flex:1;background:rgba(255,255,255,.06);border-radius:8px;padding:.38rem .3rem;border:1px solid rgba(255,255,255,.05);}
+.balance-mini-label{font-size:.5rem;color:#64748b;margin-bottom:.08rem;}
+.balance-mini-value{font-size:.68rem;font-weight:700;color:#e2e8f0;}
 
-/* ===== Quick Actions ===== */
-.quick-actions{display:flex;gap:.6rem;margin:0 .8rem .8rem;}
-.quick-btn{flex:1;padding:.7rem .3rem;border-radius:var(--radius);border:none;background:var(--surface);box-shadow:var(--shadow);font-family:'Cairo',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.3rem;color:var(--text2);transition:transform .15s;}
-.quick-btn:active{transform:scale(.93);}
-.quick-btn i{font-size:1.1rem;}
-.quick-btn.in i{color:var(--success);}
-.quick-btn.out i{color:var(--danger);}
-.quick-btn.dbt i{color:var(--warning);}
-.quick-btn.exp i{color:var(--primary);}
+/* ===== Quick Actions (Home) ===== */
+.quick-actions{display:flex;gap:.55rem;margin:.4rem .7rem .6rem;direction:rtl;}
+.quick-btn{flex:1;padding:.7rem .3rem;border-radius:14px;border:none;background:var(--surface);box-shadow:var(--shadow-md);font-family:'Cairo',sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.35rem;color:var(--text2);transition:transform .15s,box-shadow .15s;}
+.quick-btn:active{transform:scale(.92);box-shadow:none;}
+.quick-btn .qb-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.quick-btn.qb-in .qb-icon{background:var(--success-light);color:var(--success);}
+.quick-btn.qb-out .qb-icon{background:var(--danger-light);color:var(--danger);}
+.quick-btn.qb-debt .qb-icon{background:var(--warning-light);color:var(--warning);}
+.quick-btn.qb-exp .qb-icon{background:var(--primary-light);color:var(--primary);}
 
 /* ===== Section Header ===== */
-.section-header{display:flex;align-items:center;justify-content:space-between;padding:.5rem .8rem .4rem;}
-.section-title{font-size:.88rem;font-weight:700;}
-.section-link{font-size:.78rem;color:var(--primary);cursor:pointer;}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:.5rem .85rem .4rem;}
+.section-title{font-size:.9rem;font-weight:700;}
+.section-link{font-size:.78rem;color:var(--primary);cursor:pointer;font-weight:600;}
 
 /* ===== Transaction Item ===== */
-.tx-list{padding:0 .8rem;}
-.tx-item{display:flex;align-items:center;gap:.8rem;background:var(--surface);border-radius:var(--radius);padding:.8rem .9rem;margin-bottom:.45rem;box-shadow:var(--shadow);}
+.tx-list{padding:0 .75rem;}
+.tx-item{display:flex;align-items:center;gap:.8rem;background:#243044;border-radius:var(--radius);padding:.8rem .9rem;margin-bottom:.45rem;box-shadow:0 2px 8px rgba(0,0,0,.2);}
 .tx-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
 .tx-icon.income{background:var(--success-light);color:var(--success);}
 .tx-icon.expense{background:var(--danger-light);color:var(--danger);}
@@ -215,14 +193,30 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 .tx-amount.plus{color:var(--success);}
 .tx-amount.minus{color:var(--danger);}
 
+/* ===== Section Page Header (non-home) ===== */
+.page-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem .85rem;
+  background:#1e2f45;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  position:sticky;top:0;z-index:5;
+}
+.page-header-title{font-size:1rem;font-weight:800;}
+.page-header-btn{
+  width:34px;height:34px;border-radius:50%;border:none;
+  background:var(--primary-light);color:var(--primary);
+  font-size:.9rem;display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+
 /* ===== Tabs ===== */
-.tabs{display:flex;background:var(--bg);border-radius:10px;margin:.6rem .8rem;padding:3px;flex-shrink:0;}
-.tab{flex:1;padding:.5rem;border:none;background:none;border-radius:8px;font-family:'Cairo',sans-serif;font-size:.82rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s;}
-.tab.active{background:var(--surface);color:var(--primary);box-shadow:var(--shadow);}
+.tabs{display:flex;background:#131e2d;border-radius:10px;margin:.6rem .8rem;padding:3px;flex-shrink:0;}
+.tab{flex:1;padding:.5rem;border:none;background:none;border-radius:8px;font-family:'Cairo',sans-serif;font-size:.82rem;font-weight:600;color:#64748b;cursor:pointer;transition:all .2s;}
+.tab.active{background:#243044;color:#60a5fa;box-shadow:0 1px 4px rgba(0,0,0,.2);}
 
 /* ===== Debt Cards ===== */
 .debt-list{padding:0 .8rem;}
-.debt-card{background:var(--surface);border-radius:var(--radius);padding:.9rem;margin-bottom:.65rem;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s;border-right:4px solid transparent;}
+.debt-card{background:#243044;border-radius:var(--radius);padding:.9rem;margin-bottom:.65rem;box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer;transition:transform .15s;border-right:4px solid transparent;}
 .debt-card:active{transform:scale(.98);}
 .debt-card.creditor{border-right-color:var(--success);}
 .debt-card.debtor{border-right-color:var(--danger);}
@@ -245,14 +239,14 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 /* ===== Expense ===== */
 .expense-date-group{margin-bottom:1rem;}
 .expense-date-label{font-size:.78rem;font-weight:600;color:var(--text2);padding:.4rem 0;border-bottom:1px solid var(--border);margin-bottom:.5rem;display:flex;justify-content:space-between;}
-.expense-item{display:flex;align-items:center;gap:.7rem;background:var(--surface);border-radius:10px;padding:.75rem;margin-bottom:.4rem;box-shadow:var(--shadow);}
+.expense-item{display:flex;align-items:center;gap:.7rem;background:#243044;border-radius:10px;padding:.75rem;margin-bottom:.4rem;box-shadow:0 2px 8px rgba(0,0,0,.2);}
 .expense-cat-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
 .expense-info{flex:1;}
 .expense-note{font-size:.83rem;font-weight:600;}
 .expense-cat{font-size:.7rem;color:var(--text3);}
 .expense-amount{font-size:.9rem;font-weight:700;color:var(--danger);}
 
-/* ===== Stat Mini (expenses panel) ===== */
+/* ===== Stat Mini ===== */
 .stat-mini{flex:1;border-radius:var(--radius);padding:.8rem;text-align:center;}
 .stat-mini-label{font-size:.68rem;color:var(--text2);margin-bottom:.3rem;}
 .stat-mini-val{font-size:1.1rem;font-weight:800;}
@@ -260,13 +254,13 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 /* ===== Filter ===== */
 .filter-row{display:flex;gap:.5rem;padding:.6rem .8rem .5rem;overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
 .filter-row::-webkit-scrollbar{display:none;}
-.filter-chip{white-space:nowrap;padding:.32rem .75rem;border-radius:20px;border:1.5px solid var(--border);background:none;font-family:'Cairo',sans-serif;font-size:.76rem;font-weight:600;cursor:pointer;color:var(--text2);}
-.filter-chip.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary);}
+.filter-chip{white-space:nowrap;padding:.32rem .75rem;border-radius:20px;border:1.5px solid rgba(255,255,255,.1);background:none;font-family:'Cairo',sans-serif;font-size:.76rem;font-weight:600;cursor:pointer;color:#64748b;}
+.filter-chip.active{border-color:#3b82f6;background:rgba(59,130,246,.15);color:#60a5fa;}
 
 /* ===== Modal ===== */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:none;align-items:flex-end;backdrop-filter:blur(2px);}
 .modal-overlay.active{display:flex;}
-.modal{background:var(--surface);border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:430px;margin:0 auto;max-height:88vh;overflow-y:auto;animation:slideUp .25s ease;}
+.modal{background:#1e2f45;border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:430px;margin:0 auto;max-height:88vh;overflow-y:auto;animation:slideUp .25s ease;}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 1.3rem;}
 .modal-title{font-size:1.1rem;font-weight:800;margin-bottom:1.2rem;}
@@ -274,7 +268,7 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 /* ===== Form ===== */
 .form-group{margin-bottom:1rem;}
 .form-label{font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:.4rem;display:block;}
-.form-input,.form-select{width:100%;padding:.72rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-family:'Cairo',sans-serif;font-size:.9rem;color:var(--text);background:var(--bg);outline:none;direction:rtl;transition:border-color .2s;}
+.form-input,.form-select{width:100%;padding:.72rem 1rem;border:1.5px solid rgba(255,255,255,.1);border-radius:10px;font-family:'Cairo',sans-serif;font-size:.9rem;color:#e2e8f0;background:#131e2d;outline:none;direction:rtl;transition:border-color .2s;}
 .form-input:focus,.form-select:focus{border-color:var(--primary);}
 .form-select{cursor:pointer;appearance:none;}
 
@@ -314,6 +308,11 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 .chip.red{background:var(--danger-light);color:var(--danger);}
 .toast{position:fixed;bottom:1.5rem;right:50%;transform:translateX(50%);background:#1e293b;color:#fff;padding:.6rem 1.3rem;border-radius:8px;font-size:.85rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none;}
 .toast.show{opacity:1;}
+/* ===== Report Stats ===== */
+.report-stat-card{flex:1;background:#243044;border-radius:10px;padding:.6rem .7rem;border:1px solid rgba(255,255,255,.05);}
+.report-stat-label{font-size:.6rem;color:#64748b;margin-bottom:.25rem;}
+.report-stat-val{font-size:.95rem;font-weight:800;}
+
 .confirm-box{background:var(--surface);border-radius:var(--radius);padding:1.5rem;text-align:center;}
 .confirm-box p{margin-bottom:1.2rem;font-size:.95rem;color:var(--text);}
 .confirm-row{display:flex;gap:.6rem;}
@@ -326,171 +325,218 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 
 <div id="app">
 
-<!-- ===== ICON NAV (RIGHT) ===== -->
-<nav id="icon-nav">
-  <div class="inav-brand"><i class="fas fa-wallet"></i></div>
-
-  <button class="inav-btn" id="inav-home" onclick="openPanel('home')">
-    <i class="fas fa-house"></i><span>الرئيسية</span>
-  </button>
-
-  <div class="inav-sep"></div>
-
-  <button class="inav-btn c-btn" id="inav-creditor" onclick="openPanel('creditor')">
-    <i class="fas fa-hand-holding-heart"></i><span>دائن</span>
-  </button>
-  <button class="inav-btn d-btn" id="inav-debtor" onclick="openPanel('debtor')">
-    <i class="fas fa-hand-holding-dollar"></i><span>مدين</span>
-  </button>
-  <button class="inav-btn exp-btn" id="inav-expenses" onclick="openPanel('expenses')">
-    <i class="fas fa-receipt"></i><span>مصروفات</span>
-  </button>
-
-  <div class="inav-sep"></div>
-
-  <button class="inav-btn in-btn" onclick="openDeposit()">
-    <i class="fas fa-arrow-down"></i><span>إيداع</span>
-  </button>
-  <button class="inav-btn out-btn" onclick="openWithdraw()">
-    <i class="fas fa-arrow-up"></i><span>سحب</span>
-  </button>
-
-  <div class="inav-sep"></div>
-
-  <button class="inav-btn" id="inav-history" onclick="openPanel('history')">
-    <i class="fas fa-clock-rotate-left"></i><span>المعاملات</span>
-  </button>
-</nav>
-
-<!-- ===== PANEL AREA (LEFT) ===== -->
-<div id="panel-area">
-
-  <!-- Empty View -->
-  <div id="empty-view">
-    <i class="fas fa-wallet"></i>
-    <h2>مديونياتي</h2>
-    <p>اختر من القائمة على اليمين</p>
+  <!-- ===== TOP HEADER ===== -->
+  <div id="top-header">
+    <div class="header-branding">
+      <div class="header-sup">إدارة</div>
+      <div class="header-main">مديونياتي 💰</div>
+    </div>
   </div>
 
-  <!-- HOME PANEL -->
-  <div class="panel" id="panel-home">
-    <div class="panel-header">
-      <span class="panel-header-title">💰 الرئيسية</span>
-      <div class="panel-header-actions">
-        <button class="panel-close-btn" onclick="closePanel('home')"><i class="fas fa-xmark"></i></button>
-      </div>
-    </div>
-    <div class="panel-scroll">
-      <div class="balance-card" id="balance-card">
-        <div class="balance-label">رصيد الحساب الحالي</div>
-        <div class="balance-amount"><small>ج.م</small><span id="balance-display">0.00</span></div>
-        <div class="balance-row">
-          <div class="balance-mini">
-            <div class="balance-mini-label">💚 ليا (دائن)</div>
-            <div class="balance-mini-value" id="total-creditor-display">0.00</div>
-          </div>
-          <div class="balance-mini">
-            <div class="balance-mini-label">❤️ عليا (مدين)</div>
-            <div class="balance-mini-value" id="total-debtor-display">0.00</div>
-          </div>
-          <div class="balance-mini">
-            <div class="balance-mini-label">💰 صافي الديون</div>
-            <div class="balance-mini-value" id="net-display">0.00</div>
+  <!-- ===== MAIN LAYOUT ===== -->
+  <div id="main-layout">
+
+    <!-- Right Nav (dark sidebar) -->
+    <nav id="right-nav">
+      <button class="rnav-btn active" id="rnav-home" onclick="showSection('home')">
+        <i class="fas fa-house"></i><span>الرئيسية</span>
+      </button>
+
+      <div class="rnav-sep"></div>
+
+      <button class="rnav-btn c-btn" id="rnav-creditor" onclick="showSection('creditor')">
+        <i class="fas fa-hand-holding-heart"></i><span>دائن</span>
+      </button>
+      <button class="rnav-btn d-btn" id="rnav-debtor" onclick="showSection('debtor')">
+        <i class="fas fa-hand-holding-dollar"></i><span>مدين</span>
+      </button>
+      <button class="rnav-btn exp-btn" id="rnav-expenses" onclick="showSection('expenses')">
+        <i class="fas fa-receipt"></i><span>مصروفات</span>
+      </button>
+
+      <div class="rnav-sep"></div>
+
+      <button class="rnav-btn in-btn" onclick="openDeposit()">
+        <i class="fas fa-arrow-down"></i><span>إيداع</span>
+      </button>
+      <button class="rnav-btn" onclick="openModal('modal-add-expense')" style="color:rgba(255,255,255,.45);">
+        <i class="fas fa-receipt" style="color:#60a5fa;"></i><span>مصروف</span>
+      </button>
+
+      <div class="rnav-sep"></div>
+
+      <button class="rnav-btn hist-btn" id="rnav-history" onclick="showSection('history')">
+        <i class="fas fa-clock-rotate-left"></i><span>المعاملات</span>
+      </button>
+      <button class="rnav-btn" id="rnav-reports" onclick="showSection('reports')" style="color:rgba(255,255,255,.45);">
+        <i class="fas fa-chart-bar" style="color:#a78bfa;"></i><span>تقارير</span>
+      </button>
+    </nav>
+
+    <!-- Content Area -->
+    <div id="content-area">
+
+      <!-- HOME SECTION -->
+      <div class="section active" id="section-home">
+        <div class="balance-card" id="balance-card">
+          <div class="balance-label">رصيد الحساب الحالي</div>
+          <div class="balance-amount"><small>ج.م</small><span id="balance-display">0.00</span></div>
+          <div class="balance-row">
+            <div class="balance-mini">
+              <div class="balance-mini-label">💚 ليا (دائن)</div>
+              <div class="balance-mini-value" id="total-creditor-display">0.00</div>
+            </div>
+            <div class="balance-mini">
+              <div class="balance-mini-label">❤️ عليا (مدين)</div>
+              <div class="balance-mini-value" id="total-debtor-display">0.00</div>
+            </div>
+            <div class="balance-mini">
+              <div class="balance-mini-label">💰 صافي الديون</div>
+              <div class="balance-mini-value" id="net-display">0.00</div>
+            </div>
           </div>
         </div>
+
+        <div style="height:1rem;"></div>
       </div>
 
-      <div class="quick-actions">
-        <button class="quick-btn in" onclick="openDeposit()"><i class="fas fa-arrow-down"></i><span>إيداع</span></button>
-        <button class="quick-btn out" onclick="openWithdraw()"><i class="fas fa-arrow-up"></i><span>سحب</span></button>
-        <button class="quick-btn dbt" onclick="openPanel('creditor');setTimeout(()=>openModal('modal-add-debt'),50)"><i class="fas fa-handshake"></i><span>دين جديد</span></button>
-        <button class="quick-btn exp" onclick="openModal('modal-add-expense')"><i class="fas fa-receipt"></i><span>مصروف</span></button>
-      </div>
-
-      <div class="section-header">
-        <span class="section-title">آخر المعاملات</span>
-        <span class="section-link" onclick="openPanel('history')">عرض الكل</span>
-      </div>
-      <div class="tx-list" id="recent-tx-list">
-        <div class="empty-state"><i class="fas fa-clock-rotate-left"></i><p>لا توجد معاملات بعد</p></div>
-      </div>
-      <div style="height:1rem;"></div>
-    </div>
-  </div>
-
-  <!-- DEBTS PANEL -->
-  <div class="panel" id="panel-debts">
-    <div class="panel-header">
-      <span class="panel-header-title" id="debts-panel-title">الديون</span>
-      <div class="panel-header-actions">
-        <button class="panel-add-btn" onclick="openModal('modal-add-debt')" title="إضافة دين"><i class="fas fa-plus"></i></button>
-        <button class="panel-close-btn" onclick="closePanel('debts')"><i class="fas fa-xmark"></i></button>
-      </div>
-    </div>
-    <div class="tabs">
-      <button class="tab active" id="tab-creditor" onclick="switchDebtTab('creditor',this)">💚 ليا (دائن)</button>
-      <button class="tab" id="tab-debtor" onclick="switchDebtTab('debtor',this)">❤️ عليا (مدين)</button>
-    </div>
-    <div class="panel-scroll">
-      <div class="debt-list" id="debt-list" style="padding-top:.6rem;">
-        <div class="empty-state"><i class="fas fa-handshake"></i><p>لا توجد ديون</p></div>
-      </div>
-      <div style="height:1rem;"></div>
-    </div>
-  </div>
-
-  <!-- EXPENSES PANEL -->
-  <div class="panel" id="panel-expenses">
-    <div class="panel-header">
-      <span class="panel-header-title">المصروفات</span>
-      <div class="panel-header-actions">
-        <button class="panel-add-btn" onclick="openModal('modal-add-expense')" title="إضافة مصروف"><i class="fas fa-plus"></i></button>
-        <button class="panel-close-btn" onclick="closePanel('expenses')"><i class="fas fa-xmark"></i></button>
-      </div>
-    </div>
-    <div class="panel-scroll">
-      <div style="display:flex;gap:.6rem;padding:.7rem .8rem 0;">
-        <div class="stat-mini" style="background:var(--warning-light);">
-          <div class="stat-mini-label">مصروف اليوم</div>
-          <div class="stat-mini-val" style="color:var(--warning);"><span style="font-size:.7rem;">ج.م </span><span id="today-exp-display">0.00</span></div>
+      <!-- CREDITOR SECTION -->
+      <div class="section" id="section-creditor">
+        <div class="page-header">
+          <span class="page-header-title">💚 ليا (دائن)</span>
+          <button class="page-header-btn" onclick="openAddDebtFor('creditor')" title="إضافة دين">
+            <i class="fas fa-plus"></i>
+          </button>
         </div>
-        <div class="stat-mini" style="background:var(--danger-light);">
-          <div class="stat-mini-label">مصروف الشهر</div>
-          <div class="stat-mini-val" style="color:var(--danger);"><span style="font-size:.7rem;">ج.م </span><span id="month-exp-display">0.00</span></div>
+        <div class="debt-list" id="creditor-list" style="padding-top:.6rem;">
+          <div class="empty-state"><i class="fas fa-handshake"></i><p>لا توجد ديون ليك</p></div>
         </div>
+        <div style="height:1.5rem;"></div>
       </div>
-      <div style="padding:.6rem .8rem;" id="expense-list">
-        <div class="empty-state"><i class="fas fa-receipt"></i><p>لا توجد مصروفات</p></div>
-      </div>
-      <div style="height:1rem;"></div>
-    </div>
-  </div>
 
-  <!-- HISTORY PANEL -->
-  <div class="panel" id="panel-history">
-    <div class="panel-header">
-      <span class="panel-header-title">سجل المعاملات</span>
-      <div class="panel-header-actions">
-        <button class="panel-close-btn" onclick="closePanel('history')"><i class="fas fa-xmark"></i></button>
+      <!-- DEBTOR SECTION -->
+      <div class="section" id="section-debtor">
+        <div class="page-header">
+          <span class="page-header-title">❤️ عليا (مدين)</span>
+          <button class="page-header-btn" onclick="openAddDebtFor('debtor')" title="إضافة دين">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+        <div class="debt-list" id="debtor-list" style="padding-top:.6rem;">
+          <div class="empty-state"><i class="fas fa-handshake"></i><p>لا توجد ديون عليك</p></div>
+        </div>
+        <div style="height:1.5rem;"></div>
       </div>
-    </div>
-    <div class="filter-row">
-      <button class="filter-chip active" onclick="filterHistory('all',this)">الكل</button>
-      <button class="filter-chip" onclick="filterHistory('deposit',this)">إيداع</button>
-      <button class="filter-chip" onclick="filterHistory('withdraw',this)">سحب</button>
-      <button class="filter-chip" onclick="filterHistory('expense',this)">مصروفات</button>
-      <button class="filter-chip" onclick="filterHistory('debt_payment',this)">سداد دين</button>
-      <button class="filter-chip" onclick="filterHistory('debt_receive',this)">استلام دين</button>
-    </div>
-    <div class="panel-scroll">
-      <div class="tx-list" id="history-list" style="padding-top:.4rem;">
-        <div class="empty-state"><i class="fas fa-history"></i><p>لا توجد معاملات</p></div>
-      </div>
-      <div style="height:1rem;"></div>
-    </div>
-  </div>
 
-</div><!-- end #panel-area -->
+      <!-- EXPENSES SECTION -->
+      <div class="section" id="section-expenses">
+        <div class="page-header">
+          <span class="page-header-title">المصروفات</span>
+          <button class="page-header-btn" onclick="openModal('modal-add-expense')" title="إضافة مصروف">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+        <div style="display:flex;gap:.6rem;padding:.7rem .8rem 0;">
+          <div class="stat-mini" style="background:var(--warning-light);">
+            <div class="stat-mini-label">مصروف اليوم</div>
+            <div class="stat-mini-val" style="color:var(--warning);"><span style="font-size:.7rem;">ج.م </span><span id="today-exp-display">0.00</span></div>
+          </div>
+          <div class="stat-mini" style="background:var(--danger-light);">
+            <div class="stat-mini-label">مصروف الشهر</div>
+            <div class="stat-mini-val" style="color:var(--danger);"><span style="font-size:.7rem;">ج.م </span><span id="month-exp-display">0.00</span></div>
+          </div>
+        </div>
+        <div style="padding:.6rem .8rem;" id="expense-list">
+          <div class="empty-state"><i class="fas fa-receipt"></i><p>لا توجد مصروفات</p></div>
+        </div>
+        <div style="height:1.5rem;"></div>
+      </div>
+
+      <!-- HISTORY SECTION -->
+      <div class="section" id="section-history">
+        <div class="page-header">
+          <span class="page-header-title">سجل المعاملات</span>
+        </div>
+        <div class="filter-row">
+          <button class="filter-chip active" onclick="filterHistory('all',this)">الكل</button>
+          <button class="filter-chip" onclick="filterHistory('deposit',this)">إيداع</button>
+          <button class="filter-chip" onclick="filterHistory('withdraw',this)">سحب</button>
+          <button class="filter-chip" onclick="filterHistory('expense',this)">مصروفات</button>
+          <button class="filter-chip" onclick="filterHistory('debt_payment',this)">سداد دين</button>
+          <button class="filter-chip" onclick="filterHistory('debt_receive',this)">استلام دين</button>
+        </div>
+        <div class="tx-list" id="history-list" style="padding-top:.4rem;">
+          <div class="empty-state"><i class="fas fa-history"></i><p>لا توجد معاملات</p></div>
+        </div>
+        <div style="height:1.5rem;"></div>
+      </div>
+
+      <!-- REPORTS SECTION -->
+      <div class="section" id="section-reports">
+        <div class="page-header">
+          <span class="page-header-title">📊 التقارير</span>
+          <button class="page-header-btn" onclick="printReport()" title="طباعة التقرير" style="background:rgba(167,139,250,.15);color:#a78bfa;">
+            <i class="fas fa-print"></i>
+          </button>
+        </div>
+
+        <!-- Date Filter -->
+        <div style="padding:.6rem .8rem .3rem;">
+          <div style="font-size:.72rem;color:#94a3b8;margin-bottom:.4rem;font-weight:600;">الفترة الزمنية</div>
+          <div class="filter-row" style="padding:0;gap:.4rem;flex-wrap:wrap;">
+            <button class="filter-chip active" id="rdate-all"    onclick="setReportDate('all',this)">كل الوقت</button>
+            <button class="filter-chip"        id="rdate-today"  onclick="setReportDate('today',this)">اليوم</button>
+            <button class="filter-chip"        id="rdate-week"   onclick="setReportDate('week',this)">هذا الأسبوع</button>
+            <button class="filter-chip"        id="rdate-month"  onclick="setReportDate('month',this)">هذا الشهر</button>
+            <button class="filter-chip"        id="rdate-custom" onclick="setReportDate('custom',this)">تاريخ محدد</button>
+          </div>
+        </div>
+
+        <!-- Custom date range -->
+        <div id="report-custom-dates" style="display:none;padding:.3rem .8rem .3rem;gap:.5rem;display:none;flex-direction:row;align-items:center;">
+          <input type="date" class="form-input" id="report-date-from" style="flex:1;font-size:.78rem;padding:.5rem .7rem;">
+          <span style="color:#64748b;font-size:.8rem;">←</span>
+          <input type="date" class="form-input" id="report-date-to" style="flex:1;font-size:.78rem;padding:.5rem .7rem;">
+          <button onclick="applyReports()" style="background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:.5rem .8rem;cursor:pointer;font-family:'Cairo',sans-serif;font-size:.78rem;white-space:nowrap;">تطبيق</button>
+        </div>
+
+        <!-- Type Filter -->
+        <div style="padding:.3rem .8rem .4rem;">
+          <div style="font-size:.72rem;color:#94a3b8;margin-bottom:.4rem;font-weight:600;">نوع المعاملة</div>
+          <div class="filter-row" style="padding:0;gap:.4rem;flex-wrap:wrap;">
+            <button class="filter-chip active" id="rtype-all"          onclick="setReportType('all',this)">الكل</button>
+            <button class="filter-chip"        id="rtype-deposit"      onclick="setReportType('deposit',this)">إيداع</button>
+            <button class="filter-chip"        id="rtype-expense"      onclick="setReportType('expense',this)">مصروف</button>
+            <button class="filter-chip"        id="rtype-debt_payment" onclick="setReportType('debt_payment',this)">سداد دين</button>
+            <button class="filter-chip"        id="rtype-debt_receive" onclick="setReportType('debt_receive',this)">استلام دين</button>
+          </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div style="display:flex;gap:.5rem;padding:.3rem .8rem .5rem;">
+          <div class="report-stat-card" style="border-right:3px solid #34d399;">
+            <div class="report-stat-label">إجمالي وارد</div>
+            <div class="report-stat-val" style="color:#34d399;" id="report-total-in">0.00</div>
+          </div>
+          <div class="report-stat-card" style="border-right:3px solid #f87171;">
+            <div class="report-stat-label">إجمالي صادر</div>
+            <div class="report-stat-val" style="color:#f87171;" id="report-total-out">0.00</div>
+          </div>
+          <div class="report-stat-card" style="border-right:3px solid #60a5fa;">
+            <div class="report-stat-label">عدد المعاملات</div>
+            <div class="report-stat-val" style="color:#60a5fa;" id="report-count">0</div>
+          </div>
+        </div>
+
+        <!-- Results list -->
+        <div class="tx-list" id="report-list" style="padding-top:.2rem;">
+          <div class="empty-state"><i class="fas fa-chart-bar"></i><p>اختر الفلتر لعرض التقرير</p></div>
+        </div>
+        <div style="height:1.5rem;"></div>
+      </div>
+
+    </div><!-- end #content-area -->
+  </div><!-- end #main-layout -->
 </div><!-- end #app -->
 
 <!-- ===== MODALS ===== -->
@@ -499,16 +545,12 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 <div class="modal-overlay" id="modal-add-debt">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">إضافة دين جديد</div>
-    <div class="type-toggle">
-      <button class="type-btn sel-creditor" id="dtype-creditor" onclick="selectDebtType('creditor')">💚 ليا (دائن)</button>
-      <button class="type-btn" id="dtype-debtor" onclick="selectDebtType('debtor')">❤️ عليا (مدين)</button>
-    </div>
+    <div class="modal-title" id="add-debt-title">إضافة دين جديد</div>
     <div class="form-group"><label class="form-label">اسم الشخص</label><input type="text" class="form-input" id="debt-name" placeholder="مثال: أحمد محمد"></div>
     <div class="form-group"><label class="form-label">إجمالي المبلغ (ج.م)</label><input type="number" class="form-input" id="debt-amount" placeholder="0.00" inputmode="decimal"></div>
     <div class="form-group"><label class="form-label">تاريخ الدين</label><input type="date" class="form-input" id="debt-date"></div>
     <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="debt-note" placeholder="وصف أو سبب الدين"></div>
-    <button class="btn btn-primary" onclick="saveDebt()">حفظ الدين</button>
+    <button class="btn btn-primary" id="save-debt-btn" onclick="saveDebt()">حفظ الدين</button>
     <button class="btn btn-outline" onclick="closeModal('modal-add-debt')">إلغاء</button>
   </div>
 </div>
@@ -613,7 +655,7 @@ let depMode         = 'deposit';
 let selectedCat     = 'أخرى';
 let histFilter      = 'all';
 let allTxs          = [];
-let activePanel     = null;
+let activeSection   = 'home';
 
 const CATS = [
   {name:'مواصلات',icon:'🚌',color:'#3b82f6'},
@@ -657,6 +699,13 @@ function setTodayDates() {
     const el = document.getElementById(id);
     if(el) el.value = today;
   });
+}
+
+// ===== Header FAB action (context-aware) =====
+function headerFabAction() {
+  if(activeSection === 'expenses') openModal('modal-add-expense');
+  else if(activeSection === 'debts' || activeSection === 'creditor' || activeSection === 'debtor') openModal('modal-add-debt');
+  else openModal('modal-add-debt'); // default: add debt from home
 }
 
 // ===== Balance =====
@@ -761,12 +810,9 @@ function renderHistory() {
 // ===== Debts =====
 async function loadDebts(type) {
   currentDebtTab = type;
-  document.getElementById('tab-creditor').classList.toggle('active', type==='creditor');
-  document.getElementById('tab-debtor').classList.toggle('active', type==='debtor');
-  document.getElementById('inav-creditor')?.classList.toggle('active', type==='creditor');
-  document.getElementById('inav-debtor')?.classList.toggle('active', type==='debtor');
+  const listId = type === 'creditor' ? 'creditor-list' : 'debtor-list';
+  const list = document.getElementById(listId);
   const snap = await db.collection('debts').where('type','==',type).get();
-  const list = document.getElementById('debt-list');
   if(snap.empty){
     list.innerHTML = `<div class="empty-state"><i class="fas fa-handshake"></i><p>لا توجد ديون ${type==='creditor'?'ليك':'عليك'}</p></div>`;
     return;
@@ -777,6 +823,17 @@ async function loadDebts(type) {
     return tb-ta;
   });
   list.innerHTML = docs.map(d => debtCardHTML({id:d.id,...d.data()})).join('');
+}
+
+function openAddDebtFor(type) {
+  currentDebtType = type;
+  const isC = type === 'creditor';
+  document.getElementById('add-debt-title').textContent = isC ? '💚 إضافة دين ليا (دائن)' : '❤️ إضافة دين عليا (مدين)';
+  const btn = document.getElementById('save-debt-btn');
+  btn.className = isC ? 'btn btn-success' : 'btn btn-danger';
+  clearInputs(['debt-name','debt-amount','debt-note']);
+  document.getElementById('debt-date').value = new Date().toISOString().split('T')[0];
+  openModal('modal-add-debt');
 }
 
 function debtCardHTML(d) {
@@ -801,19 +858,6 @@ function debtCardHTML(d) {
   </div>`;
 }
 
-function switchDebtTab(type, el) {
-  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  loadDebts(type);
-}
-
-function selectDebtType(type) {
-  currentDebtType = type;
-  const bc = document.getElementById('dtype-creditor');
-  const bd = document.getElementById('dtype-debtor');
-  bc.className = 'type-btn' + (type==='creditor'?' sel-creditor':'');
-  bd.className = 'type-btn' + (type==='debtor'?' sel-debtor':'');
-}
 
 async function saveDebt() {
   const name   = document.getElementById('debt-name').value.trim();
@@ -829,7 +873,8 @@ async function saveDebt() {
   closeModal('modal-add-debt');
   clearInputs(['debt-name','debt-amount','debt-note']);
   showToast('تم إضافة الدين ✓');
-  openPanel(currentDebtType);
+  showSection(currentDebtType);
+  loadDebts(currentDebtType);
   loadBalance();
 }
 
@@ -950,9 +995,8 @@ async function savePayment() {
 
   closeModal('modal-add-payment');
   showToast('تم تسجيل الدفعة ✓');
-  loadDebts(d.type);
+  showSection(d.type);
   loadBalance();
-  loadRecentTxs();
 }
 
 function openEditDebt() {
@@ -981,7 +1025,7 @@ async function saveEditDebt() {
   currentDebtData = {...d, name, totalAmount:amount, date, note, remaining:newRemaining};
   closeModal('modal-edit-debt');
   showToast('تم التعديل ✓');
-  loadDebts(d.type);
+  showSection(d.type);
   loadBalance();
 }
 
@@ -996,7 +1040,7 @@ function confirmDelete(debtId) {
     pmts.forEach(p => batch.delete(p.ref));
     await batch.commit();
     showToast('تم الحذف');
-    loadDebts(currentDebtTab);
+    showSection(currentDebtTab);
     loadBalance();
   };
   openModal('modal-confirm');
@@ -1091,81 +1135,176 @@ function openDeposit() {
   openModal('modal-deposit');
 }
 
-function openWithdraw() {
-  depMode = 'withdraw';
-  document.getElementById('dep-modal-title').textContent = 'سحب رصيد';
-  const btn = document.getElementById('dep-btn');
-  btn.className = 'btn btn-danger';
-  btn.textContent = 'سحب';
-  clearInputs(['dep-amount','dep-note']);
-  document.getElementById('dep-date').value = new Date().toISOString().split('T')[0];
-  openModal('modal-deposit');
-}
-
 async function saveDeposit() {
   const amount = parseFloat(document.getElementById('dep-amount').value);
   const note   = document.getElementById('dep-note').value.trim();
   if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
-  if(depMode==='withdraw'){
-    const bal = await getBalance();
-    if(amount>bal){ showToast('الرصيد غير كافٍ'); return; }
-    await addTx('withdraw', amount, note||'سحب رصيد');
-    showToast('تم السحب ✓');
-  } else {
-    await addTx('deposit', amount, note||'إيداع رصيد');
-    showToast('تم الإيداع ✓');
-  }
+  await addTx('deposit', amount, note||'إيداع رصيد');
+  showToast('تم الإيداع ✓');
   closeModal('modal-deposit');
   loadBalance();
-  loadRecentTxs();
 }
 
-// ===== Navigation (Panel System) =====
-function openPanel(name) {
-  // creditor/debtor open the debts panel with the right tab
-  let panelName = name;
-  if(name === 'creditor' || name === 'debtor') {
-    panelName = 'debts';
+// ===== Reports =====
+let reportDateFilter = 'all';
+let reportTypeFilter = 'all';
+let reportAllTxs     = [];
+
+function setReportDate(val, el) {
+  reportDateFilter = val;
+  document.querySelectorAll('[id^="rdate-"]').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const custom = document.getElementById('report-custom-dates');
+  custom.style.display = val === 'custom' ? 'flex' : 'none';
+  if(val !== 'custom') applyReports();
+}
+
+function setReportType(val, el) {
+  reportTypeFilter = val;
+  document.querySelectorAll('[id^="rtype-"]').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  applyReports();
+}
+
+async function loadReportData() {
+  if(!reportAllTxs.length) {
+    const snap = await db.collection('transactions').orderBy('createdAt','desc').limit(500).get();
+    reportAllTxs = snap.docs.map(d => ({id:d.id,...d.data()}));
+  }
+  applyReports();
+}
+
+function applyReports() {
+  const now   = new Date();
+  const today = now.toISOString().split('T')[0];
+
+  let txs = [...reportAllTxs];
+
+  // date filter
+  if(reportDateFilter === 'today') {
+    txs = txs.filter(t => {
+      const d = t.createdAt?.toDate ? t.createdAt.toDate().toISOString().split('T')[0] : '';
+      return d === today;
+    });
+  } else if(reportDateFilter === 'week') {
+    const weekAgo = new Date(now - 7*24*60*60*1000);
+    txs = txs.filter(t => t.createdAt?.toDate && t.createdAt.toDate() >= weekAgo);
+  } else if(reportDateFilter === 'month') {
+    const monthStr = today.slice(0,7);
+    txs = txs.filter(t => {
+      const d = t.createdAt?.toDate ? t.createdAt.toDate().toISOString().slice(0,7) : '';
+      return d === monthStr;
+    });
+  } else if(reportDateFilter === 'custom') {
+    const from = document.getElementById('report-date-from').value;
+    const to   = document.getElementById('report-date-to').value;
+    if(from && to) {
+      txs = txs.filter(t => {
+        const d = t.createdAt?.toDate ? t.createdAt.toDate().toISOString().split('T')[0] : '';
+        return d >= from && d <= to;
+      });
+    }
   }
 
-  // Hide all panels, show panel area
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('empty-view').style.display = 'none';
+  // type filter
+  if(reportTypeFilter !== 'all') {
+    txs = txs.filter(t => t.type === reportTypeFilter);
+  }
 
-  // Show the panel
-  const panel = document.getElementById('panel-' + panelName);
-  if(panel) panel.classList.add('active');
+  // calc totals
+  const plusTypes = ['deposit','debt_receive'];
+  let totalIn=0, totalOut=0;
+  txs.forEach(t => {
+    if(plusTypes.includes(t.type)) totalIn  += (t.amount||0);
+    else                            totalOut += (t.amount||0);
+  });
 
-  // Update icon nav active state
-  document.querySelectorAll('.inav-btn').forEach(b => b.classList.remove('active'));
-  const navId = {
-    home:'inav-home', creditor:'inav-creditor', debtor:'inav-debtor',
-    debts: currentDebtTab==='creditor' ? 'inav-creditor' : 'inav-debtor',
-    expenses:'inav-expenses', history:'inav-history'
-  }[name];
-  if(navId) document.getElementById(navId)?.classList.add('active');
+  document.getElementById('report-total-in').textContent  = fmt(totalIn)  + ' ج.م';
+  document.getElementById('report-total-out').textContent = fmt(totalOut) + ' ج.م';
+  document.getElementById('report-count').textContent     = txs.length;
 
-  activePanel = panelName;
+  const list = document.getElementById('report-list');
+  if(!txs.length) {
+    list.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>لا توجد نتائج بهذا الفلتر</p></div>';
+    return;
+  }
+  list.innerHTML = txs.map(txHTML).join('');
+}
 
-  // Load data
-  if(name === 'home')     { loadBalance(); loadRecentTxs(); }
+function printReport() {
+  const dateLabels = {all:'كل الوقت', today:'اليوم', week:'هذا الأسبوع', month:'هذا الشهر', custom:'تاريخ محدد'};
+  const typeLabels = {all:'الكل', deposit:'إيداع', expense:'مصروف', debt_payment:'سداد دين', debt_receive:'استلام دين'};
+  const totalIn  = document.getElementById('report-total-in').textContent;
+  const totalOut = document.getElementById('report-total-out').textContent;
+  const count    = document.getElementById('report-count').textContent;
+  const listHTML = document.getElementById('report-list').innerHTML;
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+    <meta charset="UTF-8">
+    <title>تقرير مديونياتي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0;}
+      body{font-family:'Cairo',sans-serif;background:#fff;color:#1e293b;padding:1.5rem;}
+      .print-header{text-align:center;border-bottom:2px solid #2563eb;padding-bottom:1rem;margin-bottom:1.2rem;}
+      .print-header h1{font-size:1.4rem;color:#2563eb;font-weight:800;}
+      .print-header p{font-size:.8rem;color:#64748b;margin-top:.3rem;}
+      .print-meta{display:flex;gap:.5rem;margin-bottom:1rem;font-size:.8rem;color:#475569;}
+      .print-meta span{background:#f1f5f9;padding:.25rem .6rem;border-radius:6px;}
+      .summary{display:flex;gap:.6rem;margin-bottom:1.2rem;}
+      .sum-card{flex:1;border-radius:8px;padding:.7rem;text-align:center;border:1px solid #e2e8f0;}
+      .sum-label{font-size:.65rem;color:#94a3b8;margin-bottom:.2rem;}
+      .sum-val{font-size:1rem;font-weight:800;}
+      .tx-item{display:flex;align-items:center;gap:.7rem;padding:.6rem .5rem;border-bottom:1px solid #f1f5f9;}
+      .tx-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;}
+      .income{background:#ecfdf5;color:#059669;} .expense{background:#fef2f2;color:#dc2626;} .warning{background:#fffbeb;color:#d97706;} .blue{background:#eff6ff;color:#2563eb;}
+      .tx-info{flex:1;} .tx-name{font-size:.82rem;font-weight:600;} .tx-date{font-size:.65rem;color:#94a3b8;}
+      .tx-amount{font-size:.85rem;font-weight:700;} .plus{color:#059669;} .minus{color:#dc2626;}
+      @media print{body{padding:.5rem;}}
+    </style>
+  </head><body>
+    <div class="print-header">
+      <h1>💰 مديونياتي — تقرير المعاملات</h1>
+      <p>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'})}</p>
+    </div>
+    <div class="print-meta">
+      <span>الفترة: ${dateLabels[reportDateFilter]||reportDateFilter}</span>
+      <span>النوع: ${typeLabels[reportTypeFilter]||reportTypeFilter}</span>
+    </div>
+    <div class="summary">
+      <div class="sum-card"><div class="sum-label">إجمالي وارد</div><div class="sum-val" style="color:#059669;">${totalIn}</div></div>
+      <div class="sum-card"><div class="sum-label">إجمالي صادر</div><div class="sum-val" style="color:#dc2626;">${totalOut}</div></div>
+      <div class="sum-card"><div class="sum-label">عدد المعاملات</div><div class="sum-val" style="color:#2563eb;">${count}</div></div>
+    </div>
+    ${listHTML}
+    <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`);
+  win.document.close();
+}
+
+// ===== Navigation =====
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + name)?.classList.add('active');
+
+  document.getElementById('content-area').scrollTop = 0;
+
+  document.querySelectorAll('.rnav-btn').forEach(b => b.classList.remove('active'));
+  const navMap = {
+    home:'rnav-home', creditor:'rnav-creditor', debtor:'rnav-debtor',
+    expenses:'rnav-expenses', history:'rnav-history', reports:'rnav-reports'
+  };
+  if(navMap[name]) document.getElementById(navMap[name])?.classList.add('active');
+
+  activeSection = name;
+
+  if(name === 'home')     loadBalance();
   if(name === 'creditor') loadDebts('creditor');
   if(name === 'debtor')   loadDebts('debtor');
   if(name === 'expenses') loadExpenses();
   if(name === 'history')  loadAllTxs();
-}
-
-function closePanel(name) {
-  document.getElementById('panel-' + name)?.classList.remove('active');
-  document.getElementById('empty-view').style.display = '';
-  document.querySelectorAll('.inav-btn').forEach(b => b.classList.remove('active'));
-  activePanel = null;
-}
-
-// Backward compatibility
-function showScreen(name) {
-  if(name === 'debts') openPanel(currentDebtTab);
-  else openPanel(name);
+  if(name === 'reports')  loadReportData();
 }
 
 // ===== Modals =====
