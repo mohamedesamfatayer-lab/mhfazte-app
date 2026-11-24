@@ -265,8 +265,11 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* ===== Modal ===== */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:none;align-items:flex-end;backdrop-filter:blur(2px);}
-#modal-confirm{z-index:600;}
+#modal-confirm{z-index:700;}
 #modal-edit-payment{z-index:600;}
+#modal-edit-debt{z-index:600;}
+#modal-add-payment{z-index:600;}
+#modal-edit-debt .modal,#modal-add-payment .modal,#modal-edit-payment .modal{position:relative;z-index:1;}
 .modal-overlay.active{display:flex;}
 .modal{background:#1e2f45;border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:430px;margin:0 auto;max-height:88vh;overflow-y:auto;animation:slideUp .25s ease;}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -1044,7 +1047,6 @@ async function showDebtDetail(debtId) {
 
 function openAddPayment() {
   if(!currentDebtData) return;
-  closeModal('modal-debt-detail');
   const isC = currentDebtData.type==='creditor';
   document.getElementById('payment-modal-title').textContent =
     isC ? `استلام دفعة من ${currentDebtData.name}` : `سداد دفعة لـ ${currentDebtData.name}`;
@@ -1082,20 +1084,15 @@ async function savePayment() {
 
   closeModal('modal-add-payment');
   showToast('تم تسجيل الدفعة ✓');
-  showSection(d.type);
+  await refreshDebtDetail();
   loadBalance();
+  showSection(d.type);
 }
 
 async function refreshDebtDetail() {
   if(!currentDebtId) return;
-  const doc = await db.collection('debts').doc(currentDebtId).get();
-  if(!doc.exists) return;
-  currentDebtData = {id:currentDebtId, ...doc.data()};
-  // rebuild content inside the open modal without closing it
-  const overlay = document.getElementById('modal-debt-detail');
-  const wasOpen = overlay.classList.contains('active');
   await showDebtDetail(currentDebtId);
-  if(wasOpen) openModal('modal-debt-detail');
+  openModal('modal-debt-detail');
 }
 
 // ===== Edit / Delete Payment =====
@@ -1162,7 +1159,6 @@ async function deletePayment(paymentId) {
 
 function openEditDebt() {
   if(!currentDebtData) return;
-  closeModal('modal-debt-detail');
   const d = currentDebtData;
   document.getElementById('edit-debt-name').value   = d.name || '';
   document.getElementById('edit-debt-amount').value = d.totalAmount || '';
@@ -1188,15 +1184,16 @@ async function saveEditDebt() {
   currentDebtData = {...d, name, totalAmount:amount, date, note, remaining:newRemaining, currency:selectedCurrency};
   closeModal('modal-edit-debt');
   showToast('تم التعديل ✓');
-  showSection(d.type);
+  await refreshDebtDetail();
   loadBalance();
+  showSection(d.type);
 }
 
 function confirmDelete(debtId) {
-  closeModal('modal-debt-detail');
   document.getElementById('confirm-msg').textContent = 'هل تريد حذف هذا الدين وكل دفعاته؟';
   document.getElementById('confirm-yes-btn').onclick = async () => {
     closeModal('modal-confirm');
+    closeModal('modal-debt-detail');
     const pmts = await db.collection('payments').where('debtId','==',debtId).get();
     const batch = db.batch();
     batch.delete(db.collection('debts').doc(debtId));
