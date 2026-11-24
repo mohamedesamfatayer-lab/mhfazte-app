@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1d4ed8"/>
+      <stop offset="100%" style="stop-color:#2563eb"/>
+    </linearGradient>
+    <linearGradient id="wallet" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
+    </linearGradient>
+  </defs>
+  <!-- Background rounded rect -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <!-- Wallet body -->
+  <rect x="80" y="175" width="352" height="230" rx="24" fill="url(#wallet)"/>
+  <!-- Wallet flap/top -->
+  <rect x="80" y="140" width="352" height="70" rx="18" fill="#f59e0b"/>
+  <!-- Wallet clasp line -->
+  <rect x="80" y="195" width="352" height="8" fill="#b45309" opacity="0.5"/>
+  <!-- Coin pocket circle -->
+  <circle cx="360" cy="290" r="52" fill="#1d4ed8" opacity="0.9"/>
+  <circle cx="360" cy="290" r="38" fill="#2563eb"/>
+  <text x="360" y="302" text-anchor="middle" font-family="serif" font-size="36" font-weight="bold" fill="#fbbf24">$</text>
+  <!-- Card lines inside wallet -->
+  <rect x="110" y="260" width="180" height="16" rx="8" fill="#b45309" opacity="0.5"/>
+  <rect x="110" y="290" width="130" height="12" rx="6" fill="#b45309" opacity="0.35"/>
+</svg>
