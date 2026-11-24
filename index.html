@@ -864,9 +864,18 @@ function renderBalance(bal) {
   if(bal < 0){
     card.style.background = 'linear-gradient(135deg,#991b1b,#dc2626,#ef4444)';
     card.style.boxShadow  = '0 8px 25px rgba(220,38,38,.4)';
+    card.querySelectorAll('.balance-label,.balance-amount,.balance-amount small,.balance-mini-label,.balance-mini-value').forEach(el=>{
+      el.style.color='#fff'; el.style.fontWeight='800';
+    });
   } else {
     card.style.background = '';
     card.style.boxShadow  = '';
+    card.querySelectorAll('.balance-label,.balance-amount small,.balance-mini-label').forEach(el=>{
+      el.style.color=''; el.style.fontWeight='';
+    });
+    card.querySelectorAll('.balance-amount,.balance-mini-value').forEach(el=>{
+      el.style.color=''; el.style.fontWeight='';
+    });
   }
 }
 
@@ -1594,58 +1603,84 @@ function printReport() {
 
   rows.forEach(t=>{ if(plusTypes.includes(t.type)) totalIn+=(t.amount||0); else totalOut+=(t.amount||0); });
 
+  const fmtI = n => Math.round(n||0).toLocaleString('ar-EG');
+  const nowD = new Date();
+  const printDate = `${String(nowD.getDate()).padStart(2,'0')}/${String(nowD.getMonth()+1).padStart(2,'0')}/${nowD.getFullYear()}`;
+
   const tableRows = rows.map((t,i)=>{
     const isPlus = plusTypes.includes(t.type);
-    const date = t.createdAt?.toDate ? t.createdAt.toDate().toLocaleDateString('ar-EG',{year:'numeric',month:'short',day:'numeric'}) : (t.date||'');
-    const total = fmt(t.amount)+' ج.م';
-    const daf   = isPlus ? fmt(t.amount)+' ج.م' : '—';
-    const baq   = t.balance!==undefined ? fmt(t.balance)+' ج.م' : '—';
+    const d = t.createdAt?.toDate ? t.createdAt.toDate() : null;
+    const date = d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : (t.date||'');
+    const amtStr  = fmtI(t.amount);
+    const balStr  = t.balance!==undefined ? fmtI(t.balance) : '—';
+    const typeStr = typeAr[t.type]||'—';
     return `<tr>
       <td>${i+1}</td>
-      <td>${total}</td>
-      <td>${daf}</td>
       <td>${date}</td>
-      <td>${baq}</td>
-      <td style="text-align:right;">${t.note||typeAr[t.type]||'—'}</td>
+      <td style="font-weight:700;">${amtStr}</td>
+      <td style="font-weight:700;color:${isPlus?'#166534':'#991b1b'};">${isPlus?'وارد':'صادر'}</td>
+      <td style="font-weight:700;">${balStr}</td>
+      <td style="text-align:right;">${t.note||typeStr}</td>
     </tr>`;
   }).join('');
 
+  const totalInStr  = fmtI(totalIn);
+  const totalOutStr = fmtI(totalOut);
+  const netStr      = fmtI(totalIn - totalOut);
   const userName = currentUser?.displayName || '';
+  const periodLabel = dateLabels[reportDateFilter]||'';
+  const typeLabel   = typeLabels[reportTypeFilter]||'';
 
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
     <meta charset="UTF-8">
-    <title>تقرير معاملة</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>تقرير المعاملات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
       *{box-sizing:border-box;margin:0;padding:0;}
-      body{font-family:'Cairo',sans-serif;background:#fff;color:#1e293b;padding:1.5cm;font-size:11pt;}
-      h1{text-align:center;font-size:15pt;color:#b91c1c;font-weight:800;margin-bottom:.6rem;}
-      .name-row{text-align:right;font-size:11pt;font-weight:700;margin-bottom:.8rem;}
-      table{width:100%;border-collapse:collapse;font-size:10.5pt;}
-      th{background:#dbeafe;color:#1e293b;padding:.5rem .7rem;border:1px solid #93c5fd;text-align:center;font-weight:700;white-space:nowrap;}
-      td{padding:.45rem .7rem;border:1px solid #93c5fd;text-align:center;vertical-align:middle;}
-      tr:nth-child(even) td{background:#f0f9ff;}
+      body{font-family:'Cairo',sans-serif;background:#fff;color:#000;padding:1.5cm;font-size:11pt;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+      h1{text-align:center;font-size:16pt;color:#fff;font-weight:900;margin-bottom:1.2rem;background:#1e3a5f;padding:.6rem 1.5rem;border-radius:6px;display:inline-block;width:100%;}
+      .info-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;font-size:11pt;font-weight:800;color:#000;}
+      .divider{border:none;border-top:2px solid #000;margin:.7rem 0;}
+      table{width:100%;border-collapse:collapse;font-size:10.5pt;margin-top:.5rem;}
+      th{background:#b8cce4;color:#000;padding:.75rem .7rem;border:1.5px solid #000;text-align:center;font-weight:900;white-space:nowrap;font-size:11.5pt;}
+      td{padding:.5rem .7rem;border:1px solid #000;text-align:center;vertical-align:middle;color:#000;font-weight:700;}
+      tr:nth-child(even) td{background:#eef4fb;}
+      .summary{display:flex;gap:.6rem;margin-top:.8rem;}
+      .sum-in{flex:1;border:2px solid #000;border-radius:4px;padding:.55rem;text-align:center;background:#d9f2e6;}
+      .sum-out{flex:1;border:2px solid #000;border-radius:4px;padding:.55rem;text-align:center;background:#fde8e8;}
+      .sum-net{flex:1;border:2px solid #000;border-radius:4px;padding:.55rem;text-align:center;background:#f0e6ff;}
+      .sum-label{font-size:8.5pt;font-weight:700;color:#000;margin-bottom:.2rem;}
+      .sum-val{font-size:12pt;font-weight:900;color:#000;}
+      .footer{margin-top:1.2rem;font-size:9pt;color:#000;text-align:center;font-weight:700;}
       @media print{body{padding:.6cm;}@page{margin:.7cm;size:A4 portrait;}}
     </style>
   </head><body>
-    <h1>تقرير معاملة</h1>
-    ${userName ? `<div class="name-row">الاسم : ${userName}</div>` : ''}
+    <h1>تقرير المعاملات</h1>
+    ${userName ? `<div class="info-row"><span>الاسم :</span><span>${userName}</span></div>` : ''}
+    <div class="info-row"><span>الفترة :</span><span>${periodLabel}</span><span style="margin-right:auto;"></span><span>النوع :</span><span>${typeLabel}</span></div>
+    <hr class="divider">
     <table>
       <thead>
         <tr>
-          <th>م</th>
-          <th>اجمالي المبلغ</th>
-          <th>الدفعة</th>
-          <th>تاريخ الدفعة</th>
-          <th>الباقي</th>
+          <th style="width:4%;">م</th>
+          <th style="width:13%;">التاريخ</th>
+          <th style="width:12%;">المبلغ</th>
+          <th style="width:10%;">النوع</th>
+          <th style="width:12%;">الرصيد</th>
           <th>البيان</th>
         </tr>
       </thead>
       <tbody>
-        ${tableRows || '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:1rem;">لا توجد بيانات</td></tr>'}
+        ${tableRows || '<tr><td colspan="6" style="text-align:center;color:#666;padding:1rem;">لا توجد بيانات</td></tr>'}
       </tbody>
     </table>
+    <div class="summary">
+      <div class="sum-in"><div class="sum-label">إجمالي الوارد</div><div class="sum-val">${totalInStr}</div></div>
+      <div class="sum-out"><div class="sum-label">إجمالي الصادر</div><div class="sum-val">${totalOutStr}</div></div>
+      <div class="sum-net"><div class="sum-label">الصافي</div><div class="sum-val">${netStr}</div></div>
+    </div>
+    <div class="footer">تاريخ الطباعة: ${printDate}</div>
     <script>window.onload=()=>{window.print();}<\/script>
   </body></html>`);
   win.document.close();
