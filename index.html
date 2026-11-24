@@ -1568,26 +1568,39 @@ function confirmSignOut() {
   openModal('modal-confirm');
 }
 
-auth.onAuthStateChanged(user => {
-  if(user) {
-    currentUser = user;
-    reportAllTxs = [];
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    const wrap = document.getElementById('user-avatar-wrap');
-    const avatar = document.getElementById('user-avatar');
-    const nameEl = document.getElementById('user-name-short');
-    if(user.photoURL){ avatar.src = user.photoURL; wrap.style.display = 'flex'; }
-    if(user.displayName){ nameEl.textContent = user.displayName.split(' ')[0]; }
-    init();
-  } else {
-    currentUser = null;
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('user-avatar-wrap').style.display = 'none';
-  }
-});
+function setupUser(user) {
+  currentUser = user;
+  reportAllTxs = [];
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  const wrap   = document.getElementById('user-avatar-wrap');
+  const avatar = document.getElementById('user-avatar');
+  const nameEl = document.getElementById('user-name-short');
+  if(user.photoURL){ avatar.src = user.photoURL; wrap.style.display = 'flex'; }
+  if(user.displayName){ nameEl.textContent = user.displayName.split(' ')[0]; }
+  init();
+}
+
+async function startAuth() {
+  try {
+    const result = await auth.getRedirectResult();
+    if(result && result.user) { setupUser(result.user); return; }
+  } catch(e) { console.error(e); }
+
+  auth.onAuthStateChanged(user => {
+    if(user) {
+      setupUser(user);
+    } else {
+      currentUser = null;
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('user-avatar-wrap').style.display = 'none';
+    }
+  });
+}
+
+startAuth();
 
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
