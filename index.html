@@ -682,13 +682,13 @@ body.light-bg{background:#f1f5f9!important;}
 
         <!-- Summary Cards -->
         <div style="display:flex;gap:.5rem;padding:.3rem .8rem .5rem;">
-          <div class="report-stat-card" style="border-right:3px solid #34d399;">
+          <div class="report-stat-card" style="border-right:3px solid #34d399;flex:1.4;">
             <div class="report-stat-label">إجمالي وارد</div>
-            <div class="report-stat-val" style="color:#34d399;" id="report-total-in">0.00</div>
+            <div id="report-total-in" style="margin-top:.15rem;"></div>
           </div>
-          <div class="report-stat-card" style="border-right:3px solid #f87171;">
+          <div class="report-stat-card" style="border-right:3px solid #f87171;flex:1.4;">
             <div class="report-stat-label">إجمالي صادر</div>
-            <div class="report-stat-val" style="color:#f87171;" id="report-total-out">0.00</div>
+            <div id="report-total-out" style="margin-top:.15rem;"></div>
           </div>
           <div class="report-stat-card" style="border-right:3px solid #60a5fa;">
             <div class="report-stat-label">عدد المعاملات</div>
@@ -1946,17 +1946,26 @@ function applyReports() {
     txs = txs.filter(t => t.type === reportTypeFilter);
   }
 
-  // calc totals
+  // calc totals per currency
   const plusTypes = ['deposit','debt_receive'];
-  let totalIn=0, totalOut=0;
+  const inByCur = {}, outByCur = {};
   txs.forEach(t => {
-    if(plusTypes.includes(t.type)) totalIn  += (t.amount||0);
-    else                            totalOut += (t.amount||0);
+    const cur = t.currency || 'EGP';
+    if(plusTypes.includes(t.type)) inByCur[cur]  = (inByCur[cur]  || 0) + (t.amount||0);
+    else                            outByCur[cur] = (outByCur[cur] || 0) + (t.amount||0);
   });
 
-  document.getElementById('report-total-in').textContent  = fmt(totalIn)  + ' ج.م';
-  document.getElementById('report-total-out').textContent = fmt(totalOut) + ' ج.م';
-  document.getElementById('report-count').textContent     = txs.length;
+  const symMap = {EGP:'ج.م', SAR:'ريال', USD:'$', EUR:'€'};
+  function renderCurTotals(byMap, color) {
+    const entries = Object.entries(byMap);
+    if(!entries.length) return `<span style="font-size:.85rem;font-weight:700;color:${color};">٠.٠٠</span>`;
+    return entries.map(([c,v]) =>
+      `<div style="font-size:.82rem;font-weight:800;color:${color};line-height:1.4;">${fmt(v)} <span style="font-size:.7rem;color:var(--text3);">${symMap[c]||c}</span></div>`
+    ).join('');
+  }
+  document.getElementById('report-total-in').innerHTML  = renderCurTotals(inByCur,  '#34d399');
+  document.getElementById('report-total-out').innerHTML = renderCurTotals(outByCur, '#f87171');
+  document.getElementById('report-count').textContent   = txs.length;
 
   const list = document.getElementById('report-list');
   if(!txs.length) {
@@ -1972,11 +1981,10 @@ function printReport() {
   const typeAr = {deposit:'إيداع', withdraw:'سحب', expense:'مصروف', debt_payment:'سداد دين', debt_receive:'استلام دين'};
 
   const plusTypes = ['deposit','debt_receive'];
-  let totalIn=0, totalOut=0;
+  const pSymMap = {EGP:'ج.م', SAR:'ريال', USD:'$', EUR:'€'};
 
   const rows = reportAllTxs.length
     ? (() => {
-        // apply same filters as applyReports
         const now = new Date(); const today = now.toISOString().split('T')[0];
         let txs = [...reportAllTxs];
         if(reportDateFilter==='today') txs=txs.filter(t=>{const d=t.createdAt?.toDate?t.createdAt.toDate().toISOString().split('T')[0]:'';return d===today;});
@@ -1988,7 +1996,13 @@ function printReport() {
       })()
     : [];
 
-  rows.forEach(t=>{ if(plusTypes.includes(t.type)) totalIn+=(t.amount||0); else totalOut+=(t.amount||0); });
+  // per-currency totals
+  const inByCur = {}, outByCur = {};
+  rows.forEach(t => {
+    const cur = t.currency || 'EGP';
+    if(plusTypes.includes(t.type)) inByCur[cur]  = (inByCur[cur]  || 0) + (t.amount||0);
+    else                            outByCur[cur] = (outByCur[cur] || 0) + (t.amount||0);
+  });
 
   const fmtI = n => Math.round(n||0).toLocaleString('ar-EG');
   const nowD = new Date();
@@ -1998,22 +2012,28 @@ function printReport() {
     const isPlus = plusTypes.includes(t.type);
     const d = t.createdAt?.toDate ? t.createdAt.toDate() : null;
     const date = d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : (t.date||'');
-    const amtStr  = fmtI(t.amount);
-    const balStr  = t.balance!==undefined ? fmtI(t.balance) : '—';
+    const cur    = t.currency || 'EGP';
+    const sym    = pSymMap[cur] || cur;
+    const amtStr = fmtI(t.amount);
+    const balStr = t.balance!==undefined ? fmtI(t.balance) : '—';
     const typeStr = typeAr[t.type]||'—';
     return `<tr>
       <td>${i+1}</td>
       <td>${date}</td>
       <td style="font-weight:700;">${amtStr}</td>
+      <td style="font-weight:800;font-size:9pt;">${sym}</td>
       <td style="font-weight:700;color:${isPlus?'#166534':'#991b1b'};">${isPlus?'وارد':'صادر'}</td>
       <td style="font-weight:700;">${balStr}</td>
       <td style="text-align:right;">${t.note||typeStr}</td>
     </tr>`;
   }).join('');
 
-  const totalInStr  = fmtI(totalIn);
-  const totalOutStr = fmtI(totalOut);
-  const netStr      = fmtI(totalIn - totalOut);
+  // build summary rows per currency
+  const allCurs = [...new Set([...Object.keys(inByCur), ...Object.keys(outByCur)])];
+  const sumRowsIn  = allCurs.map(c => `<div style="font-size:11pt;font-weight:900;">${fmtI(inByCur[c]||0)} <span style="font-size:9pt;">${pSymMap[c]||c}</span></div>`).join('') || `<div style="font-size:11pt;font-weight:900;">٠</div>`;
+  const sumRowsOut = allCurs.map(c => `<div style="font-size:11pt;font-weight:900;">${fmtI(outByCur[c]||0)} <span style="font-size:9pt;">${pSymMap[c]||c}</span></div>`).join('') || `<div style="font-size:11pt;font-weight:900;">٠</div>`;
+  const sumRowsNet = allCurs.map(c => { const n=(inByCur[c]||0)-(outByCur[c]||0); return `<div style="font-size:11pt;font-weight:900;color:${n>=0?'#166534':'#991b1b'};">${fmtI(Math.abs(n))} <span style="font-size:9pt;">${pSymMap[c]||c}</span> ${n<0?'(عجز)':''}</div>`; }).join('') || `<div style="font-size:11pt;font-weight:900;">٠</div>`;
+
   const userName = currentUser?.displayName || '';
   const periodLabel = dateLabels[reportDateFilter]||'';
   const typeLabel   = typeLabels[reportTypeFilter]||'';
@@ -2034,11 +2054,10 @@ function printReport() {
       td{padding:.5rem .7rem;border:1px solid #000;text-align:center;vertical-align:middle;color:#000;font-weight:700;}
       tr:nth-child(even) td{background:#eef4fb;}
       .summary{display:flex;gap:.6rem;margin-top:.8rem;}
-      .sum-in{flex:1;border:2px solid #000;border-radius:4px;padding:.55rem;text-align:center;background:#d9f2e6;}
-      .sum-out{flex:1;border:2px solid #000;border-radius:4px;padding:.55rem;text-align:center;background:#fde8e8;}
-      .sum-net{flex:1;border:2px solid #000;border-radius:4px;padding:.55rem;text-align:center;background:#f0e6ff;}
-      .sum-label{font-size:8.5pt;font-weight:700;color:#000;margin-bottom:.2rem;}
-      .sum-val{font-size:12pt;font-weight:900;color:#000;}
+      .sum-in{flex:1;border:2px solid #000;border-radius:4px;padding:.6rem;text-align:center;background:#d9f2e6;}
+      .sum-out{flex:1;border:2px solid #000;border-radius:4px;padding:.6rem;text-align:center;background:#fde8e8;}
+      .sum-net{flex:1;border:2px solid #000;border-radius:4px;padding:.6rem;text-align:center;background:#f0e6ff;}
+      .sum-label{font-size:9pt;font-weight:900;color:#000;margin-bottom:.35rem;border-bottom:1px solid rgba(0,0,0,.15);padding-bottom:.25rem;}
       .footer{margin-top:1.2rem;font-size:9pt;color:#000;text-align:center;font-weight:700;}
       @media print{body{padding:.6cm;}@page{margin:.7cm;size:A4 portrait;}}
     </style>
@@ -2051,23 +2070,24 @@ function printReport() {
       <thead>
         <tr>
           <th style="width:4%;">م</th>
-          <th style="width:13%;">التاريخ</th>
-          <th style="width:12%;">المبلغ</th>
-          <th style="width:10%;">النوع</th>
-          <th style="width:12%;">الرصيد</th>
+          <th style="width:12%;">التاريخ</th>
+          <th style="width:11%;">المبلغ</th>
+          <th style="width:8%;">العملة</th>
+          <th style="width:9%;">النوع</th>
+          <th style="width:11%;">الرصيد</th>
           <th>البيان</th>
         </tr>
       </thead>
       <tbody>
-        ${tableRows || '<tr><td colspan="6" style="text-align:center;color:#666;padding:1rem;">لا توجد بيانات</td></tr>'}
+        ${tableRows || '<tr><td colspan="7" style="text-align:center;color:#666;padding:1rem;">لا توجد بيانات</td></tr>'}
       </tbody>
     </table>
     <div class="summary">
-      <div class="sum-in"><div class="sum-label">إجمالي الوارد</div><div class="sum-val">${totalInStr}</div></div>
-      <div class="sum-out"><div class="sum-label">إجمالي الصادر</div><div class="sum-val">${totalOutStr}</div></div>
-      <div class="sum-net"><div class="sum-label">الصافي</div><div class="sum-val">${netStr}</div></div>
+      <div class="sum-in"><div class="sum-label">إجمالي الوارد</div>${sumRowsIn}</div>
+      <div class="sum-out"><div class="sum-label">إجمالي الصادر</div>${sumRowsOut}</div>
+      <div class="sum-net"><div class="sum-label">الصافي</div>${sumRowsNet}</div>
     </div>
-    <div class="footer">تاريخ الطباعة: ${printDate}</div>
+    <div class="footer">تاريخ الطباعة: ${printDate} &nbsp;|&nbsp; عدد المعاملات: ${rows.length}</div>
     <script>window.onload=()=>{window.print();}<\/script>
   </body></html>`);
   win.document.close();
