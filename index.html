@@ -1551,11 +1551,21 @@ function showToast(msg){
 // ===== Auth =====
 async function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
+  const btn = document.querySelector('.google-btn');
+  btn.disabled = true;
+  btn.textContent = 'جاري التسجيل...';
   try {
-    await auth.signInWithRedirect(provider);
+    const result = await auth.signInWithPopup(provider);
+    if(result.user) setupUser(result.user);
   } catch(e) {
-    showToast('خطأ في تسجيل الدخول');
     console.error(e);
+    if(e.code === 'auth/popup-blocked') {
+      showToast('السماح بالنوافذ المنبثقة ثم أعد المحاولة');
+    } else if(e.code !== 'auth/popup-closed-by-user') {
+      showToast('خطأ: ' + e.code);
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="22" height="22"> تسجيل الدخول بـ Google';
   }
 }
 
@@ -1581,29 +1591,16 @@ function setupUser(user) {
   init();
 }
 
-async function startAuth() {
-  // Wait for redirect result first, then check auth.currentUser
-  try {
-    await auth.getRedirectResult();
-  } catch(e) { console.error('redirect error:', e); }
-
-  // After getRedirectResult, auth.currentUser is reliable
-  const user = auth.currentUser;
+auth.onAuthStateChanged(user => {
   if(user) {
     setupUser(user);
-    return;
+  } else {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('user-avatar-wrap').style.display = 'none';
   }
-
-  // No user — now safe to listen for future sign-ins
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-
-  auth.onAuthStateChanged(u => {
-    if(u) setupUser(u);
-  });
-}
-
-startAuth();
+});
 
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
