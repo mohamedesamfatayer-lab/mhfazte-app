@@ -1582,21 +1582,24 @@ function setupUser(user) {
 }
 
 async function startAuth() {
+  // Wait for redirect result first, then check auth.currentUser
   try {
-    const result = await auth.getRedirectResult();
-    if(result && result.user) { setupUser(result.user); return; }
-  } catch(e) { console.error(e); }
+    await auth.getRedirectResult();
+  } catch(e) { console.error('redirect error:', e); }
 
-  auth.onAuthStateChanged(user => {
-    if(user) {
-      setupUser(user);
-    } else {
-      currentUser = null;
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('login-screen').style.display = 'flex';
-      document.getElementById('app').style.display = 'none';
-      document.getElementById('user-avatar-wrap').style.display = 'none';
-    }
+  // After getRedirectResult, auth.currentUser is reliable
+  const user = auth.currentUser;
+  if(user) {
+    setupUser(user);
+    return;
+  }
+
+  // No user — now safe to listen for future sign-ins
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+
+  auth.onAuthStateChanged(u => {
+    if(u) setupUser(u);
   });
 }
 
