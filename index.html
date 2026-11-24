@@ -1481,82 +1481,54 @@ function printReport() {
   const tableRows = rows.map((t,i)=>{
     const isPlus = plusTypes.includes(t.type);
     const date = t.createdAt?.toDate ? t.createdAt.toDate().toLocaleDateString('ar-EG',{year:'numeric',month:'short',day:'numeric'}) : (t.date||'');
-    const ward  = isPlus  ? fmt(t.amount)+' ج.م' : '—';
-    const sadr  = !isPlus ? fmt(t.amount)+' ج.م' : '—';
-    const bal   = t.balance!==undefined ? fmt(t.balance)+' ج.م' : '—';
-    const rowBg = i%2===0 ? '#fff' : '#f8fafc';
-    return `<tr style="background:${rowBg};">
-      <td style="text-align:center;">${i+1}</td>
+    const total = fmt(t.amount)+' ج.م';
+    const daf   = isPlus ? fmt(t.amount)+' ج.م' : '—';
+    const baq   = t.balance!==undefined ? fmt(t.balance)+' ج.م' : '—';
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${total}</td>
+      <td>${daf}</td>
       <td>${date}</td>
-      <td>${typeAr[t.type]||t.type}</td>
-      <td>${t.note||'—'}</td>
-      <td style="color:#059669;font-weight:700;text-align:left;">${ward}</td>
-      <td style="color:#dc2626;font-weight:700;text-align:left;">${sadr}</td>
-      <td style="color:#2563eb;font-weight:700;text-align:left;">${bal}</td>
+      <td>${baq}</td>
+      <td style="text-align:right;">${t.note||typeAr[t.type]||'—'}</td>
     </tr>`;
   }).join('');
+
+  const userName = currentUser?.displayName || '';
 
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
     <meta charset="UTF-8">
-    <title>تقرير مديونياتي</title>
+    <title>تقرير معاملة</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
       *{box-sizing:border-box;margin:0;padding:0;}
       body{font-family:'Cairo',sans-serif;background:#fff;color:#1e293b;padding:1.5cm;font-size:11pt;}
-      .header{text-align:center;margin-bottom:1rem;}
-      .header h1{font-size:16pt;color:#1d4ed8;font-weight:800;margin-bottom:.2rem;}
-      .header p{font-size:9pt;color:#64748b;}
-      .meta{display:flex;gap:.5rem;margin-bottom:.8rem;font-size:9pt;flex-wrap:wrap;}
-      .meta span{background:#eff6ff;border:1px solid #bfdbfe;padding:.2rem .6rem;border-radius:4px;color:#1d4ed8;}
-      .summary{display:flex;gap:.5rem;margin-bottom:1rem;}
-      .sum{flex:1;border:1.5px solid #e2e8f0;border-radius:6px;padding:.5rem;text-align:center;}
-      .sum-label{font-size:8pt;color:#94a3b8;margin-bottom:.2rem;}
-      .sum-val{font-size:11pt;font-weight:800;}
-      table{width:100%;border-collapse:collapse;font-size:10pt;}
-      thead tr{background:#1d4ed8;color:#fff;}
-      th{padding:.45rem .6rem;text-align:right;font-weight:700;border:1px solid #1e40af;white-space:nowrap;}
-      td{padding:.4rem .6rem;border:1px solid #cbd5e1;vertical-align:middle;}
-      tfoot tr{background:#f1f5f9;font-weight:800;}
-      tfoot td{border:1.5px solid #94a3b8;padding:.45rem .6rem;}
-      @media print{body{padding:.5cm;}@page{margin:.8cm;}}
+      h1{text-align:center;font-size:15pt;color:#b91c1c;font-weight:800;margin-bottom:.6rem;}
+      .name-row{text-align:right;font-size:11pt;font-weight:700;margin-bottom:.8rem;}
+      table{width:100%;border-collapse:collapse;font-size:10.5pt;}
+      th{background:#dbeafe;color:#1e293b;padding:.5rem .7rem;border:1px solid #93c5fd;text-align:center;font-weight:700;white-space:nowrap;}
+      td{padding:.45rem .7rem;border:1px solid #93c5fd;text-align:center;vertical-align:middle;}
+      tr:nth-child(even) td{background:#f0f9ff;}
+      @media print{body{padding:.6cm;}@page{margin:.7cm;size:A4 portrait;}}
     </style>
   </head><body>
-    <div class="header">
-      <h1>💰 مديونياتي — تقرير المعاملات</h1>
-      <p>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'})}</p>
-    </div>
-    <div class="meta">
-      <span>📅 الفترة: ${dateLabels[reportDateFilter]||reportDateFilter}</span>
-      <span>🏷️ النوع: ${typeLabels[reportTypeFilter]||reportTypeFilter}</span>
-      <span>🔢 عدد المعاملات: ${rows.length}</span>
-    </div>
-    <div class="summary">
-      <div class="sum"><div class="sum-label">إجمالي وارد</div><div class="sum-val" style="color:#059669;">${fmt(totalIn)} ج.م</div></div>
-      <div class="sum"><div class="sum-label">إجمالي صادر</div><div class="sum-val" style="color:#dc2626;">${fmt(totalOut)} ج.م</div></div>
-      <div class="sum"><div class="sum-label">صافي</div><div class="sum-val" style="color:#1d4ed8;">${fmt(totalIn-totalOut)} ج.م</div></div>
-    </div>
+    <h1>تقرير معاملة</h1>
+    ${userName ? `<div class="name-row">الاسم : ${userName}</div>` : ''}
     <table>
       <thead>
         <tr>
-          <th style="width:35px;text-align:center;">م</th>
-          <th>التاريخ</th>
-          <th>النوع</th>
+          <th>م</th>
+          <th>اجمالي المبلغ</th>
+          <th>الدفعة</th>
+          <th>تاريخ الدفعة</th>
+          <th>الباقي</th>
           <th>البيان</th>
-          <th style="text-align:left;">وارد</th>
-          <th style="text-align:left;">صادر</th>
-          <th style="text-align:left;">الرصيد</th>
         </tr>
       </thead>
-      <tbody>${tableRows||'<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:1rem;">لا توجد بيانات</td></tr>'}</tbody>
-      <tfoot>
-        <tr>
-          <td colspan="4" style="text-align:center;">الإجمالي</td>
-          <td style="color:#059669;">${fmt(totalIn)} ج.م</td>
-          <td style="color:#dc2626;">${fmt(totalOut)} ج.م</td>
-          <td style="color:#1d4ed8;">${fmt(totalIn-totalOut)} ج.م</td>
-        </tr>
-      </tfoot>
+      <tbody>
+        ${tableRows || '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:1rem;">لا توجد بيانات</td></tr>'}
+      </tbody>
     </table>
     <script>window.onload=()=>{window.print();}<\/script>
   </body></html>`);
