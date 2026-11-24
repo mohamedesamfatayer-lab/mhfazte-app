@@ -1598,16 +1598,36 @@ function setupUser(user) {
   init();
 }
 
+function showLogin() {
+  sessionStorage.removeItem('signingIn');
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('user-avatar-wrap').style.display = 'none';
+  // restore button
+  const btn = document.querySelector('.google-btn');
+  if(btn){ btn.disabled=false; btn.innerHTML='<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="22" height="22"> تسجيل الدخول بـ Google'; }
+}
+
 auth.onAuthStateChanged(user => {
   if(user) {
     sessionStorage.removeItem('signingIn');
     setupUser(user);
+  } else if(sessionStorage.getItem('signingIn')) {
+    // Coming back from redirect — process result explicitly
+    auth.getRedirectResult().then(result => {
+      if(result && result.user) {
+        setupUser(result.user);
+      } else {
+        showLogin();
+      }
+    }).catch(e => {
+      console.error('redirect result error:', e);
+      showToast('خطأ تسجيل الدخول: ' + (e.code || e.message));
+      showLogin();
+    });
   } else {
-    if(sessionStorage.getItem('signingIn')) return; // redirect in progress, wait
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('user-avatar-wrap').style.display = 'none';
+    showLogin();
   }
 });
 
