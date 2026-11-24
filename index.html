@@ -638,6 +638,20 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
 </div>
 
+<!-- Edit Payment -->
+<div class="modal-overlay" id="modal-edit-payment">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="edit-payment-title">تعديل الدفعة</div>
+    <div class="form-group"><label class="form-label">المبلغ (<span id="edit-payment-currency-label">ج.م</span>)</label><input type="number" class="form-input" id="edit-payment-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">التاريخ</label><input type="date" class="form-input" id="edit-payment-date"></div>
+    <div class="form-group"><label class="form-label">رقم الوصل (اختياري)</label><input type="text" class="form-input" id="edit-payment-ref" placeholder="رقم الإيصال"></div>
+    <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="edit-payment-note" placeholder=""></div>
+    <button class="btn btn-primary" onclick="saveEditPayment()">حفظ التعديل</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-edit-payment')">إلغاء</button>
+  </div>
+</div>
+
 <!-- Confirm -->
 <div class="modal-overlay" id="modal-confirm">
   <div class="modal">
@@ -960,15 +974,19 @@ async function showDebtDetail(debtId) {
   const paymentsHTML = paymentsSnap.empty
     ? '<p style="color:var(--text3);font-size:.85rem;text-align:center;padding:1rem 0;">لا توجد دفعات بعد</p>'
     : sortedPmts.map(p=>{
-        const pd=p.data();
+        const pd=p.data(); const pid=p.id;
         const pd2=pd.createdAt?.toDate?fmtDate(pd.createdAt.toDate()):(pd.date||'');
         return `<div class="payment-item">
-          <div>
+          <div style="flex:1;">
             <div class="payment-date">${pd2}</div>
             ${pd.ref?`<div class="payment-ref">وصل: ${pd.ref}</div>`:''}
             ${pd.note?`<div class="payment-ref">${pd.note}</div>`:''}
           </div>
-          <div class="payment-amt">+${fmt(pd.amount)} ج.م</div>
+          <div style="display:flex;align-items:center;gap:.5rem;">
+            <div class="payment-amt">+${fmt(pd.amount)} ${sym}</div>
+            <button onclick="openEditPayment('${pid}')" style="border:none;background:rgba(59,130,246,.15);color:#60a5fa;border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;"><i class="fas fa-pen"></i></button>
+            <button onclick="deletePayment('${pid}')" style="border:none;background:rgba(220,38,38,.15);color:#f87171;border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;"><i class="fas fa-trash"></i></button>
+          </div>
         </div>`;
       }).join('');
 
@@ -1064,6 +1082,70 @@ async function savePayment() {
   showToast('تم تسجيل الدفعة ✓');
   showSection(d.type);
   loadBalance();
+}
+
+// ===== Edit / Delete Payment =====
+let currentPaymentId = null;
+let currentPaymentOldAmount = 0;
+
+async function openEditPayment(paymentId) {
+  const doc = await db.collection('payments').doc(paymentId).get();
+  if(!doc.exists) return;
+  const pd = doc.data();
+  currentPaymentId = paymentId;
+  currentPaymentOldAmount = pd.amount || 0;
+  const isC = currentDebtData.type === 'creditor';
+  document.getElementById('edit-payment-title').textContent = isC ? 'تعديل دفعة استلام' : 'تعديل دفعة سداد';
+  const sym = getCurrency(currentDebtData.currency||'EGP').symbol;
+  document.getElementById('edit-payment-currency-label').textContent = sym;
+  document.getElementById('edit-payment-amount').value = pd.amount || '';
+  document.getElementById('edit-payment-date').value   = pd.date || pd.createdAt?.toDate?.().toISOString().split('T')[0] || '';
+  document.getElementById('edit-payment-ref').value    = pd.ref  || '';
+  document.getElementById('edit-payment-note').value   = pd.note || '';
+  closeModal('modal-debt-detail');
+  openModal('modal-edit-payment');
+}
+
+async function saveEditPayment() {
+  const newAmount = parseFloat(document.getElementById('edit-payment-amount').value);
+  const date  = document.getElementById('edit-payment-date').value;
+  const ref   = document.getElementById('edit-payment-ref').value.trim();
+  const note  = document.getElementById('edit-payment-note').value.trim();
+  if(!newAmount||newAmount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
+  if(!currentPaymentId||!currentDebtData) return;
+
+  const diff     = newAmount - currentPaymentOldAmount;
+  const newPaid  = Math.max(0, (currentDebtData.paidAmount||0) + diff);
+  const newRem   = Math.max(0, (currentDebtData.totalAmount||0) - newPaid);
+
+  await db.collection('payments').doc(currentPaymentId).update({amount:newAmount, date, ref, note});
+  await db.collection('debts').doc(currentDebtId).update({paidAmount:newPaid, remaining:newRem});
+  currentDebtData = {...currentDebtData, paidAmount:newPaid, remaining:newRem};
+
+  closeModal('modal-edit-payment');
+  showToast('تم تعديل الدفعة ✓');
+  showDebtDetail(currentDebtId);
+  loadBalance();
+}
+
+async function deletePayment(paymentId) {
+  closeModal('modal-debt-detail');
+  document.getElementById('confirm-msg').textContent = 'هل تريد حذف هذه الدفعة؟';
+  document.getElementById('confirm-yes-btn').onclick = async () => {
+    closeModal('modal-confirm');
+    const doc = await db.collection('payments').doc(paymentId).get();
+    if(!doc.exists) return;
+    const amount   = doc.data().amount || 0;
+    const newPaid  = Math.max(0, (currentDebtData.paidAmount||0) - amount);
+    const newRem   = Math.max(0, (currentDebtData.totalAmount||0) - newPaid);
+    await db.collection('payments').doc(paymentId).delete();
+    await db.collection('debts').doc(currentDebtId).update({paidAmount:newPaid, remaining:newRem});
+    currentDebtData = {...currentDebtData, paidAmount:newPaid, remaining:newRem};
+    showToast('تم حذف الدفعة');
+    showDebtDetail(currentDebtId);
+    loadBalance();
+  };
+  openModal('modal-confirm');
 }
 
 function openEditDebt() {
