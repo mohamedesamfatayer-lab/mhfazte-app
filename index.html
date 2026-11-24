@@ -163,8 +163,12 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 /* ===== Balance Card ===== */
 .balance-card{background:#243044;color:#e2e8f0;margin:.6rem .7rem .5rem;border-radius:14px;padding:.65rem .9rem;box-shadow:0 2px 10px rgba(0,0,0,.3);position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.07);}
 .balance-label{font-size:.65rem;color:#94a3b8;margin-bottom:.1rem;}
-.balance-amount{font-size:1.3rem;font-weight:800;letter-spacing:-.5px;color:#fff;}
-.balance-amount small{font-size:.7rem;font-weight:500;color:#94a3b8;margin-right:.2rem;}
+.bal-cur-row{display:flex;align-items:baseline;gap:.35rem;margin-bottom:.1rem;}
+.bal-cur-amount{font-size:1.3rem;font-weight:800;letter-spacing:-.5px;color:#fff;}
+.bal-cur-sym{font-size:.72rem;font-weight:600;color:#94a3b8;}
+.curr-toggle{display:flex;gap:.35rem;margin-bottom:.6rem;}
+.curr-btn{padding:.3rem .8rem;border-radius:8px;border:1.5px solid rgba(255,255,255,.15);background:transparent;color:#94a3b8;font-family:'Cairo',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .15s;}
+.curr-btn.active{border-color:#60a5fa;background:rgba(96,165,250,.18);color:#60a5fa;}
 .balance-row{display:flex;gap:.4rem;margin-top:.5rem;}
 .balance-mini{flex:1;background:rgba(255,255,255,.06);border-radius:8px;padding:.38rem .3rem;border:1px solid rgba(255,255,255,.05);}
 .balance-mini-label{font-size:.5rem;color:#64748b;margin-bottom:.08rem;}
@@ -457,8 +461,11 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
       <!-- HOME SECTION -->
       <div class="section active" id="section-home">
         <div class="balance-card" id="balance-card">
-          <div class="balance-label">رصيد الحساب الحالي</div>
-          <div class="balance-amount"><small>ج.م</small><span id="balance-display">0.00</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.25rem;">
+            <div class="balance-label">رصيد الحساب الحالي</div>
+            <button onclick="openAdjustBalance()" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);border-radius:8px;padding:.2rem .55rem;font-size:.65rem;font-family:'Cairo',sans-serif;cursor:pointer;">ضبط الرصيد</button>
+          </div>
+          <div id="balance-amounts-wrap"></div>
           <div class="balance-row">
             <div class="balance-mini">
               <div class="balance-mini-label">💚 ليا (دائن)</div>
@@ -665,7 +672,15 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
       <label class="form-label">الفئة</label>
       <div class="cat-grid" id="cat-grid"></div>
     </div>
-    <div class="form-group"><label class="form-label">المبلغ (ج.م)</label><input type="number" class="form-input" id="expense-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group">
+      <label class="form-label">العملة</label>
+      <div class="curr-toggle" id="exp-curr-toggle">
+        <button class="curr-btn active" onclick="setExpCur('EGP',this)">ج.م (جنيه)</button>
+        <button class="curr-btn" onclick="setExpCur('SAR',this)">ريال سعودي</button>
+        <button class="curr-btn" onclick="setExpCur('USD',this)">دولار</button>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">المبلغ</label><input type="number" class="form-input" id="expense-amount" placeholder="0.00" inputmode="decimal"></div>
     <div class="form-group"><label class="form-label">التاريخ</label><input type="date" class="form-input" id="expense-date"></div>
     <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="expense-note" placeholder="وصف المصروف"></div>
     <button class="btn btn-primary" onclick="saveExpense()">حفظ المصروف</button>
@@ -678,7 +693,15 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title" id="dep-modal-title">إيداع رصيد</div>
-    <div class="form-group"><label class="form-label">المبلغ (ج.م)</label><input type="number" class="form-input" id="dep-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group">
+      <label class="form-label">العملة</label>
+      <div class="curr-toggle" id="dep-curr-toggle">
+        <button class="curr-btn active" onclick="setDepCur('EGP',this)">ج.م (جنيه)</button>
+        <button class="curr-btn" onclick="setDepCur('SAR',this)">ريال سعودي</button>
+        <button class="curr-btn" onclick="setDepCur('USD',this)">دولار</button>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">المبلغ</label><input type="number" class="form-input" id="dep-amount" placeholder="0.00" inputmode="decimal"></div>
     <div class="form-group"><label class="form-label">التاريخ</label><input type="date" class="form-input" id="dep-date"></div>
     <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="dep-note" placeholder=""></div>
     <button class="btn" id="dep-btn" onclick="saveDeposit()">إيداع</button>
@@ -715,6 +738,25 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="edit-payment-note" placeholder=""></div>
     <button class="btn btn-primary" onclick="saveEditPayment()">حفظ التعديل</button>
     <button class="btn btn-outline" onclick="closeModal('modal-edit-payment')">إلغاء</button>
+  </div>
+</div>
+
+<!-- Adjust Balance -->
+<div class="modal-overlay" id="modal-adjust-balance">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">ضبط الرصيد</div>
+    <div class="form-group">
+      <label class="form-label">العملة</label>
+      <div class="curr-toggle" id="adj-curr-toggle">
+        <button class="curr-btn active" onclick="setAdjCur('EGP',this)">ج.م (جنيه)</button>
+        <button class="curr-btn" onclick="setAdjCur('SAR',this)">ريال سعودي</button>
+        <button class="curr-btn" onclick="setAdjCur('USD',this)">دولار</button>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">الرصيد الصحيح</label><input type="number" class="form-input" id="adj-balance-amount" placeholder="0.00" inputmode="decimal"></div>
+    <button class="btn btn-primary" onclick="saveAdjustBalance()">حفظ</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-adjust-balance')">إلغاء</button>
   </div>
 </div>
 
@@ -852,11 +894,21 @@ function headerFabAction() {
   else openModal('modal-add-debt'); // default: add debt from home
 }
 
-// ===== Balance =====
+// ===== Balance (multi-currency) =====
+let currentBalances = {};
+
 async function loadBalance() {
   const doc = await userCol('account').doc('main').get({ source: 'server' });
-  const bal = doc.exists ? (doc.data().balance || 0) : 0;
-  renderBalance(bal);
+  if(doc.exists) {
+    const data = doc.data();
+    // migrate old single-balance format
+    if(data.balances) currentBalances = data.balances;
+    else if(data.balance !== undefined) currentBalances = {EGP: data.balance};
+    else currentBalances = {};
+  } else {
+    currentBalances = {};
+  }
+  renderAllBalances(currentBalances);
 
   const snap = await userCol('debts').get();
   const byC = {}, byD = {};
@@ -875,47 +927,67 @@ async function loadBalance() {
   document.getElementById('net-display').innerHTML = '<span style="font-size:.62rem;color:rgba(255,255,255,.6);">متعدد العملات</span>';
 }
 
-function renderBalance(bal) {
-  document.getElementById('balance-display').textContent = fmt(bal);
+function renderAllBalances(balances) {
+  const wrap = document.getElementById('balance-amounts-wrap');
   const card = document.getElementById('balance-card');
-  if(bal < 0){
+  const entries = Object.entries(balances).filter(([,v]) => v !== 0);
+  const hasNeg = Object.values(balances).some(v => v < 0);
+
+  if(hasNeg) {
     card.style.background = 'linear-gradient(135deg,#991b1b,#dc2626,#ef4444)';
     card.style.boxShadow  = '0 8px 25px rgba(220,38,38,.4)';
-    card.querySelectorAll('.balance-label,.balance-amount,.balance-amount small,.balance-mini-label,.balance-mini-value').forEach(el=>{
-      el.style.color='#fff'; el.style.fontWeight='800';
+    card.querySelectorAll('.balance-label,.balance-mini-label,.balance-mini-value').forEach(el=>{
+      el.style.color='rgba(255,255,255,.8)'; el.style.fontWeight='800';
     });
   } else {
     card.style.background = '';
     card.style.boxShadow  = '';
-    card.querySelectorAll('.balance-label,.balance-amount small,.balance-mini-label').forEach(el=>{
-      el.style.color=''; el.style.fontWeight='';
-    });
-    card.querySelectorAll('.balance-amount,.balance-mini-value').forEach(el=>{
+    card.querySelectorAll('.balance-label,.balance-mini-label,.balance-mini-value').forEach(el=>{
       el.style.color=''; el.style.fontWeight='';
     });
   }
+
+  if(!entries.length) {
+    wrap.innerHTML = `<div class="bal-cur-row"><span class="bal-cur-amount" style="color:#94a3b8;">0.00</span><span class="bal-cur-sym">ج.م</span></div>`;
+    return;
+  }
+  const symMap = {EGP:'ج.م', SAR:'ريال', USD:'$', EUR:'€'};
+  wrap.innerHTML = entries.map(([cur, val]) => {
+    const sym = symMap[cur] || getCurrency(cur).symbol;
+    const color = hasNeg ? '#fff' : (val < 0 ? '#ef4444' : '#fff');
+    return `<div class="bal-cur-row">
+      <span class="bal-cur-amount" style="color:${color};">${val < 0 ? '−' : ''}${fmt(Math.abs(val))}</span>
+      <span class="bal-cur-sym" style="color:${hasNeg?'rgba(255,255,255,.7)':'#94a3b8'};">${sym}</span>
+    </div>`;
+  }).join('');
 }
 
-async function getBalance() {
+async function getBalance(cur='EGP') {
   const doc = await userCol('account').doc('main').get({ source: 'server' });
-  return doc.exists ? (doc.data().balance || 0) : 0;
+  if(!doc.exists) return 0;
+  const data = doc.data();
+  if(data.balances) return data.balances[cur] || 0;
+  return cur==='EGP' ? (data.balance || 0) : 0;
 }
 
-async function setBalance(b) {
-  await userCol('account').doc('main').set({balance:b, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
-  renderBalance(b);
+async function setBalance(b, cur='EGP') {
+  currentBalances = { ...currentBalances, [cur]: b };
+  await userCol('account').doc('main').set(
+    { balances: currentBalances, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }
+  );
+  renderAllBalances(currentBalances);
 }
 
 // ===== Transactions =====
-async function addTx(type, amount, note, ref='') {
-  const bal = await getBalance();
+async function addTx(type, amount, note, ref='', cur='EGP') {
+  const bal = await getBalance(cur);
   const isPlus = ['deposit','debt_receive'].includes(type);
   const newBal = isPlus ? bal + amount : bal - amount;
   await userCol('transactions').add({
-    type, amount, note, ref, balance: newBal,
+    type, amount, note, ref, currency: cur, balance: newBal,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
-  await setBalance(newBal);
+  await setBalance(newBal, cur);
   return newBal;
 }
 
@@ -940,12 +1012,15 @@ function txHTML(tx) {
   const info = TX_INFO[tx.type] || {icon:'fa-circle',cls:'blue',label:tx.type};
   const isPlus = ['deposit','debt_receive'].includes(tx.type);
   const date = tx.createdAt?.toDate ? fmtDate(tx.createdAt.toDate()) : '';
+  const txCur = tx.currency || 'EGP';
+  const symMap2 = {EGP:'ج.م', SAR:'ريال', USD:'$', EUR:'€'};
+  const txSym = symMap2[txCur] || txCur;
   const canEdit = tx.id && (tx.type==='deposit'||tx.type==='expense'||tx.type==='withdraw');
   const canDelete = !!tx.id;
   const actions = canDelete ? `
     <div class="tx-actions">
-      ${canEdit ? `<button class="tx-act-btn edit" onclick="openEditTx('${tx.id}','${tx.type}',${tx.amount},\`${(tx.note||'').replace(/`/g,"'")}\`)"><i class="fas fa-pen"></i></button>` : ''}
-      <button class="tx-act-btn del" onclick="deleteTx('${tx.id}',${tx.amount},'${tx.type}')"><i class="fas fa-trash"></i></button>
+      ${canEdit ? `<button class="tx-act-btn edit" onclick="openEditTx('${tx.id}','${tx.type}',${tx.amount},\`${(tx.note||'').replace(/`/g,"'")}\`,'${txCur}')"><i class="fas fa-pen"></i></button>` : ''}
+      <button class="tx-act-btn del" onclick="deleteTx('${tx.id}',${tx.amount},'${tx.type}','${txCur}')"><i class="fas fa-trash"></i></button>
     </div>` : '';
   return `<div class="tx-item">
     <div class="tx-icon ${info.cls}"><i class="fas ${info.icon}"></i></div>
@@ -953,7 +1028,7 @@ function txHTML(tx) {
       <div class="tx-name">${tx.note || info.label}</div>
       <div class="tx-date">${info.label} • ${date}</div>
     </div>
-    <div class="tx-amount ${isPlus?'plus':'minus'}">${isPlus?'+':'-'}${fmt(tx.amount)} ج.م</div>
+    <div class="tx-amount ${isPlus?'plus':'minus'}">${isPlus?'+':'-'}${fmt(tx.amount)} ${txSym}</div>
     ${actions}
   </div>`;
 }
@@ -1468,7 +1543,7 @@ function expHTML(e) {
       <div class="expense-note">${e.note||e.category}</div>
       <div class="expense-cat">${e.category}</div>
     </div>
-    <div class="expense-amount">-${fmt(e.amount)} ج.م</div>
+    <div class="expense-amount">-${fmt(e.amount)} ${({EGP:'ج.م',SAR:'ريال',USD:'$'})[e.currency||'EGP']||'ج.م'}</div>
   </div>`;
 }
 
@@ -1484,10 +1559,10 @@ async function saveExpense() {
   const note   = document.getElementById('expense-note').value.trim();
   if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
   await userCol('expenses').add({
-    amount, date, note, category:selectedCat,
+    amount, date, note, category:selectedCat, currency: expCurrency,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
-  await addTx('expense', amount, note||`مصروف: ${selectedCat}`);
+  await addTx('expense', amount, note||`مصروف: ${selectedCat}`, '', expCurrency);
   closeModal('modal-add-expense');
   clearInputs(['expense-amount','expense-note']);
   showToast('تم تسجيل المصروف ✓');
@@ -1497,8 +1572,29 @@ async function saveExpense() {
 }
 
 // ===== Deposit / Withdraw =====
+let depCurrency = 'EGP';
+let expCurrency = 'EGP';
+let adjCurrency = 'EGP';
+
+function setDepCur(cur, el) {
+  depCurrency = cur;
+  document.querySelectorAll('#dep-curr-toggle .curr-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+function setExpCur(cur, el) {
+  expCurrency = cur;
+  document.querySelectorAll('#exp-curr-toggle .curr-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+function setAdjCur(cur, el) {
+  adjCurrency = cur;
+  document.querySelectorAll('#adj-curr-toggle .curr-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
 function openDeposit() {
-  depMode = 'deposit';
+  depMode = 'deposit'; depCurrency = 'EGP';
+  document.querySelectorAll('#dep-curr-toggle .curr-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.getElementById('dep-modal-title').textContent = 'إيداع رصيد';
   const btn = document.getElementById('dep-btn');
   btn.className = 'btn btn-primary';
@@ -1512,17 +1608,37 @@ async function saveDeposit() {
   const amount = parseFloat(document.getElementById('dep-amount').value);
   const note   = document.getElementById('dep-note').value.trim();
   if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
-  await addTx('deposit', amount, note||'إيداع رصيد');
+  await addTx('deposit', amount, note||'إيداع رصيد', '', depCurrency);
   showToast('تم الإيداع ✓');
   closeModal('modal-deposit');
   loadRecentTxs();
 }
 
-// ===== Edit / Delete Transactions =====
-let editTxId = null, editTxType = null, editTxOldAmount = 0;
+function openAdjustBalance() {
+  adjCurrency = 'EGP';
+  document.querySelectorAll('#adj-curr-toggle .curr-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  const cur = currentBalances.EGP !== undefined ? currentBalances.EGP : 0;
+  document.getElementById('adj-balance-amount').value = cur;
+  openModal('modal-adjust-balance');
+}
 
-function openEditTx(id, type, amount, note) {
-  editTxId = id; editTxType = type; editTxOldAmount = amount;
+async function saveAdjustBalance() {
+  const newBal = parseFloat(document.getElementById('adj-balance-amount').value);
+  if(isNaN(newBal)){ showToast('أدخل رقماً صحيحاً'); return; }
+  currentBalances = { ...currentBalances, [adjCurrency]: newBal };
+  await userCol('account').doc('main').set(
+    { balances: currentBalances, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }
+  );
+  renderAllBalances(currentBalances);
+  closeModal('modal-adjust-balance');
+  showToast('تم ضبط الرصيد ✓');
+}
+
+// ===== Edit / Delete Transactions =====
+let editTxId = null, editTxType = null, editTxOldAmount = 0, editTxCur = 'EGP';
+
+function openEditTx(id, type, amount, note, cur='EGP') {
+  editTxId = id; editTxType = type; editTxOldAmount = amount; editTxCur = cur;
   const labels = {deposit:'إيداع رصيد', expense:'مصروف', withdraw:'سحب رصيد'};
   document.getElementById('edit-tx-title').textContent = 'تعديل: ' + (labels[type]||type);
   document.getElementById('edit-tx-amount').value = amount;
@@ -1536,25 +1652,25 @@ async function saveEditTx() {
   if(!newAmount||newAmount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
   const isPlus = ['deposit','debt_receive'].includes(editTxType);
   const diff = newAmount - editTxOldAmount;
-  const bal = await getBalance();
+  const bal = await getBalance(editTxCur);
   const newBal = isPlus ? bal + diff : bal - diff;
   await userCol('transactions').doc(editTxId).update({amount:newAmount, note:newNote, balance:newBal});
-  await setBalance(newBal);
+  await setBalance(newBal, editTxCur);
   closeModal('modal-edit-tx');
   showToast('تم التعديل ✓');
   loadAllTxs();
   loadRecentTxs();
 }
 
-function deleteTx(txId, amount, type) {
+function deleteTx(txId, amount, type, cur='EGP') {
   document.getElementById('confirm-msg').textContent = 'هل تريد حذف هذه المعاملة؟';
   document.getElementById('confirm-yes-btn').onclick = async () => {
     closeModal('modal-confirm');
     const isPlus = ['deposit','debt_receive'].includes(type);
-    const bal = await getBalance();
+    const bal = await getBalance(cur);
     const newBal = isPlus ? bal - amount : bal + amount;
     await userCol('transactions').doc(txId).delete();
-    await setBalance(newBal);
+    await setBalance(newBal, cur);
     showToast('تم الحذف ✓');
     loadAllTxs();
     loadRecentTxs();
