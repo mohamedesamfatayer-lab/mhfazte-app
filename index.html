@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#2563eb">
+<meta name="theme-color" content="#1a2535">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="مديونياتي">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <title>مديونياتي</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -308,6 +314,12 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 .chip.red{background:var(--danger-light);color:var(--danger);}
 .toast{position:fixed;bottom:1.5rem;right:50%;transform:translateX(50%);background:#1e293b;color:#fff;padding:.6rem 1.3rem;border-radius:8px;font-size:.85rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none;}
 .toast.show{opacity:1;}
+/* ===== Currency Picker ===== */
+.currency-grid{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem;}
+.currency-btn{display:flex;align-items:center;gap:.35rem;padding:.4rem .7rem;border-radius:20px;border:1.5px solid rgba(255,255,255,.1);background:none;font-family:'Cairo',sans-serif;font-size:.8rem;cursor:pointer;color:#94a3b8;transition:all .2s;}
+.currency-btn.active{border-color:#3b82f6;background:rgba(59,130,246,.15);color:#60a5fa;}
+.currency-tag{display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .45rem;border-radius:6px;font-size:.68rem;font-weight:700;background:rgba(59,130,246,.15);color:#60a5fa;margin-right:.3rem;}
+
 /* ===== Report Stats ===== */
 .report-stat-card{flex:1;background:#243044;border-radius:10px;padding:.6rem .7rem;border:1px solid rgba(255,255,255,.05);}
 .report-stat-label{font-size:.6rem;color:#64748b;margin-bottom:.25rem;}
@@ -547,7 +559,11 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="modal-handle"></div>
     <div class="modal-title" id="add-debt-title">إضافة دين جديد</div>
     <div class="form-group"><label class="form-label">اسم الشخص</label><input type="text" class="form-input" id="debt-name" placeholder="مثال: أحمد محمد"></div>
-    <div class="form-group"><label class="form-label">إجمالي المبلغ (ج.م)</label><input type="number" class="form-input" id="debt-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group">
+      <label class="form-label">العملة</label>
+      <div class="currency-grid" id="debt-currency-grid"></div>
+    </div>
+    <div class="form-group"><label class="form-label">إجمالي المبلغ</label><input type="number" class="form-input" id="debt-amount" placeholder="0.00" inputmode="decimal"></div>
     <div class="form-group"><label class="form-label">تاريخ الدين</label><input type="date" class="form-input" id="debt-date"></div>
     <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="debt-note" placeholder="وصف أو سبب الدين"></div>
     <button class="btn btn-primary" id="save-debt-btn" onclick="saveDebt()">حفظ الدين</button>
@@ -565,7 +581,7 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title" id="payment-modal-title">إضافة دفعة</div>
-    <div class="form-group"><label class="form-label">مبلغ الدفعة (ج.م)</label><input type="number" class="form-input" id="payment-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">مبلغ الدفعة (<span id="payment-currency-label">ج.م</span>)</label><input type="number" class="form-input" id="payment-amount" placeholder="0.00" inputmode="decimal"></div>
     <div class="form-group"><label class="form-label">تاريخ الدفعة</label><input type="date" class="form-input" id="payment-date"></div>
     <div class="form-group"><label class="form-label">رقم الوصل / مرجع (اختياري)</label><input type="text" class="form-input" id="payment-ref" placeholder="رقم الإيصال أو الحوالة"></div>
     <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="payment-note" placeholder=""></div>
@@ -610,7 +626,11 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="modal-handle"></div>
     <div class="modal-title">تعديل بيانات الدين</div>
     <div class="form-group"><label class="form-label">اسم الشخص</label><input type="text" class="form-input" id="edit-debt-name" placeholder="اسم الشخص"></div>
-    <div class="form-group"><label class="form-label">إجمالي المبلغ (ج.م)</label><input type="number" class="form-input" id="edit-debt-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group">
+      <label class="form-label">العملة</label>
+      <div class="currency-grid" id="edit-currency-grid"></div>
+    </div>
+    <div class="form-group"><label class="form-label">إجمالي المبلغ</label><input type="number" class="form-input" id="edit-debt-amount" placeholder="0.00" inputmode="decimal"></div>
     <div class="form-group"><label class="form-label">تاريخ الدين</label><input type="date" class="form-input" id="edit-debt-date"></div>
     <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="edit-debt-note" placeholder="وصف أو سبب الدين"></div>
     <button class="btn btn-primary" onclick="saveEditDebt()">حفظ التعديلات</button>
@@ -653,9 +673,19 @@ let currentDebtId   = null;
 let currentDebtData = null;
 let depMode         = 'deposit';
 let selectedCat     = 'أخرى';
+let selectedCurrency= 'EGP';
 let histFilter      = 'all';
 let allTxs          = [];
 let activeSection   = 'home';
+
+const CURRENCIES = [
+  {code:'EGP', symbol:'ج.م',  name:'جنيه مصري',   flag:'🇪🇬'},
+  {code:'SAR', symbol:'ر.س',  name:'ريال سعودي',  flag:'🇸🇦'},
+  {code:'USD', symbol:'$',    name:'دولار أمريكي', flag:'🇺🇸'},
+  {code:'EUR', symbol:'€',    name:'يورو',         flag:'🇪🇺'},
+  {code:'AED', symbol:'د.إ', name:'درهم إماراتي', flag:'🇦🇪'},
+];
+function getCurrency(code){ return CURRENCIES.find(c=>c.code===code) || CURRENCIES[0]; }
 
 const CATS = [
   {name:'مواصلات',icon:'🚌',color:'#3b82f6'},
@@ -679,10 +709,26 @@ const TX_INFO = {
 // ===== Init =====
 async function init() {
   buildCatGrid();
+  buildCurrencyGrid('debt-currency-grid','EGP');
+  buildCurrencyGrid('edit-currency-grid','EGP');
   setTodayDates();
   try { await Promise.all([loadBalance(), loadRecentTxs()]); }
   catch(e){ console.error(e); showToast('تحقق من اتصال الإنترنت'); }
   document.getElementById('loading').style.display = 'none';
+}
+
+function buildCurrencyGrid(gridId, selectedCode='EGP') {
+  document.getElementById(gridId).innerHTML = CURRENCIES.map(c =>
+    `<button class="currency-btn${c.code===selectedCode?' active':''}" onclick="selectCurrency('${c.code}','${gridId}',this)">
+      ${c.flag} ${c.symbol} <span style="font-size:.7rem;color:#64748b;">${c.name}</span>
+    </button>`
+  ).join('');
+}
+
+function selectCurrency(code, gridId, el) {
+  selectedCurrency = code;
+  document.querySelectorAll(`#${gridId} .currency-btn`).forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
 }
 
 function buildCatGrid() {
@@ -715,14 +761,20 @@ async function loadBalance() {
   renderBalance(bal);
 
   const snap = await db.collection('debts').get();
-  let tc=0, td=0;
+  const byC = {}, byD = {};
   snap.forEach(d => {
-    const r = d.data().remaining || 0;
-    if(d.data().type==='creditor') tc += r; else td += r;
+    const r   = d.data().remaining || 0;
+    const cur = d.data().currency || 'EGP';
+    if(d.data().type==='creditor'){ byC[cur]=(byC[cur]||0)+r; }
+    else                          { byD[cur]=(byD[cur]||0)+r; }
   });
-  document.getElementById('total-creditor-display').textContent = fmt(tc);
-  document.getElementById('total-debtor-display').textContent   = fmt(td);
-  document.getElementById('net-display').textContent = fmt(tc - td);
+  const fmtCurTotals = obj => Object.entries(obj).map(([code,v])=>{
+    const c = getCurrency(code);
+    return `<span style="display:block;font-size:.7rem;font-weight:700;">${fmt(v)} ${c.symbol}</span>`;
+  }).join('') || '<span style="font-size:.7rem;">٠.٠٠</span>';
+  document.getElementById('total-creditor-display').innerHTML = fmtCurTotals(byC);
+  document.getElementById('total-debtor-display').innerHTML   = fmtCurTotals(byD);
+  document.getElementById('net-display').innerHTML = '<span style="font-size:.62rem;color:rgba(255,255,255,.6);">متعدد العملات</span>';
 }
 
 function renderBalance(bal) {
@@ -827,12 +879,14 @@ async function loadDebts(type) {
 
 function openAddDebtFor(type) {
   currentDebtType = type;
+  selectedCurrency = 'EGP';
   const isC = type === 'creditor';
   document.getElementById('add-debt-title').textContent = isC ? '💚 إضافة دين ليا (دائن)' : '❤️ إضافة دين عليا (مدين)';
   const btn = document.getElementById('save-debt-btn');
   btn.className = isC ? 'btn btn-success' : 'btn btn-danger';
   clearInputs(['debt-name','debt-amount','debt-note']);
   document.getElementById('debt-date').value = new Date().toISOString().split('T')[0];
+  buildCurrencyGrid('debt-currency-grid','EGP');
   openModal('modal-add-debt');
 }
 
@@ -842,16 +896,21 @@ function debtCardHTML(d) {
   const pct  = total>0 ? Math.min(100,(paid/total)*100) : 0;
   const isC  = d.type==='creditor';
   const date = d.createdAt?.toDate ? fmtDate(d.createdAt.toDate()) : (d.date||'');
+  const cur  = getCurrency(d.currency||'EGP');
+  const sym  = cur.symbol;
   return `<div class="debt-card ${d.type}" onclick="showDebtDetail('${d.id}')">
     <div class="debt-card-header">
       <span class="debt-name">${d.name}</span>
-      <span class="debt-badge ${d.type}">${isC?'💚 ليا':'❤️ عليا'}</span>
+      <div style="display:flex;align-items:center;gap:.35rem;">
+        <span class="currency-tag">${cur.flag} ${sym}</span>
+        <span class="debt-badge ${d.type}">${isC?'💚 ليا':'❤️ عليا'}</span>
+      </div>
     </div>
     ${d.note?`<div style="font-size:.76rem;color:var(--text3);margin-bottom:.4rem;">${d.note}</div>`:''}
     <div class="debt-row">
-      <div class="debt-mini"><span class="debt-mini-label">إجمالي</span><span class="debt-mini-value">${fmt(total)}</span></div>
-      <div class="debt-mini"><span class="debt-mini-label">مدفوع</span><span class="debt-mini-value paid">${fmt(paid)}</span></div>
-      <div class="debt-mini"><span class="debt-mini-label">الباقي</span><span class="debt-mini-value remaining">${fmt(rem)}</span></div>
+      <div class="debt-mini"><span class="debt-mini-label">إجمالي</span><span class="debt-mini-value">${fmt(total)} ${sym}</span></div>
+      <div class="debt-mini"><span class="debt-mini-label">مدفوع</span><span class="debt-mini-value paid">${fmt(paid)} ${sym}</span></div>
+      <div class="debt-mini"><span class="debt-mini-label">الباقي</span><span class="debt-mini-value remaining">${fmt(rem)} ${sym}</span></div>
     </div>
     <div class="progress-bar"><div class="progress-fill ${d.type}" style="width:${pct}%"></div></div>
     <div style="font-size:.68rem;color:var(--text3);margin-top:.35rem;text-align:left;">${date}</div>
@@ -867,7 +926,8 @@ async function saveDebt() {
   if(!name){ showToast('أدخل الاسم'); return; }
   if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
   await db.collection('debts').add({
-    name, type:currentDebtType, totalAmount:amount, paidAmount:0, remaining:amount,
+    name, type:currentDebtType, currency:selectedCurrency,
+    totalAmount:amount, paidAmount:0, remaining:amount,
     date, note, createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
   closeModal('modal-add-debt');
@@ -888,6 +948,8 @@ async function showDebtDetail(debtId) {
   const paid  = d.paidAmount||0, total = d.totalAmount||0;
   const rem   = d.remaining!==undefined ? d.remaining : total-paid;
   const pct   = total>0 ? Math.min(100,(paid/total)*100) : 0;
+  const cur   = getCurrency(d.currency||'EGP');
+  const sym   = cur.symbol;
 
   const paymentsSnap = await db.collection('payments').where('debtId','==',debtId).get();
   const sortedPmts = paymentsSnap.docs.sort((a,b)=>{
@@ -915,7 +977,10 @@ async function showDebtDetail(debtId) {
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
       <div>
         <div style="font-size:1.2rem;font-weight:800;">${d.name}</div>
-        <span class="chip ${isC?'green':'red'}">${isC?'💚 ليا (دائن)':'❤️ عليا (مدين)'}</span>
+        <div style="display:flex;align-items:center;gap:.4rem;margin-top:.3rem;flex-wrap:wrap;">
+          <span class="chip ${isC?'green':'red'}">${isC?'💚 ليا (دائن)':'❤️ عليا (مدين)'}</span>
+          <span class="currency-tag" style="font-size:.75rem;">${cur.flag} ${cur.name} (${sym})</span>
+        </div>
         ${d.note?`<div style="font-size:.78rem;color:var(--text3);margin-top:.3rem;">${d.note}</div>`:''}
       </div>
       <div style="display:flex;gap:.5rem;">
@@ -928,17 +993,17 @@ async function showDebtDetail(debtId) {
       </div>
     </div>
     <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
-      <div style="flex:1;text-align:center;background:var(--bg);border-radius:10px;padding:.8rem;">
+      <div style="flex:1;text-align:center;background:#1a2535;border-radius:10px;padding:.8rem;">
         <div style="font-size:.68rem;color:var(--text3);">إجمالي</div>
-        <div style="font-weight:700;font-size:.95rem;">${fmt(total)}</div>
+        <div style="font-weight:700;font-size:.9rem;">${fmt(total)} ${sym}</div>
       </div>
-      <div style="flex:1;text-align:center;background:var(--success-light);border-radius:10px;padding:.8rem;">
+      <div style="flex:1;text-align:center;background:rgba(5,150,105,.15);border-radius:10px;padding:.8rem;">
         <div style="font-size:.68rem;color:var(--text3);">مدفوع</div>
-        <div style="font-weight:700;font-size:.95rem;color:var(--success);">${fmt(paid)}</div>
+        <div style="font-weight:700;font-size:.9rem;color:#34d399;">${fmt(paid)} ${sym}</div>
       </div>
-      <div style="flex:1;text-align:center;background:var(--danger-light);border-radius:10px;padding:.8rem;">
+      <div style="flex:1;text-align:center;background:rgba(220,38,38,.15);border-radius:10px;padding:.8rem;">
         <div style="font-size:.68rem;color:var(--text3);">الباقي</div>
-        <div style="font-weight:700;font-size:.95rem;color:var(--danger);">${fmt(rem)}</div>
+        <div style="font-weight:700;font-size:.9rem;color:#f87171;">${fmt(rem)} ${sym}</div>
       </div>
     </div>
     <div class="progress-bar" style="height:6px;margin-bottom:1.2rem;">
@@ -964,6 +1029,8 @@ function openAddPayment() {
   document.getElementById('payment-modal-title').textContent =
     isC ? `استلام دفعة من ${currentDebtData.name}` : `سداد دفعة لـ ${currentDebtData.name}`;
   document.getElementById('payment-btn').className = isC ? 'btn btn-success' : 'btn btn-danger';
+  const pCur = getCurrency(currentDebtData.currency||'EGP');
+  document.getElementById('payment-currency-label').textContent = pCur.symbol;
   clearInputs(['payment-amount','payment-ref','payment-note']);
   document.getElementById('payment-date').value = new Date().toISOString().split('T')[0];
   openModal('modal-add-payment');
@@ -1007,6 +1074,8 @@ function openEditDebt() {
   document.getElementById('edit-debt-amount').value = d.totalAmount || '';
   document.getElementById('edit-debt-date').value   = d.date || '';
   document.getElementById('edit-debt-note').value   = d.note || '';
+  selectedCurrency = d.currency || 'EGP';
+  buildCurrencyGrid('edit-currency-grid', selectedCurrency);
   openModal('modal-edit-debt');
 }
 
@@ -1020,9 +1089,9 @@ async function saveEditDebt() {
   const d = currentDebtData;
   const newRemaining = Math.max(0, amount - (d.paidAmount||0));
   await db.collection('debts').doc(currentDebtId).update({
-    name, totalAmount:amount, date, note, remaining:newRemaining
+    name, totalAmount:amount, date, note, remaining:newRemaining, currency:selectedCurrency
   });
-  currentDebtData = {...d, name, totalAmount:amount, date, note, remaining:newRemaining};
+  currentDebtData = {...d, name, totalAmount:amount, date, note, remaining:newRemaining, currency:selectedCurrency};
   closeModal('modal-edit-debt');
   showToast('تم التعديل ✓');
   showSection(d.type);
@@ -1326,6 +1395,10 @@ function showToast(msg){
 }
 
 init();
+
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
 </script>
 </body>
 </html>
