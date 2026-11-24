@@ -1043,7 +1043,7 @@ async function showDebtDetail(debtId) {
     ? '<p style="color:var(--text3);font-size:.85rem;text-align:center;padding:1rem 0;">لا توجد دفعات بعد</p>'
     : sortedPmts.map(p=>{
         const pd=p.data(); const pid=p.id;
-        const pd2=pd.createdAt?.toDate?fmtDate(pd.createdAt.toDate()):(pd.date||'');
+        const pd2=pd.date ? fmtDateStr(pd.date) : (pd.createdAt?.toDate?fmtDate(pd.createdAt.toDate()):'');
         return `<div class="payment-item">
           <div style="flex:1;">
             <div class="payment-date">${pd2}</div>
@@ -1148,7 +1148,13 @@ async function savePayment() {
   const txNote = d.type==='creditor'
     ? `استلام دفعة من ${d.name}`
     : `سداد دفعة لـ ${d.name}`;
-  await addTx(txType, amount, note||txNote, ref);
+  // Record in history without changing account balance
+  const curBal = await getBalance();
+  await userCol('transactions').add({
+    type:txType, amount, note:note||txNote, ref,
+    balance:curBal,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
 
   closeModal('modal-add-payment');
   showToast('تم تسجيل الدفعة ✓');
@@ -1225,8 +1231,6 @@ async function printDebtStatement(debtId) {
     <h1>كشف حساب</h1>
     <div class="info-row"><span>الاسم :</span><span class="val">${d.name}</span></div>
     <div class="info-row"><span>نوع العملة :</span><span class="val">${cur.flag} ${cur.name} (${sym})</span></div>
-    <div class="info-row"><span>نوع الدين :</span><span class="val">${isC ? 'دين ليا (دائن)' : 'دين عليا (مدين)'}</span></div>
-    ${d.note ? `<div class="info-row"><span>ملاحظة :</span><span>${d.note}</span></div>` : ''}
     <hr class="divider">
     <table>
       <thead>
@@ -1247,6 +1251,7 @@ async function printDebtStatement(debtId) {
       <div class="sum"><div class="sum-label">المدفوع</div><div class="sum-val" style="color:#059669;">${paid} ${sym}</div></div>
       <div class="sum"><div class="sum-label">المتبقي</div><div class="sum-val" style="color:#dc2626;">${rem} ${sym}</div></div>
     </div>
+    ${d.note ? `<div style="margin-top:.7rem;border:1px solid #93c5fd;border-radius:6px;padding:.5rem .8rem;background:#eff6ff;font-size:10pt;"><span style="font-weight:700;color:#1d4ed8;">ملاحظة: </span>${d.note}</div>` : ''}
     <div class="footer">تاريخ الطباعة: ${printDate}</div>
     <script>window.onload=()=>{window.print();}<\/script>
   </body></html>`);
