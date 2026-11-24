@@ -1551,6 +1551,12 @@ function showToast(msg){
 // ===== Auth =====
 async function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
+  const isMobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
+  if(isMobile) {
+    sessionStorage.setItem('signingIn','1');
+    await auth.signInWithRedirect(provider);
+    return;
+  }
   const btn = document.querySelector('.google-btn');
   btn.disabled = true;
   btn.textContent = 'جاري التسجيل...';
@@ -1560,12 +1566,13 @@ async function signInWithGoogle() {
   } catch(e) {
     console.error(e);
     if(e.code === 'auth/popup-blocked') {
-      showToast('السماح بالنوافذ المنبثقة ثم أعد المحاولة');
+      sessionStorage.setItem('signingIn','1');
+      await auth.signInWithRedirect(provider);
     } else if(e.code !== 'auth/popup-closed-by-user') {
       showToast('خطأ: ' + e.code);
+      btn.disabled = false;
+      btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="22" height="22"> تسجيل الدخول بـ Google';
     }
-    btn.disabled = false;
-    btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="22" height="22"> تسجيل الدخول بـ Google';
   }
 }
 
@@ -1593,8 +1600,10 @@ function setupUser(user) {
 
 auth.onAuthStateChanged(user => {
   if(user) {
+    sessionStorage.removeItem('signingIn');
     setupUser(user);
   } else {
+    if(sessionStorage.getItem('signingIn')) return; // redirect in progress, wait
     document.getElementById('loading').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
