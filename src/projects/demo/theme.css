@@ -1,0 +1,9 @@
+/* RULE: declare ONLY on [data-demo] — never re-declare on inner elements */
+[data-demo] {
+  --a-bg:      #0f172a;
+  --a-surface: #1e293b;
+  --a-line:    rgba(255, 255, 255, 0.08);
+  --a-text:    #f1f5f9;
+  --a-dim:     #64748b;
+  --a-accent:  #7c3aed;
+}

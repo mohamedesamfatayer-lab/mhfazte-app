@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-app-bg:      var(--a-bg,      #ffffff);
+  --color-app-surface: var(--a-surface, #f8fafc);
+  --color-app-line:    var(--a-line,    rgba(0,0,0,0.1));
+  --color-app-text:    var(--a-text,    #1e293b);
+  --color-app-dim:     var(--a-dim,     #64748b);
+  --color-app-accent:  var(--a-accent,  #2563eb);
+}

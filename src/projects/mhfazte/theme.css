@@ -1,0 +1,9 @@
+/* RULE: declare ONLY on [data-mhfazte] — never re-declare on inner elements */
+[data-mhfazte] {
+  --a-bg:      #1a2535;
+  --a-surface: #243044;
+  --a-line:    rgba(255, 255, 255, 0.08);
+  --a-text:    #e2e8f0;
+  --a-dim:     #94a3b8;
+  --a-accent:  #2563eb;
+}
