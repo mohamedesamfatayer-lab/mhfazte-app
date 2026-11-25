@@ -701,6 +701,15 @@ body.light-bg{background:#f1f5f9!important;}
           </div>
         </div>
 
+        <!-- Debt person search filter -->
+        <div id="report-person-filter" style="display:none;padding:.1rem .8rem .4rem;">
+          <div style="font-size:.72rem;color:#94a3b8;margin-bottom:.4rem;font-weight:600;">بحث باسم صاحب الدين / القسط</div>
+          <div style="position:relative;">
+            <i class="fas fa-search" style="position:absolute;right:.8rem;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.8rem;pointer-events:none;"></i>
+            <input type="text" class="form-input" id="report-person-search" placeholder="اسم الشخص..." oninput="applyReports()" style="padding-right:2.2rem;margin-bottom:0;">
+          </div>
+        </div>
+
         <!-- Summary Cards -->
         <div style="display:flex;gap:.5rem;padding:.3rem .8rem .5rem;">
           <div class="report-stat-card" style="border-right:3px solid #34d399;flex:1.4;">
@@ -1628,6 +1637,7 @@ async function savePayment() {
   const curBal = await getBalance();
   await userCol('transactions').add({
     type:txType, amount, note:note||txNote, ref,
+    debtName:d.name, currency:d.currency||'EGP',
     balance:curBal,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
@@ -2200,6 +2210,15 @@ function setReportType(val, el) {
   reportTypeFilter = val;
   document.querySelectorAll('[id^="rtype-"]').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
+  const debtTypes = ['debt_payment','debt_receive','all'];
+  const personWrap = document.getElementById('report-person-filter');
+  if(personWrap) {
+    personWrap.style.display = (val==='debt_payment'||val==='debt_receive') ? '' : 'none';
+    if(!['debt_payment','debt_receive'].includes(val)) {
+      const inp = document.getElementById('report-person-search');
+      if(inp) inp.value = '';
+    }
+  }
   applyReports();
 }
 
@@ -2248,6 +2267,15 @@ function applyReports() {
     txs = txs.filter(t => t.type === reportTypeFilter);
   }
 
+  // person name filter (for debt types)
+  const personQ = (document.getElementById('report-person-search')?.value||'').trim().toLowerCase();
+  if(personQ) {
+    txs = txs.filter(t => {
+      const haystack = ((t.debtName||'') + ' ' + (t.note||'')).toLowerCase();
+      return haystack.includes(personQ);
+    });
+  }
+
   // calc totals per currency
   const plusTypes = ['deposit','debt_receive'];
   const inByCur = {}, outByCur = {};
@@ -2294,6 +2322,8 @@ function printReport() {
         else if(reportDateFilter==='month'){const m=today.slice(0,7);txs=txs.filter(t=>{const d=t.createdAt?.toDate?t.createdAt.toDate().toISOString().slice(0,7):'';return d===m;});}
         else if(reportDateFilter==='custom'){const from=document.getElementById('report-date-from').value,to=document.getElementById('report-date-to').value;if(from&&to)txs=txs.filter(t=>{const d=t.createdAt?.toDate?t.createdAt.toDate().toISOString().split('T')[0]:'';return d>=from&&d<=to;});}
         if(reportTypeFilter!=='all') txs=txs.filter(t=>t.type===reportTypeFilter);
+        const pQ=(document.getElementById('report-person-search')?.value||'').trim().toLowerCase();
+        if(pQ) txs=txs.filter(t=>(((t.debtName||'')+' '+(t.note||'')).toLowerCase()).includes(pQ));
         return txs;
       })()
     : [];
@@ -2339,6 +2369,7 @@ function printReport() {
   const userName = currentUser?.displayName || '';
   const periodLabel = dateLabels[reportDateFilter]||'';
   const typeLabel   = typeLabels[reportTypeFilter]||'';
+  const personLabel = (document.getElementById('report-person-search')?.value||'').trim();
 
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
@@ -2367,6 +2398,7 @@ function printReport() {
     <h1>تقرير المعاملات</h1>
     ${userName ? `<div class="info-row"><span>الاسم :</span><span>${userName}</span></div>` : ''}
     <div class="info-row"><span>الفترة :</span><span>${periodLabel}</span><span style="margin-right:auto;"></span><span>النوع :</span><span>${typeLabel}</span></div>
+    ${personLabel ? `<div class="info-row"><span>صاحب الدين :</span><span style="font-weight:800;">${personLabel}</span></div>` : ''}
     <hr class="divider">
     <table>
       <thead>
