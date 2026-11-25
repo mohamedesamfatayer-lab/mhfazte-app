@@ -701,12 +701,17 @@ body.light-bg{background:#f1f5f9!important;}
           </div>
         </div>
 
-        <!-- Debt person search filter -->
-        <div id="report-person-filter" style="display:none;padding:.1rem .8rem .4rem;">
-          <div style="font-size:.72rem;color:#94a3b8;margin-bottom:.4rem;font-weight:600;">بحث باسم صاحب الدين / القسط</div>
-          <div style="position:relative;">
-            <i class="fas fa-search" style="position:absolute;right:.8rem;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.8rem;pointer-events:none;"></i>
-            <input type="text" class="form-input" id="report-person-search" placeholder="اسم الشخص..." oninput="applyReports()" style="padding-right:2.2rem;margin-bottom:0;">
+        <!-- Person account statement -->
+        <div style="padding:.1rem .8rem .5rem;">
+          <div style="font-size:.72rem;color:#94a3b8;margin-bottom:.4rem;font-weight:600;">👤 كشف حساب شخص</div>
+          <div style="display:flex;gap:.4rem;align-items:center;">
+            <div style="position:relative;flex:1;">
+              <i class="fas fa-user" style="position:absolute;right:.8rem;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.8rem;pointer-events:none;"></i>
+              <input type="text" class="form-input" id="report-person-search" placeholder="اكتب اسم الشخص..." oninput="applyReports()" style="padding-right:2.2rem;margin-bottom:0;">
+            </div>
+            <button onclick="printPersonStatement()" style="background:#8b5cf6;color:#fff;border:none;border-radius:10px;padding:.6rem .8rem;cursor:pointer;white-space:nowrap;font-family:'Cairo',sans-serif;font-size:.78rem;display:flex;align-items:center;gap:.3rem;">
+              <i class="fas fa-file-invoice"></i> طباعة كشف
+            </button>
           </div>
         </div>
 
@@ -2210,15 +2215,6 @@ function setReportType(val, el) {
   reportTypeFilter = val;
   document.querySelectorAll('[id^="rtype-"]').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  const debtTypes = ['debt_payment','debt_receive','all'];
-  const personWrap = document.getElementById('report-person-filter');
-  if(personWrap) {
-    personWrap.style.display = (val==='debt_payment'||val==='debt_receive') ? '' : 'none';
-    if(!['debt_payment','debt_receive'].includes(val)) {
-      const inp = document.getElementById('report-person-search');
-      if(inp) inp.value = '';
-    }
-  }
   applyReports();
 }
 
@@ -2577,6 +2573,127 @@ function applyStoredTheme() {
     document.body.classList.add('light-bg');
     updateThemeIcon();
   }
+}
+
+// ===== Person Statement =====
+async function printPersonStatement() {
+  const name = (document.getElementById('report-person-search')?.value||'').trim();
+  if(!name){ showToast('اكتب اسم الشخص أولاً'); return; }
+
+  // Fetch all debts matching this name (creditor + debtor)
+  const snap = await userCol('debts').get();
+  const matched = snap.docs
+    .map(d=>({id:d.id,...d.data()}))
+    .filter(d => d.name.trim().toLowerCase() === name.toLowerCase() ||
+                 d.name.trim().toLowerCase().includes(name.toLowerCase()));
+
+  if(!matched.length){ showToast('لا توجد ديون بهذا الاسم'); return; }
+
+  const symMap8 = {EGP:'ج.م', SAR:'ريال', USD:'$', EUR:'€'};
+  const fmtN = n => Number(n||0).toLocaleString('ar-EG', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const fmtD = ts => { const d = ts?.toDate?ts.toDate():new Date(); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; };
+
+  let sectionsHTML = '';
+
+  for(const debt of matched) {
+    const sym  = symMap8[debt.currency||'EGP'] || debt.currency;
+    const paid = debt.paidAmount||0, total = debt.totalAmount||0;
+    const rem  = debt.remaining!==undefined ? debt.remaining : total-paid;
+    const pct  = total>0 ? Math.min(100,Math.round((paid/total)*100)) : 0;
+    const isC  = debt.type==='creditor';
+    const debtDate = debt.date || (debt.createdAt?.toDate ? fmtD(debt.createdAt) : '');
+    const subBadge = !isC && debt.subtype ? ` — ${debt.subtype}` : '';
+
+    // payments for this debt
+    const pmtSnap = await userCol('payments').where('debtId','==',debt.id).get();
+    const pmts = pmtSnap.docs
+      .sort((a,b)=>(a.data().createdAt?.toMillis?.()||0)-(b.data().createdAt?.toMillis?.()||0))
+      .map(p=>({...p.data()}));
+
+    const pmtRows = pmts.map((p,i)=>`
+      <tr>
+        <td>${i+1}</td>
+        <td>${p.date||''}</td>
+        <td style="font-weight:800;color:#166534;">${fmtN(p.amount)} ${sym}</td>
+        <td>${p.ref||'—'}</td>
+        <td>${p.note||'—'}</td>
+      </tr>`).join('');
+
+    sectionsHTML += `
+    <div class="debt-block">
+      <div class="debt-block-header">
+        <div>
+          <span class="badge ${isC?'badge-green':'badge-red'}">${isC?'💚 ليا (دائن)':'❤️ عليا (مدين)'}${subBadge}</span>
+          <span style="margin-right:.5rem;font-size:9pt;color:#64748b;">تاريخ الدين: ${debtDate}</span>
+        </div>
+        ${debt.note?`<div style="font-size:9pt;color:#64748b;margin-top:3px;">ملاحظة: ${debt.note}</div>`:''}
+      </div>
+      <div class="summary-row">
+        <div class="summary-box"><div class="summary-box-label">إجمالي الدين</div><div class="summary-box-val">${fmtN(total)} ${sym}</div></div>
+        <div class="summary-box green"><div class="summary-box-label">إجمالي المدفوع</div><div class="summary-box-val">${fmtN(paid)} ${sym}</div></div>
+        <div class="summary-box ${rem>0?'red':'green'}"><div class="summary-box-label">المتبقي</div><div class="summary-box-val">${fmtN(rem)} ${sym}</div></div>
+        <div class="summary-box"><div class="summary-box-label">نسبة السداد</div><div class="summary-box-val">${pct}%</div></div>
+      </div>
+      ${pmts.length ? `
+      <table>
+        <thead><tr><th>#</th><th>التاريخ</th><th>المبلغ</th><th>المرجع</th><th>ملاحظة</th></tr></thead>
+        <tbody>${pmtRows}</tbody>
+      </table>` : `<p style="color:#94a3b8;font-size:9pt;text-align:center;padding:.5rem 0;">لم يتم تسجيل أي دفعات بعد</p>`}
+    </div>`;
+  }
+
+  // Grand totals per currency per type
+  const grandC={}, grandD={};
+  matched.forEach(d=>{
+    const c=d.currency||'EGP'; const r=d.remaining!==undefined?d.remaining:(d.totalAmount||0)-(d.paidAmount||0);
+    if(d.type==='creditor') grandC[c]=(grandC[c]||0)+r;
+    else grandD[c]=(grandD[c]||0)+r;
+  });
+  const grandHTML = [...Object.entries(grandC).map(([c,v])=>`<span style="color:#166534;font-weight:800;">ليا: ${fmtN(v)} ${symMap8[c]||c}</span>`),
+                     ...Object.entries(grandD).map(([c,v])=>`<span style="color:#991b1b;font-weight:800;">عليا: ${fmtN(v)} ${symMap8[c]||c}</span>`)].join('  |  ');
+
+  const userName = currentUser?.displayName||'';
+  const printDate = fmtD({toDate:()=>new Date()});
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+  <title>كشف حساب — ${name}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;font-size:11pt;color:#1e293b;background:#fff;padding:1.5cm;}
+    h1{font-size:18pt;color:#1e293b;margin-bottom:.3rem;}
+    .sub{font-size:9pt;color:#64748b;margin-bottom:.8rem;}
+    .info-row{display:flex;gap:1rem;font-size:9.5pt;color:#475569;margin-bottom:.25rem;}
+    .info-row span{font-weight:600;}
+    hr{border:none;border-top:1.5px solid #e2e8f0;margin:.6rem 0;}
+    .debt-block{border:1px solid #e2e8f0;border-radius:10px;padding:.8rem;margin-bottom:1rem;page-break-inside:avoid;}
+    .debt-block-header{margin-bottom:.5rem;}
+    .badge{display:inline-block;padding:.15rem .5rem;border-radius:5px;font-size:8.5pt;font-weight:700;}
+    .badge-green{background:#dcfce7;color:#166534;}
+    .badge-red{background:#fee2e2;color:#991b1b;}
+    .summary-row{display:flex;gap:.5rem;margin:.5rem 0;}
+    .summary-box{flex:1;border:1px solid #e2e8f0;border-radius:7px;padding:.4rem .5rem;text-align:center;}
+    .summary-box.green{border-color:#bbf7d0;background:#f0fdf4;}
+    .summary-box.red{border-color:#fecaca;background:#fef2f2;}
+    .summary-box-label{font-size:7.5pt;color:#64748b;margin-bottom:2px;}
+    .summary-box-val{font-size:11pt;font-weight:800;}
+    table{width:100%;border-collapse:collapse;font-size:9.5pt;margin-top:.5rem;}
+    th{background:#f8fafc;padding:.35rem .5rem;text-align:right;font-weight:700;border:1px solid #e2e8f0;}
+    td{padding:.3rem .5rem;border:1px solid #f1f5f9;vertical-align:middle;}
+    tr:nth-child(even) td{background:#fafafa;}
+    .grand{background:#f1f5f9;border-radius:8px;padding:.6rem .9rem;margin-top:.3rem;font-size:10pt;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;}
+    .grand-title{font-size:9pt;color:#64748b;margin-left:.5rem;}
+    @media print{body{padding:.7cm;}@page{margin:.7cm;}}
+  </style></head><body>
+  <h1>📋 كشف حساب</h1>
+  <div class="sub">تقرير مفصّل لجميع الديون والدفعات</div>
+  ${userName?`<div class="info-row"><span>بواسطة:</span>${userName}</div>`:''}
+  <div class="info-row"><span>اسم الشخص:</span>${name}</div>
+  <div class="info-row"><span>تاريخ الكشف:</span>${printDate}</div>
+  <hr>
+  ${sectionsHTML}
+  <div class="grand"><span class="grand-title">📊 الإجمالي الكلي (الباقي):</span>${grandHTML||'لا يوجد'}</div>
+  <script>window.print();<\/script></body></html>`);
+  win.document.close();
 }
 
 // ===== Feature 1: Charts =====
