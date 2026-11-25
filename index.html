@@ -602,11 +602,11 @@ body.light-bg{background:#f1f5f9!important;}
         <div style="display:flex;gap:.6rem;padding:.7rem .8rem 0;">
           <div class="stat-mini" style="background:var(--warning-light);">
             <div class="stat-mini-label">مصروف اليوم</div>
-            <div class="stat-mini-val" style="color:var(--warning);"><span style="font-size:.7rem;">ج.م </span><span id="today-exp-display">0.00</span></div>
+            <div id="today-exp-display" style="color:var(--warning);line-height:1.5;"></div>
           </div>
           <div class="stat-mini" style="background:var(--danger-light);">
             <div class="stat-mini-label">مصروف الشهر</div>
-            <div class="stat-mini-val" style="color:var(--danger);"><span style="font-size:.7rem;">ج.م </span><span id="month-exp-display">0.00</span></div>
+            <div id="month-exp-display" style="color:var(--danger);line-height:1.5;"></div>
           </div>
         </div>
         <div style="padding:.6rem .8rem;" id="expense-list">
@@ -1721,18 +1721,27 @@ async function loadExpenses() {
     return;
   }
   const expenses = snap.docs.map(d=>({id:d.id,...d.data()}));
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr  = new Date().toISOString().split('T')[0];
   const thisMonth = new Date().toISOString().slice(0,7);
+  const symMap5   = {EGP:'ج.م', SAR:'ريال', USD:'$', EUR:'€'};
 
-  let todayTotal=0, monthTotal=0;
+  const todayByCur = {}, monthByCur = {};
   expenses.forEach(e=>{
     const eDate = e.createdAt?.toDate ? e.createdAt.toDate().toISOString().split('T')[0] : (e.date||'');
-    if(eDate===todayStr) todayTotal += (e.amount||0);
-    if(eDate.startsWith(thisMonth)) monthTotal += (e.amount||0);
+    const cur = e.currency||'EGP';
+    if(eDate===todayStr)          todayByCur[cur] = (todayByCur[cur]||0) + (e.amount||0);
+    if(eDate.startsWith(thisMonth)) monthByCur[cur] = (monthByCur[cur]||0) + (e.amount||0);
   });
 
-  document.getElementById('today-exp-display').textContent = fmt(todayTotal);
-  document.getElementById('month-exp-display').textContent = fmt(monthTotal);
+  function renderExpStat(byCur, color) {
+    const entries = Object.entries(byCur);
+    if(!entries.length) return `<span style="font-size:1.1rem;font-weight:800;">٠.٠٠</span>`;
+    return entries.map(([c,v])=>
+      `<div style="font-size:1rem;font-weight:800;color:${color};">${fmt(v)} <span style="font-size:.7rem;">${symMap5[c]||c}</span></div>`
+    ).join('');
+  }
+  document.getElementById('today-exp-display').innerHTML = renderExpStat(todayByCur, 'var(--warning)');
+  document.getElementById('month-exp-display').innerHTML = renderExpStat(monthByCur, 'var(--danger)');
 
   const groups = {};
   expenses.forEach(e=>{
@@ -1742,10 +1751,13 @@ async function loadExpenses() {
   });
 
   document.getElementById('expense-list').innerHTML = Object.entries(groups).map(([date,items])=>{
-    const dayTotal = items.reduce((s,e)=>s+(e.amount||0),0);
+    // per-currency day total
+    const dayByCur = {};
+    items.forEach(e=>{ const c=e.currency||'EGP'; dayByCur[c]=(dayByCur[c]||0)+(e.amount||0); });
+    const dayTotalStr = Object.entries(dayByCur).map(([c,v])=>`${fmt(v)} ${symMap5[c]||c}`).join(' + ');
     const label = date===todayStr ? 'اليوم' : fmtDateStr(date);
     return `<div class="expense-date-group">
-      <div class="expense-date-label"><span>${label}</span><span style="color:var(--danger);">${fmt(dayTotal)} ج.م</span></div>
+      <div class="expense-date-label"><span>${label}</span><span style="color:var(--danger);font-size:.82rem;">${dayTotalStr}</span></div>
       ${items.map(e=>expHTML(e)).join('')}
     </div>`;
   }).join('');
