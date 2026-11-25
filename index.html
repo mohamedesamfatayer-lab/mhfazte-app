@@ -707,7 +707,8 @@ body.light-bg{background:#f1f5f9!important;}
           <div style="display:flex;gap:.4rem;align-items:center;">
             <div style="position:relative;flex:1;">
               <i class="fas fa-user" style="position:absolute;right:.8rem;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.8rem;pointer-events:none;"></i>
-              <input type="text" class="form-input" id="report-person-search" placeholder="اكتب اسم الشخص..." oninput="applyReports()" style="padding-right:2.2rem;margin-bottom:0;">
+              <input type="text" class="form-input" id="report-person-search" list="person-names-list" placeholder="اكتب اسم الشخص..." oninput="applyReports()" autocomplete="off" style="padding-right:2.2rem;margin-bottom:0;">
+              <datalist id="person-names-list"></datalist>
             </div>
             <button onclick="printPersonStatement()" style="background:#8b5cf6;color:#fff;border:none;border-radius:10px;padding:.6rem .8rem;cursor:pointer;white-space:nowrap;font-family:'Cairo',sans-serif;font-size:.78rem;display:flex;align-items:center;gap:.3rem;">
               <i class="fas fa-file-invoice"></i> طباعة كشف
@@ -2218,11 +2219,20 @@ function setReportType(val, el) {
   applyReports();
 }
 
+async function loadPersonNamesList() {
+  const dl = document.getElementById('person-names-list');
+  if(!dl) return;
+  const snap = await userCol('debts').get();
+  const names = [...new Set(snap.docs.map(d => d.data().name?.trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar'));
+  dl.innerHTML = names.map(n => `<option value="${n}">`).join('');
+}
+
 async function loadReportData() {
   if(!reportAllTxs.length) {
     const snap = await userCol('transactions').orderBy('createdAt','desc').limit(500).get();
     reportAllTxs = snap.docs.map(d => ({id:d.id,...d.data()}));
   }
+  loadPersonNamesList();
   applyReports();
 }
 
