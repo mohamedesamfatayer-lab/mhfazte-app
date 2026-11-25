@@ -2648,14 +2648,17 @@ async function printPersonStatement() {
   allRows.sort((a,b)=> a.date.split('/').reverse().join('') > b.date.split('/').reverse().join('') ? 1 : -1);
 
   const tableRows = allRows.map((r,i)=>{
-    const bg   = r.kind==='debt' ? (r.isC?'#d9f2e6':'#fde8e8') : (i%2===0?'#eef4fb':'#fff');
-    const bold = r.kind==='debt' ? 'font-weight:900;' : 'font-weight:700;';
+    const bg       = r.kind==='debt' ? (r.isC?'#d9f2e6':'#fde8e8') : (i%2===0?'#eef4fb':'#fff');
+    const bold     = r.kind==='debt' ? 'font-weight:900;' : 'font-weight:700;';
+    const typeLabel = r.kind==='debt' ? (r.isC ? 'دائن' : 'مدين') : 'دفعة';
+    const typeColor = r.kind==='debt' ? (r.isC ? '#166534' : '#991b1b') : '#1e3a5f';
     return `<tr style="background:${bg};">
       <td>${i+1}</td>
       <td>${r.date}</td>
       <td style="${bold}font-size:11pt;">${fmtN(r.amount)}</td>
       <td style="font-size:9pt;font-weight:800;">${r.sym}</td>
-      <td style="text-align:right;">${r.bayan}</td>
+      <td style="font-weight:900;color:${typeColor};">${typeLabel}</td>
+      <td style="text-align:right;font-size:9.5pt;">${r.bayan}</td>
     </tr>`;
   }).join('');
 
@@ -2699,10 +2702,11 @@ async function printPersonStatement() {
   <hr class="divider">
   <table>
     <thead><tr>
-      <th style="width:5%;">م</th>
-      <th style="width:20%;">التاريخ</th>
-      <th style="width:14%;">المبلغ</th>
-      <th style="width:9%;">العملة</th>
+      <th style="width:4%;">م</th>
+      <th style="width:18%;">التاريخ</th>
+      <th style="width:13%;">المبلغ</th>
+      <th style="width:8%;">العملة</th>
+      <th style="width:10%;">النوع</th>
       <th>البيان</th>
     </tr></thead>
     <tbody>
