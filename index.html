@@ -2583,8 +2583,7 @@ async function printPersonStatement() {
   const snap = await userCol('debts').get();
   const matched = snap.docs
     .map(d=>({id:d.id,...d.data()}))
-    .filter(d => d.name.trim().toLowerCase().includes(name.toLowerCase()))
-    .sort((a,b)=>(a.createdAt?.toMillis?.()||0)-(b.createdAt?.toMillis?.()||0));
+    .filter(d => d.name.trim().toLowerCase().includes(name.toLowerCase()));
 
   if(!matched.length){ showToast('لا توجد ديون بهذا الاسم'); return; }
 
@@ -2592,63 +2591,78 @@ async function printPersonStatement() {
   const fmtN = n => Number(n||0).toLocaleString('ar-EG', {minimumFractionDigits:2, maximumFractionDigits:2});
   const fmtD = ts => { const d=ts?.toDate?ts.toDate():new Date(); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; };
 
-  let sectionsHTML = '';
-  let debtIndex = 0;
+  // Build flat list of all rows: debt rows + payment rows
+  const allRows = [];
+  const totByCur={}, paidByCur={};
 
   for(const debt of matched) {
-    debtIndex++;
-    const sym  = symMap8[debt.currency||'EGP'] || debt.currency;
-    const paid = debt.paidAmount||0, total = debt.totalAmount||0;
-    const rem  = debt.remaining!==undefined ? debt.remaining : total-paid;
-    const pct  = total>0 ? Math.min(100,Math.round((paid/total)*100)) : 0;
-    const isC  = debt.type==='creditor';
+    const sym = symMap8[debt.currency||'EGP'] || debt.currency;
+    const cur = debt.currency||'EGP';
+    const isC = debt.type==='creditor';
+    const total = debt.totalAmount||0;
+    const paid  = debt.paidAmount||0;
+    const rem   = debt.remaining!==undefined ? debt.remaining : total-paid;
     const debtDate = debt.date || (debt.createdAt?.toDate ? fmtD(debt.createdAt) : '');
-    const subLabel = !isC && debt.subtype ? debt.subtype : '';
+    const subLabel = !isC && debt.subtype ? ` (${debt.subtype})` : '';
+    const dirLabel = isC ? 'ليا' : 'عليا';
+
+    totByCur[cur]  = (totByCur[cur]||0)  + total;
+    paidByCur[cur] = (paidByCur[cur]||0) + paid;
+
+    allRows.push({
+      date: debtDate,
+      amount: total,
+      sym,
+      cur,
+      bayan: `${dirLabel}${subLabel}${debt.note?' — '+debt.note:''}`,
+      kind: 'debt',
+      isC
+    });
 
     const pmtSnap = await userCol('payments').where('debtId','==',debt.id).get();
-    const pmts = pmtSnap.docs
+    pmtSnap.docs
       .sort((a,b)=>(a.data().createdAt?.toMillis?.()||0)-(b.data().createdAt?.toMillis?.()||0))
-      .map(p=>({...p.data()}));
-
-    const pmtRows = pmts.map((p,i)=>`<tr>
-      <td>${i+1}</td>
-      <td>${p.date||fmtD(p.createdAt)}</td>
-      <td style="font-weight:900;color:#166534;">${fmtN(p.amount)}</td>
-      <td style="font-weight:800;font-size:9pt;">${sym}</td>
-      <td>${p.ref||'—'}</td>
-      <td style="text-align:right;">${p.note||'—'}</td>
-    </tr>`).join('');
-
-    sectionsHTML += `
-    <div class="debt-block">
-      <div class="block-title">
-        <span>${debtIndex}. ${isC ? 'دين ليا (دائن)' : 'دين عليا (مدين)'}${subLabel?' — '+subLabel:''}</span>
-        <span class="block-date">تاريخ الدين: ${debtDate}</span>
-      </div>
-      ${debt.note?`<div class="block-note">ملاحظة: ${debt.note}</div>`:''}
-      <div class="summary-row">
-        <div class="sum-box"><div class="sum-label">إجمالي الدين</div><div class="sum-val">${fmtN(total)} <span class="sym">${sym}</span></div></div>
-        <div class="sum-box green"><div class="sum-label">إجمالي المدفوع</div><div class="sum-val">${fmtN(paid)} <span class="sym">${sym}</span></div></div>
-        <div class="sum-box ${rem>0?'red':'green'}"><div class="sum-label">المتبقي</div><div class="sum-val">${fmtN(rem)} <span class="sym">${sym}</span></div></div>
-        <div class="sum-box purple"><div class="sum-label">نسبة السداد</div><div class="sum-val">${pct}%</div></div>
-      </div>
-      ${pmts.length ? `
-      <table>
-        <thead><tr><th style="width:5%;">م</th><th style="width:13%;">تاريخ الدفعة</th><th style="width:13%;">المبلغ</th><th style="width:8%;">العملة</th><th style="width:14%;">رقم الوصل</th><th>البيان</th></tr></thead>
-        <tbody>${pmtRows}</tbody>
-      </table>` : `<div class="no-pmts">لم يتم تسجيل أي دفعات بعد</div>`}
-    </div>`;
+      .forEach(p=>{
+        const pd = p.data();
+        allRows.push({
+          date: pd.date || (pd.createdAt?.toDate ? fmtD(pd.createdAt) : ''),
+          amount: pd.amount||0,
+          sym,
+          cur,
+          bayan: `دفعة سداد${pd.ref?' — وصل '+pd.ref:''}${pd.note?' — '+pd.note:''}`,
+          kind: 'payment',
+          isC
+        });
+      });
   }
 
-  // Grand totals
-  const grandC={}, grandD={};
-  matched.forEach(d=>{
-    const c=d.currency||'EGP'; const r=d.remaining!==undefined?d.remaining:(d.totalAmount||0)-(d.paidAmount||0);
-    if(d.type==='creditor') grandC[c]=(grandC[c]||0)+r;
-    else grandD[c]=(grandD[c]||0)+r;
-  });
-  const grandInHTML  = Object.entries(grandC).map(([c,v])=>`<div class="sum-box green" style="flex:0 0 auto;min-width:120px;"><div class="sum-label">ليا (الباقي)</div><div class="sum-val">${fmtN(v)} <span class="sym">${symMap8[c]||c}</span></div></div>`).join('');
-  const grandOutHTML = Object.entries(grandD).map(([c,v])=>`<div class="sum-box red"   style="flex:0 0 auto;min-width:120px;"><div class="sum-label">عليا (الباقي)</div><div class="sum-val">${fmtN(v)} <span class="sym">${symMap8[c]||c}</span></div></div>`).join('');
+  // Sort by date string
+  allRows.sort((a,b)=> a.date.split('/').reverse().join('') > b.date.split('/').reverse().join('') ? 1 : -1);
+
+  const tableRows = allRows.map((r,i)=>{
+    const bg   = r.kind==='debt' ? (r.isC?'#d9f2e6':'#fde8e8') : (i%2===0?'#eef4fb':'#fff');
+    const bold = r.kind==='debt' ? 'font-weight:900;' : 'font-weight:700;';
+    return `<tr style="background:${bg};">
+      <td>${i+1}</td>
+      <td>${r.date}</td>
+      <td style="${bold}font-size:11pt;">${fmtN(r.amount)}</td>
+      <td style="font-size:9pt;font-weight:800;">${r.sym}</td>
+      <td style="text-align:right;">${r.bayan}</td>
+    </tr>`;
+  }).join('');
+
+  // Summary per currency
+  const allCurs = [...new Set(allRows.map(r=>r.cur))];
+  const sumRows = allCurs.map(c=>{
+    const t = totByCur[c]||0, p = paidByCur[c]||0, rem = t-p;
+    const sym = symMap8[c]||c;
+    return `<tr>
+      <td style="font-weight:900;">${sym}</td>
+      <td style="font-weight:900;color:#1e3a5f;">${fmtN(t)}</td>
+      <td style="font-weight:900;color:#166534;">${fmtN(p)}</td>
+      <td style="font-weight:900;color:${rem>0?'#991b1b':'#166534'};">${fmtN(Math.abs(rem))}${rem<=0?' ✓':''}</td>
+    </tr>`;
+  }).join('');
 
   const userName  = currentUser?.displayName||'';
   const printDate = fmtD({toDate:()=>new Date()});
@@ -2662,40 +2676,40 @@ async function printPersonStatement() {
     h1{text-align:center;font-size:16pt;color:#fff;font-weight:900;margin-bottom:1rem;background:#1e3a5f;padding:.6rem 1.5rem;border-radius:6px;width:100%;}
     .info-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;font-size:11pt;font-weight:800;color:#000;}
     .divider{border:none;border-top:2px solid #000;margin:.6rem 0;}
-    .debt-block{border:1.5px solid #000;border-radius:6px;padding:.7rem;margin-bottom:.9rem;page-break-inside:avoid;}
-    .block-title{display:flex;justify-content:space-between;align-items:center;font-size:11pt;font-weight:900;color:#1e3a5f;border-bottom:1px solid #cdd8e3;padding-bottom:.35rem;margin-bottom:.4rem;}
-    .block-date{font-size:9pt;font-weight:700;color:#475569;}
-    .block-note{font-size:9pt;color:#475569;margin-bottom:.35rem;font-weight:600;}
-    .summary-row{display:flex;gap:.5rem;margin:.35rem 0 .5rem;}
-    .sum-box{flex:1;border:1.5px solid #000;border-radius:4px;padding:.4rem .5rem;text-align:center;}
-    .sum-box.green{background:#d9f2e6;}
-    .sum-box.red{background:#fde8e8;}
-    .sum-box.purple{background:#f0e6ff;}
-    .sum-label{font-size:8pt;font-weight:900;color:#000;margin-bottom:3px;border-bottom:1px solid rgba(0,0,0,.12);padding-bottom:2px;}
-    .sum-val{font-size:11pt;font-weight:900;color:#000;}
-    .sym{font-size:8.5pt;font-weight:700;}
-    table{width:100%;border-collapse:collapse;font-size:10pt;}
-    th{background:#b8cce4;color:#000;padding:.5rem .6rem;border:1.5px solid #000;text-align:center;font-weight:900;}
-    td{padding:.4rem .6rem;border:1px solid #000;text-align:center;vertical-align:middle;font-weight:700;}
-    tr:nth-child(even) td{background:#eef4fb;}
-    .no-pmts{font-size:9pt;color:#94a3b8;text-align:center;padding:.4rem 0;font-weight:600;}
-    .grand-section{margin-top:.5rem;}
-    .grand-title{font-size:10pt;font-weight:900;color:#000;margin-bottom:.4rem;border-bottom:2px solid #000;padding-bottom:.25rem;}
-    .grand-row{display:flex;gap:.5rem;flex-wrap:wrap;}
+    table{width:100%;border-collapse:collapse;font-size:10.5pt;margin-top:.5rem;}
+    th{background:#b8cce4;color:#000;padding:.6rem .7rem;border:1.5px solid #000;text-align:center;font-weight:900;white-space:nowrap;font-size:11pt;}
+    td{padding:.45rem .7rem;border:1px solid #000;text-align:center;vertical-align:middle;}
+    .summary{margin-top:.9rem;}
+    .summary-title{font-size:11pt;font-weight:900;border-bottom:2px solid #000;padding-bottom:.3rem;margin-bottom:.4rem;}
+    .sum-table th{background:#1e3a5f;color:#fff;}
     .footer{margin-top:1rem;font-size:9pt;color:#000;text-align:center;font-weight:700;border-top:1px solid #000;padding-top:.5rem;}
     @media print{body{padding:.6cm;}@page{margin:.7cm;size:A4 portrait;}}
   </style></head><body>
   <h1>كشف حساب</h1>
   ${userName?`<div class="info-row"><span>بواسطة :</span><span>${userName}</span></div>`:''}
-  <div class="info-row"><span>الاسم :</span><span>${name}</span></div>
-  <div class="info-row"><span>تاريخ الكشف :</span><span>${printDate}</span><span style="margin-right:auto;"></span><span>عدد الديون :</span><span>${matched.length}</span></div>
+  <div class="info-row"><span>الاسم :</span><span>${name}</span><span style="margin-right:auto;"></span><span>عدد السجلات :</span><span>${allRows.length}</span></div>
+  <div class="info-row"><span>تاريخ الكشف :</span><span>${printDate}</span></div>
   <hr class="divider">
-  ${sectionsHTML}
-  <div class="grand-section">
-    <div class="grand-title">📊 الإجمالي الكلي (الباقي)</div>
-    <div class="grand-row">${grandInHTML||''}${grandOutHTML||''}${!grandInHTML&&!grandOutHTML?'<span style="font-size:9pt;color:#64748b;">لا يوجد رصيد متبقي</span>':''}</div>
+  <table>
+    <thead><tr>
+      <th style="width:5%;">م</th>
+      <th style="width:13%;">التاريخ</th>
+      <th style="width:14%;">المبلغ</th>
+      <th style="width:9%;">العملة</th>
+      <th>البيان</th>
+    </tr></thead>
+    <tbody>
+      ${tableRows||'<tr><td colspan="5" style="text-align:center;color:#666;padding:1rem;">لا توجد بيانات</td></tr>'}
+    </tbody>
+  </table>
+  <div class="summary">
+    <div class="summary-title">الإجمالي حسب العملة</div>
+    <table class="sum-table">
+      <thead><tr><th>العملة</th><th>إجمالي الديون</th><th>إجمالي المدفوع</th><th>الباقي</th></tr></thead>
+      <tbody>${sumRows}</tbody>
+    </table>
   </div>
-  <div class="footer">تاريخ الطباعة: ${printDate} &nbsp;|&nbsp; محفظتي 🧧</div>
+  <div class="footer">تاريخ الطباعة: ${printDate} &nbsp;|&nbsp; محفظتي</div>
   <script>window.onload=()=>{window.print();}<\/script>
   </body></html>`);
   win.document.close();
