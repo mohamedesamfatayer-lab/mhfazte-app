@@ -922,6 +922,22 @@ body.light-bg{background:#f1f5f9!important;}
   </div>
 </div>
 
+<!-- Edit Expense Modal -->
+<div class="modal-overlay" id="modal-edit-expense">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">تعديل المصروف</div>
+    <div class="form-group">
+      <label class="form-label">الفئة</label>
+      <div class="cat-grid" id="edit-exp-cat-grid"></div>
+    </div>
+    <div class="form-group"><label class="form-label">المبلغ (<span id="edit-exp-cur-label">ج.م</span>)</label><input type="number" class="form-input" id="edit-exp-amount" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="edit-exp-note" placeholder="وصف المصروف"></div>
+    <button class="btn btn-primary" onclick="saveEditExpense()">حفظ التعديلات</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-edit-expense')">إلغاء</button>
+  </div>
+</div>
+
 <!-- Set Budget Modal -->
 <div class="modal-overlay" id="modal-add-budget">
   <div class="modal">
@@ -1737,13 +1753,20 @@ async function loadExpenses() {
 
 function expHTML(e) {
   const cat = CATS.find(c=>c.name===e.category)||CATS[7];
+  const sym = ({EGP:'ج.م',SAR:'ريال',USD:'$',EUR:'€'})[e.currency||'EGP']||'ج.م';
+  const noteEsc = (e.note||'').replace(/`/g,"'");
+  const catEsc  = (e.category||'أخرى').replace(/`/g,"'");
   return `<div class="expense-item">
     <div class="expense-cat-icon" style="background:${cat.color}22;">${cat.icon}</div>
     <div class="expense-info">
       <div class="expense-note">${e.note||e.category}</div>
       <div class="expense-cat">${e.category}</div>
     </div>
-    <div class="expense-amount">-${fmt(e.amount)} ${({EGP:'ج.م',SAR:'ريال',USD:'$'})[e.currency||'EGP']||'ج.م'}</div>
+    <div class="expense-amount">-${fmt(e.amount)} ${sym}</div>
+    <div class="tx-actions">
+      <button class="tx-act-btn edit" onclick="openEditExpense('${e.id}',${e.amount},\`${noteEsc}\`,\`${catEsc}\`,'${e.currency||'EGP'}')"><i class="fas fa-pen"></i></button>
+      <button class="tx-act-btn del"  onclick="deleteExpense('${e.id}',${e.amount},'${e.currency||'EGP'}')"><i class="fas fa-trash"></i></button>
+    </div>
   </div>`;
 }
 
@@ -1769,6 +1792,105 @@ async function saveExpense() {
   loadExpenses();
   loadBalance();
   loadRecentTxs();
+}
+
+// ===== Edit / Delete Expenses =====
+let editExpId = null, editExpOldAmount = 0, editExpCur = 'EGP', editExpCat = 'أخرى';
+
+function buildEditExpCatGrid(selectedName) {
+  document.getElementById('edit-exp-cat-grid').innerHTML = CATS.map(c =>
+    `<button class="cat-btn${c.name===selectedName?' active':''}" onclick="selectEditExpCat('${c.name}',this)">
+      ${c.icon} ${c.name}
+    </button>`
+  ).join('');
+  editExpCat = selectedName;
+}
+function selectEditExpCat(name, el) {
+  editExpCat = name;
+  document.querySelectorAll('#edit-exp-cat-grid .cat-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function openEditExpense(id, amount, note, category, cur='EGP') {
+  editExpId = id; editExpOldAmount = amount; editExpCur = cur;
+  buildEditExpCatGrid(category);
+  document.getElementById('edit-exp-amount').value = amount;
+  document.getElementById('edit-exp-note').value   = note;
+  const symMap4 = {EGP:'ج.م', SAR:'ريال', USD:'$', EUR:'€'};
+  document.getElementById('edit-exp-cur-label').textContent = symMap4[cur]||cur;
+  openModal('modal-edit-expense');
+}
+
+async function saveEditExpense() {
+  const newAmount = parseFloat(document.getElementById('edit-exp-amount').value);
+  const newNote   = document.getElementById('edit-exp-note').value.trim();
+  if(!newAmount||newAmount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
+
+  // adjust balance by diff
+  const diff    = newAmount - editExpOldAmount;
+  const curBal  = await getBalance(editExpCur);
+  const newBal  = curBal - diff;   // expense is a minus, so more amount = less balance
+
+  await userCol('expenses').doc(editExpId).update({
+    amount:newAmount, note:newNote, category:editExpCat
+  });
+
+  // try to update matching transaction
+  try {
+    const txSnap = await userCol('transactions')
+      .where('type','==','expense')
+      .where('amount','==',editExpOldAmount)
+      .where('currency','==',editExpCur)
+      .get();
+    if(!txSnap.empty) {
+      let closest = null, minDiff = Infinity;
+      const expDoc = await userCol('expenses').doc(editExpId).get();
+      const expTime = expDoc.data()?.createdAt?.toMillis?.() || 0;
+      txSnap.forEach(d => {
+        const diff2 = Math.abs((d.data().createdAt?.toMillis?.() || 0) - expTime);
+        if(diff2 < minDiff) { minDiff = diff2; closest = d; }
+      });
+      if(closest) await userCol('transactions').doc(closest.id).update({
+        amount:newAmount, note:newNote||`مصروف: ${editExpCat}`, balance:newBal
+      });
+    }
+  } catch(err) { console.warn('tx update skip:', err); }
+
+  await setBalance(newBal, editExpCur);
+  closeModal('modal-edit-expense');
+  showToast('تم التعديل ✓');
+  loadExpenses();
+}
+
+function deleteExpense(expId, amount, cur='EGP') {
+  document.getElementById('confirm-msg').textContent = 'هل تريد حذف هذا المصروف؟';
+  document.getElementById('confirm-yes-btn').onclick = async () => {
+    closeModal('modal-confirm');
+    // try to find and delete matching transaction
+    try {
+      const txSnap = await userCol('transactions')
+        .where('type','==','expense')
+        .where('amount','==',amount)
+        .where('currency','==',cur)
+        .get();
+      if(!txSnap.empty) {
+        const expDoc = await userCol('expenses').doc(expId).get();
+        const expTime = expDoc.data()?.createdAt?.toMillis?.() || 0;
+        let closest = null, minDiff2 = Infinity;
+        txSnap.forEach(d => {
+          const diff3 = Math.abs((d.data().createdAt?.toMillis?.() || 0) - expTime);
+          if(diff3 < minDiff2) { minDiff2 = diff3; closest = d; }
+        });
+        if(closest) await userCol('transactions').doc(closest.id).delete();
+      }
+    } catch(err) { console.warn('tx delete skip:', err); }
+    await userCol('expenses').doc(expId).delete();
+    const curBal = await getBalance(cur);
+    await setBalance(curBal + amount, cur);
+    showToast('تم الحذف ✓');
+    loadExpenses();
+  };
+  openModal('modal-confirm');
 }
 
 // ===== Deposit / Withdraw =====
