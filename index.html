@@ -872,6 +872,13 @@ body.light-bg{background:#f1f5f9!important;}
     </div>
     <div class="form-group"><label class="form-label">إجمالي المبلغ</label><input type="number" class="form-input" id="edit-debt-amount" placeholder="0.00" inputmode="decimal"></div>
     <div class="form-group"><label class="form-label">تاريخ الدين</label><input type="date" class="form-input" id="edit-debt-date"></div>
+    <div class="form-group" id="edit-debt-subtype-wrap" style="display:none;">
+      <label class="form-label">نوع الدين</label>
+      <div class="type-toggle">
+        <button class="type-btn edit-debt-subtype-btn active" onclick="setEditDebtSubtype('سلفة',this)" style="border-color:#8b5cf6;background:#f5f3ff;color:#7c3aed;">💸 سلفة</button>
+        <button class="type-btn edit-debt-subtype-btn" onclick="setEditDebtSubtype('أقساط',this)">📋 أقساط</button>
+      </div>
+    </div>
     <div class="form-group"><label class="form-label">ملاحظة (اختياري)</label><input type="text" class="form-input" id="edit-debt-note" placeholder="وصف أو سبب الدين"></div>
     <button class="btn btn-primary" onclick="saveEditDebt()">حفظ التعديلات</button>
     <button class="btn btn-outline" onclick="closeModal('modal-edit-debt')">إلغاء</button>
@@ -1735,6 +1742,12 @@ async function deletePayment(paymentId) {
   openModal('modal-confirm');
 }
 
+function setEditDebtSubtype(sub, el) {
+  debtSubtype = sub;
+  document.querySelectorAll('.edit-debt-subtype-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
 function openEditDebt() {
   if(!currentDebtData) return;
   const d = currentDebtData;
@@ -1744,6 +1757,17 @@ function openEditDebt() {
   document.getElementById('edit-debt-note').value   = d.note || '';
   selectedCurrency = d.currency || 'EGP';
   buildCurrencyGrid('edit-currency-grid', selectedCurrency);
+  const subtypeWrap = document.getElementById('edit-debt-subtype-wrap');
+  if(subtypeWrap) {
+    const isDebtor = d.type === 'debtor';
+    subtypeWrap.style.display = isDebtor ? '' : 'none';
+    if(isDebtor) {
+      debtSubtype = d.subtype || 'سلفة';
+      document.querySelectorAll('.edit-debt-subtype-btn').forEach(b=>{
+        b.classList.toggle('active', b.textContent.includes(debtSubtype));
+      });
+    }
+  }
   openModal('modal-edit-debt');
 }
 
@@ -1756,10 +1780,10 @@ async function saveEditDebt() {
   if(!amount||amount<=0){ showToast('أدخل مبلغاً صحيحاً'); return; }
   const d = currentDebtData;
   const newRemaining = Math.max(0, amount - (d.paidAmount||0));
-  await userCol('debts').doc(currentDebtId).update({
-    name, totalAmount:amount, date, note, remaining:newRemaining, currency:selectedCurrency
-  });
-  currentDebtData = {...d, name, totalAmount:amount, date, note, remaining:newRemaining, currency:selectedCurrency};
+  const updateData = {name, totalAmount:amount, date, note, remaining:newRemaining, currency:selectedCurrency};
+  if(d.type === 'debtor') updateData.subtype = debtSubtype;
+  await userCol('debts').doc(currentDebtId).update(updateData);
+  currentDebtData = {...d, ...updateData};
   closeModal('modal-edit-debt');
   showToast('تم التعديل ✓');
   await refreshDebtDetail();
