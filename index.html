@@ -2603,8 +2603,6 @@ async function printPersonStatement() {
     const paid  = debt.paidAmount||0;
     const rem   = debt.remaining!==undefined ? debt.remaining : total-paid;
     const debtDate = debt.date || (debt.createdAt?.toDate ? fmtD(debt.createdAt) : '');
-    const subLabel = !isC && debt.subtype ? ` (${debt.subtype})` : '';
-    const dirLabel = isC ? 'ليا' : 'عليا';
 
     totByCur[cur]  = (totByCur[cur]||0)  + total;
     paidByCur[cur] = (paidByCur[cur]||0) + paid;
@@ -2614,7 +2612,7 @@ async function printPersonStatement() {
       amount: total,
       sym,
       cur,
-      bayan: `${dirLabel}${subLabel}${debt.note?' — '+debt.note:''}`,
+      bayan: debt.note||'',
       kind: 'debt',
       isC
     });
@@ -2629,7 +2627,7 @@ async function printPersonStatement() {
           amount: pd.amount||0,
           sym,
           cur,
-          bayan: `دفعة سداد${pd.ref?' — وصل '+pd.ref:''}${pd.note?' — '+pd.note:''}`,
+          bayan: pd.note || (pd.ref ? 'وصل '+pd.ref : ''),
           kind: 'payment',
           isC
         });
@@ -2686,14 +2684,13 @@ async function printPersonStatement() {
     @media print{body{padding:.6cm;}@page{margin:.7cm;size:A4 portrait;}}
   </style></head><body>
   <h1>كشف حساب</h1>
-  ${userName?`<div class="info-row"><span>بواسطة :</span><span>${userName}</span></div>`:''}
   <div class="info-row"><span>الاسم :</span><span>${name}</span><span style="margin-right:auto;"></span><span>عدد السجلات :</span><span>${allRows.length}</span></div>
   <div class="info-row"><span>تاريخ الكشف :</span><span>${printDate}</span></div>
   <hr class="divider">
   <table>
     <thead><tr>
       <th style="width:5%;">م</th>
-      <th style="width:13%;">التاريخ</th>
+      <th style="width:20%;">التاريخ</th>
       <th style="width:14%;">المبلغ</th>
       <th style="width:9%;">العملة</th>
       <th>البيان</th>
