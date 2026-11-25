@@ -299,6 +299,7 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 .type-btn{flex:1;padding:.7rem;border-radius:10px;border:2px solid var(--border);background:none;font-family:'Cairo',sans-serif;font-size:.87rem;font-weight:700;cursor:pointer;transition:all .2s;color:var(--text2);}
 .type-btn.sel-creditor{border-color:var(--success);background:var(--success-light);color:var(--success);}
 .type-btn.sel-debtor{border-color:var(--danger);background:var(--danger-light);color:var(--danger);}
+.debt-subtype-btn.active,.edit-debt-subtype-btn.active{border-color:#8b5cf6!important;background:#f5f3ff!important;color:#7c3aed!important;}
 
 /* ===== Categories ===== */
 .cat-grid{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.5rem;}
@@ -778,7 +779,7 @@ body.light-bg{background:#f1f5f9!important;}
     <div class="form-group" id="debt-subtype-wrap" style="display:none;">
       <label class="form-label">نوع الدين</label>
       <div class="type-toggle">
-        <button class="type-btn debt-subtype-btn active" onclick="setDebtSubtype('سلفة',this)" style="border-color:#8b5cf6;background:#f5f3ff;color:#7c3aed;">💸 سلفة</button>
+        <button class="type-btn debt-subtype-btn active" onclick="setDebtSubtype('سلفة',this)">💸 سلفة</button>
         <button class="type-btn debt-subtype-btn"        onclick="setDebtSubtype('أقساط',this)">📋 أقساط</button>
       </div>
     </div>
@@ -875,7 +876,7 @@ body.light-bg{background:#f1f5f9!important;}
     <div class="form-group" id="edit-debt-subtype-wrap" style="display:none;">
       <label class="form-label">نوع الدين</label>
       <div class="type-toggle">
-        <button class="type-btn edit-debt-subtype-btn active" onclick="setEditDebtSubtype('سلفة',this)" style="border-color:#8b5cf6;background:#f5f3ff;color:#7c3aed;">💸 سلفة</button>
+        <button class="type-btn edit-debt-subtype-btn active" onclick="setEditDebtSubtype('سلفة',this)">💸 سلفة</button>
         <button class="type-btn edit-debt-subtype-btn" onclick="setEditDebtSubtype('أقساط',this)">📋 أقساط</button>
       </div>
     </div>
