@@ -2,7 +2,9 @@ import { projects } from '@/registry'
 import { viewMap } from '@/view-map'
 import { notFound } from 'next/navigation'
 
-export const dynamicParams = false
+export function generateStaticParams() {
+  return projects.map((p) => ({ slug: p.slug }))
+}
 
 export default async function ProjectPage({
   params,
