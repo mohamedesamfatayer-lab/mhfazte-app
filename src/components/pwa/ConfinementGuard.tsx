@@ -26,7 +26,9 @@ export function ConfinementGuard({ slug }: { slug: string }) {
 
       try {
         const url = new URL(anchor.href, location.origin)
-        if (url.origin !== location.origin || !url.pathname.startsWith(projectRoot)) {
+        const isAllowed = url.origin === location.origin &&
+          (url.pathname.startsWith(projectRoot) || url.pathname === '/')
+        if (!isAllowed) {
           e.preventDefault()
           e.stopPropagation()
         }
