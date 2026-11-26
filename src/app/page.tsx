@@ -24,6 +24,7 @@ export default function PlatformHome() {
   const [myPerms, setMyPerms] = useState<string[]>([])  // slugs I can access
   const [loading, setLoading] = useState(true)
   const [toast, setToast]     = useState('')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
@@ -69,26 +70,43 @@ export default function PlatformHome() {
       background: '#1a2535', fontFamily: "'Cairo', system-ui, sans-serif",
       color: '#e2e8f0',
     }}>
+      {/* ══ Sidebar overlay backdrop (mobile) ══ */}
+      {sidebarOpen && (
+        <div onClick={() => setSidebarOpen(false)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 40,
+        }} />
+      )}
+
       {/* ══ Sidebar ══ */}
-      <Sidebar me={me} view={view} setView={setView} visibleProjects={visibleProjects.map(p => p.slug)} showToast={showToast} />
+      <Sidebar me={me} view={view} setView={v => { setView(v); setSidebarOpen(false) }}
+        visibleProjects={visibleProjects.map(p => p.slug)} showToast={showToast}
+        sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* ══ Main ══ */}
-      <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', padding: '1.8rem 2rem 3rem' }}>
+      <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', padding: '1rem 1rem 3rem' }}>
 
         {/* Top bar */}
         <div style={{
-          background: '#1e2d42', borderRadius: 12, padding: '.7rem 1.2rem',
+          background: '#1e2d42', borderRadius: 12, padding: '.7rem 1rem',
           marginBottom: '1.5rem', display: 'flex', alignItems: 'center',
           justifyContent: 'space-between', border: '1px solid rgba(255,255,255,.07)',
         }}>
-          <div>
-            <span style={{ fontWeight: 700, color: '#2563eb', fontSize: '.82rem' }}>منصتي</span>
-            <span style={{ color: 'rgba(255,255,255,.2)', margin: '0 .4rem' }}>/</span>
-            <span style={{ color: '#94a3b8', fontSize: '.82rem' }}>{view === 'home' ? 'الرئيسية' : 'المستخدمون والصلاحيات'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+            <button onClick={() => setSidebarOpen(o => !o)} style={{
+              background: 'rgba(255,255,255,.07)', border: 'none', borderRadius: 7,
+              color: '#94a3b8', cursor: 'pointer', padding: '.3rem .5rem', fontSize: '1rem',
+            }}>
+              <i className="fas fa-bars" />
+            </button>
+            <div>
+              <span style={{ fontWeight: 700, color: '#2563eb', fontSize: '.82rem' }}>منصتي</span>
+              <span style={{ color: 'rgba(255,255,255,.2)', margin: '0 .4rem' }}>/</span>
+              <span style={{ color: '#94a3b8', fontSize: '.82rem' }}>{view === 'home' ? 'الرئيسية' : 'المستخدمون والصلاحيات'}</span>
+            </div>
           </div>
           {me && (
-            <span style={{ fontSize: '.75rem', color: '#64748b' }}>
-              {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            <span style={{ fontSize: '.7rem', color: '#64748b' }}>
+              {new Date().toLocaleDateString('ar-EG', { month: 'long', day: 'numeric' })}
             </span>
           )}
         </div>
@@ -118,15 +136,19 @@ export default function PlatformHome() {
 }
 
 // ── Sidebar ────────────────────────────────────────────
-function Sidebar({ me, view, setView, visibleProjects, showToast }: {
+function Sidebar({ me, view, setView, visibleProjects, showToast, sidebarOpen, setSidebarOpen }: {
   me: Me | null; view: ActiveView; setView: (v: ActiveView) => void
   visibleProjects: string[]; showToast: (m: string) => void
+  sidebarOpen: boolean; setSidebarOpen: (v: boolean) => void
 }) {
   return (
     <aside style={{
-      width: 230, minWidth: 230, height: '100dvh', position: 'sticky', top: 0,
+      width: 230, minWidth: 230, height: '100dvh',
+      position: 'fixed', top: 0, right: 0, zIndex: 50,
       background: '#141c2b', display: 'flex', flexDirection: 'column',
       borderLeft: '1px solid rgba(255,255,255,.07)', overflowY: 'auto',
+      transform: sidebarOpen ? 'translateX(0)' : 'translateX(100%)',
+      transition: 'transform .25s ease',
     }}>
       {/* Brand */}
       <div style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,.07)' }}>
