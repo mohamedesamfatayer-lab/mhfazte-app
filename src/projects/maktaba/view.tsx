@@ -65,6 +65,7 @@ const SECTION_LABELS: Record<Section, string> = {
 export default function MaktabaView() {
   const [active, setActive] = useState<Section>('dashboard')
   const [toast, setToast]   = useState('')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
@@ -76,11 +77,23 @@ export default function MaktabaView() {
       background: '#1a2535', fontFamily: "'Cairo', system-ui, sans-serif",
       color: '#e2e8f0',
     }}>
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div onClick={() => setSidebarOpen(false)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 40,
+        }} />
+      )}
+
       {/* ══ Sidebar ══ */}
       <aside style={{
-        width: 220, minWidth: 220, height: '100dvh', position: 'sticky', top: 0,
+        width: 220, minWidth: 220, height: '100dvh',
         background: '#141c2b', display: 'flex', flexDirection: 'column',
         borderLeft: '1px solid rgba(255,255,255,.07)', overflowY: 'auto',
+        position: 'fixed' as const,
+        top: 0, right: 0, bottom: 0,
+        zIndex: 50,
+        transform: sidebarOpen ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform .25s ease',
       }}>
         {/* Back + Brand */}
         <div style={{ padding: '.7rem .9rem', borderBottom: '1px solid rgba(255,255,255,.07)' }}>
@@ -118,7 +131,7 @@ export default function MaktabaView() {
                 </div>
               )}
               {group.items.map(item => (
-                <button key={item.id} onClick={() => setActive(item.id)} style={{
+                <button key={item.id} onClick={() => { setActive(item.id); setSidebarOpen(false) }} style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: '.55rem',
                   padding: '.5rem .9rem',
                   background: active === item.id ? `${item.color}18` : 'transparent',
@@ -159,10 +172,11 @@ export default function MaktabaView() {
         {/* Breadcrumb */}
         <div style={{
           background: '#141c2b', borderBottom: '1px solid rgba(255,255,255,.07)',
-          padding: '.5rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '.5rem 1rem', display: 'flex', alignItems: 'center', gap: '.6rem',
           position: 'sticky', top: 0, zIndex: 10,
+          direction: 'rtl',
         }}>
-          <div style={{ fontSize: '.78rem' }}>
+          <div style={{ fontSize: '.78rem', flex: 1 }}>
             <span style={{ color: '#16a34a', fontWeight: 700 }}>المكتبة</span>
             <span style={{ color: 'rgba(255,255,255,.2)', margin: '0 .4rem' }}>/</span>
             <span style={{ color: '#94a3b8' }}>{SECTION_LABELS[active]}</span>
@@ -170,6 +184,12 @@ export default function MaktabaView() {
           <span style={{ fontSize: '.68rem', color: '#374151' }}>
             {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </span>
+          <button onClick={() => setSidebarOpen(o => !o)} style={{
+            background: 'rgba(255,255,255,.07)', border: 'none', borderRadius: 7,
+            color: '#94a3b8', cursor: 'pointer', padding: '.3rem .5rem', fontSize: '1rem',
+          }}>
+            <i className="fas fa-bars" />
+          </button>
         </div>
 
         {/* Section content */}

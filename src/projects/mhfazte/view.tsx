@@ -63,6 +63,7 @@ export default function MhfazteView() {
   const [user, setUser] = useState<User | null>(null)
   const [refresh, setRefresh] = useState(0)
   const [toast, setToast] = useState('')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => {
@@ -148,6 +149,13 @@ export default function MhfazteView() {
       direction: 'rtl',
     }}>
 
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div onClick={() => setSidebarOpen(false)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 40,
+        }} />
+      )}
+
       {/* ══ Right Sidebar (kababji style) ══════════════ */}
       <aside style={{
         width: 220, minWidth: 220, height: '100%',
@@ -156,6 +164,12 @@ export default function MhfazteView() {
         flexShrink: 0,
         borderLeft: '1px solid rgba(255,255,255,.07)',
         overflowY: 'auto',
+        // Mobile: fixed overlay, hidden by default
+        position: 'fixed' as const,
+        top: 0, right: 0, bottom: 0,
+        zIndex: 50,
+        transform: sidebarOpen ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform .25s ease',
       }}>
 
         {/* القائمة الرئيسية */}
@@ -203,7 +217,7 @@ export default function MhfazteView() {
               {sec.items.map(item => {
                 const isActive = active === item.id as Section
                 return (
-                  <button key={item.id} onClick={() => setActive(item.id as Section)} style={{
+                  <button key={item.id} onClick={() => { setActive(item.id as Section); setSidebarOpen(false) }} style={{
                     width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem',
                     padding: '.55rem 1rem',
                     background: isActive ? 'rgba(37,99,235,.2)' : 'transparent',
@@ -295,10 +309,17 @@ export default function MhfazteView() {
           padding: '0 1rem',
           borderBottom: '1px solid rgba(255,255,255,.07)',
           direction: 'rtl',
+          gap: '.6rem',
         }}>
           <span style={{ fontWeight: 700, fontSize: '.82rem', color: '#2563eb' }}>محفظتي</span>
           <span style={{ color: 'rgba(255,255,255,.2)', margin: '0 .4rem' }}>/</span>
-          <span style={{ fontSize: '.82rem', color: '#94a3b8' }}>{sectionLabel[active]}</span>
+          <span style={{ fontSize: '.82rem', color: '#94a3b8', flex: 1 }}>{sectionLabel[active]}</span>
+          <button onClick={() => setSidebarOpen(o => !o)} style={{
+            background: 'rgba(255,255,255,.07)', border: 'none', borderRadius: 7,
+            color: '#94a3b8', cursor: 'pointer', padding: '.3rem .5rem', fontSize: '1rem',
+          }}>
+            <i className="fas fa-bars" />
+          </button>
         </div>
 
         {/* Section content */}
