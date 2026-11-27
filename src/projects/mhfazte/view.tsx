@@ -143,7 +143,7 @@ export default function MhfazteView() {
     <div className="mhfazte-root" style={{
       display: 'flex', flexDirection: 'row',
       width: '100%', height: '100dvh', overflow: 'hidden',
-      background: '#1a2535',
+      background: '#0f1a2e',
       fontFamily: "'Cairo', sans-serif",
       color: '#e2e8f0',
       direction: 'rtl',
@@ -325,7 +325,7 @@ export default function MhfazteView() {
         <div style={{
           flex: 1, minHeight: 0,
           overflowY: 'auto', overflowX: 'hidden',
-          background: '#1a2535',
+          background: '#0f1a2e',
           direction: 'rtl',
         }}>
           {active === 'home'      && <HomeSection key={refresh} onDeposit={() => setModal('deposit')} onExpense={() => setModal('expense')} onDebt={(t) => setModal(t === 'creditor' ? 'debt-creditor' : 'debt-debtor')} />}

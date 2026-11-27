@@ -109,65 +109,69 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
     { label: 'معاملات الشهر', val: txThisMonth.toString(), icon: 'fa-clock-rotate-left', color: '#7c3aed', bg: 'rgba(124,58,237,.18)' },
   ]
 
+  // Shared design tokens (matches Kababji sidebar style)
+  const CARD_BG = '#131f30'
+  const BORDER  = '1px solid rgba(255,255,255,.06)'
+  const SEC_TXT = '#8899aa'
+  const DIM_TXT = '#4b5563'
+
   return (
-    <div style={{ direction: 'rtl', minHeight: '100%' }}>
+    <div style={{ direction: 'rtl', minHeight: '100%', background: '#0f1a2e' }}>
 
       {/* ── Action bar ───────────────────────────────── */}
       <div style={{
-        background: '#1e2d42',
-        borderBottom: '1px solid rgba(255,255,255,.06)',
-        padding: '.55rem .9rem',
+        background: '#0d1521',
+        borderBottom: BORDER,
+        padding: '.6rem 1rem',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        {/* left: title + user hint */}
         <div>
-          <div style={{ fontSize: '.72rem', color: '#2563eb', fontWeight: 700 }}>محفظتي — الرئيسية</div>
-          <div style={{ fontSize: '.6rem', color: '#64748b' }}>إدارة المال والديون والمصروفات</div>
+          <div style={{ fontSize: '.83rem', color: '#3b82f6', fontWeight: 700 }}>محفظتي — الرئيسية</div>
+          <div style={{ fontSize: '.65rem', color: DIM_TXT }}>إدارة المال والديون والمصروفات</div>
         </div>
-        {/* right: date + actions button */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
-          <span style={{ fontSize: '.68rem', color: '#94a3b8' }}>{todayAr()}</span>
+          <span style={{ fontSize: '.7rem', color: SEC_TXT }}>{todayAr()}</span>
           <button onClick={onDeposit} style={{
-            background: '#16a34a', color: '#fff', border: 'none',
-            borderRadius: 7, padding: '.3rem .75rem',
-            fontSize: '.72rem', fontWeight: 700, cursor: 'pointer',
+            background: '#15803d', color: '#fff', border: 'none',
+            borderRadius: 8, padding: '.38rem .85rem',
+            fontSize: '.78rem', fontWeight: 700, cursor: 'pointer',
             fontFamily: 'Cairo, sans-serif',
-            display: 'flex', alignItems: 'center', gap: '.3rem',
+            display: 'flex', alignItems: 'center', gap: '.35rem',
           }}>
-            <i className="fas fa-plus" style={{ fontSize: '.65rem' }} />
+            <i className="fas fa-plus" style={{ fontSize: '.68rem' }} />
             إجراءات
-            <i className="fas fa-caret-down" style={{ fontSize: '.6rem' }} />
+            <i className="fas fa-caret-down" style={{ fontSize: '.63rem' }} />
           </button>
         </div>
       </div>
 
       {/* ── Two large featured cards ─────────────────── */}
-      <div style={{ display: 'flex', gap: '.7rem', margin: '.75rem .8rem .5rem', alignItems: 'stretch' }}>
+      <div style={{ display: 'flex', gap: '.75rem', margin: '.8rem .9rem .6rem', alignItems: 'stretch' }}>
 
         {/* Green card – ليا دائن */}
         <div style={{
           flex: 1,
           background: 'linear-gradient(135deg,#14532d,#16a34a)',
           borderRadius: 12, padding: '1rem 1.1rem',
-          boxShadow: '0 4px 20px rgba(22,163,74,.35)',
+          boxShadow: '0 4px 20px rgba(22,163,74,.3)',
           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: 'rgba(255,255,255,.18)',
+              width: 38, height: 38, borderRadius: 10,
+              background: 'rgba(255,255,255,.15)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <i className="fas fa-hand-holding-heart" style={{ color: '#fff', fontSize: '.95rem' }} />
+              <i className="fas fa-hand-holding-heart" style={{ color: '#fff', fontSize: '1rem' }} />
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '.65rem', color: 'rgba(255,255,255,.75)', marginBottom: '.2rem' }}>ليا دائن (الكلي)</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', lineHeight: 1.2, whiteSpace: 'pre-line' }}>
+              <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.7)', marginBottom: '.25rem' }}>ليا دائن (الكلي)</div>
+              <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', lineHeight: 1.2, whiteSpace: 'pre-line' }}>
                 {loading ? '...' : totalCredStr}
               </div>
             </div>
           </div>
-          <div style={{ marginTop: '.6rem', fontSize: '.65rem', color: 'rgba(255,255,255,.65)' }}>
+          <div style={{ marginTop: '.6rem', fontSize: '.68rem', color: 'rgba(255,255,255,.6)' }}>
             إجمالي ما يستحق لك من الآخرين
           </div>
         </div>
@@ -175,31 +179,30 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
         {/* Dark card – رصيد الحساب */}
         <div style={{
           flex: 1,
-          background: '#1e2d42',
+          background: CARD_BG,
           borderRadius: 12, padding: '1rem 1.1rem',
-          border: '1px solid rgba(255,255,255,.08)',
+          border: BORDER,
           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: 'rgba(37,99,235,.25)',
+              width: 38, height: 38, borderRadius: 10,
+              background: 'rgba(37,99,235,.22)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <i className="fas fa-vault" style={{ color: '#60a5fa', fontSize: '.95rem' }} />
+              <i className="fas fa-vault" style={{ color: '#60a5fa', fontSize: '1rem' }} />
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '.65rem', color: '#94a3b8', marginBottom: '.2rem' }}>رصيد الحساب الحالي</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', lineHeight: 1.2, whiteSpace: 'pre-line' }}>
+              <div style={{ fontSize: '.68rem', color: SEC_TXT, marginBottom: '.25rem' }}>رصيد الحساب الحالي</div>
+              <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', lineHeight: 1.2, whiteSpace: 'pre-line' }}>
                 {loading ? '...' : balStr}
               </div>
             </div>
           </div>
           <button onClick={onDeposit} style={{
-            marginTop: '.7rem', background: 'rgba(255,255,255,.08)',
-            border: '1px solid rgba(255,255,255,.12)',
-            borderRadius: 7, padding: '.25rem .6rem',
-            color: 'rgba(255,255,255,.65)', fontSize: '.62rem',
+            marginTop: '.7rem', background: 'rgba(255,255,255,.07)',
+            border: BORDER, borderRadius: 8, padding: '.3rem .7rem',
+            color: SEC_TXT, fontSize: '.68rem',
             cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
             alignSelf: 'flex-start',
           }}>
@@ -209,29 +212,27 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
       </div>
 
       {/* ── Stat cards row ───────────────────────────── */}
-      <div style={{ display: 'flex', gap: '.5rem', margin: '0 .8rem .75rem', overflowX: 'auto', paddingBottom: '.1rem' }}>
+      <div style={{ display: 'flex', gap: '.55rem', margin: '0 .9rem .8rem', overflowX: 'auto', paddingBottom: '.1rem' }}>
         {statCards.map(s => (
           <div key={s.label} style={{
-            flex: '0 0 130px',
-            background: '#1e2d42',
-            borderRadius: 10, padding: '.65rem .75rem',
-            border: '1px solid rgba(255,255,255,.06)',
+            flex: '0 0 135px',
+            background: CARD_BG,
+            borderRadius: 10, padding: '.7rem .8rem',
+            border: BORDER,
             position: 'relative',
           }}>
-            {/* Icon top-left */}
             <div style={{
-              position: 'absolute', top: '.6rem', left: '.6rem',
-              width: 28, height: 28, borderRadius: 7,
+              position: 'absolute', top: '.65rem', left: '.65rem',
+              width: 30, height: 30, borderRadius: 8,
               background: s.bg,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <i className={`fas ${s.icon}`} style={{ color: s.color, fontSize: '.72rem' }} />
+              <i className={`fas ${s.icon}`} style={{ color: s.color, fontSize: '.75rem' }} />
             </div>
-            {/* Content right-aligned */}
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '.6rem', color: '#64748b', marginBottom: '.25rem', paddingLeft: 34 }}>&nbsp;</div>
-              <div style={{ fontSize: '.6rem', color: '#94a3b8', marginBottom: '.3rem' }}>{s.label}</div>
-              <div style={{ fontSize: '.95rem', fontWeight: 800, color: '#fff', lineHeight: 1.3, whiteSpace: 'pre-line' }}>
+              <div style={{ fontSize: '.68rem', color: SEC_TXT, marginBottom: '.3rem', paddingLeft: 36 }}>&nbsp;</div>
+              <div style={{ fontSize: '.65rem', color: DIM_TXT, marginBottom: '.3rem' }}>{s.label}</div>
+              <div style={{ fontSize: '.98rem', fontWeight: 800, color: '#fff', lineHeight: 1.3, whiteSpace: 'pre-line' }}>
                 {loading ? '...' : s.val}
               </div>
             </div>
@@ -240,43 +241,40 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
       </div>
 
       {/* ── Add new operation ────────────────────────── */}
-      <div style={{ margin: '0 .8rem .9rem', background: '#1e2d42', borderRadius: 12, border: '1px solid rgba(255,255,255,.07)' }}>
-        {/* Section title */}
+      <div style={{ margin: '0 .9rem .9rem', background: CARD_BG, borderRadius: 12, border: BORDER }}>
         <div style={{
-          padding: '.6rem .9rem', borderBottom: '1px solid rgba(255,255,255,.06)',
+          padding: '.65rem 1rem', borderBottom: BORDER,
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
         }}>
-          <span style={{ fontWeight: 700, fontSize: '.82rem', color: '#e2e8f0' }}>أضف عملية جديدة</span>
+          <span style={{ fontWeight: 700, fontSize: '.83rem', color: '#e2e8f0' }}>أضف عملية جديدة</span>
         </div>
 
-        {/* Operation type tabs */}
-        <div style={{ display: 'flex', gap: '.4rem', padding: '.6rem .9rem .4rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '.45rem', padding: '.65rem 1rem .45rem', flexWrap: 'wrap' }}>
           {OP_TABS.map(tab => {
             const active = activeTab === tab.key
             return (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
-                display: 'flex', alignItems: 'center', gap: '.35rem',
-                padding: '.35rem .75rem', borderRadius: 7, border: 'none',
-                background: active ? tab.color : 'rgba(255,255,255,.07)',
-                color: active ? '#fff' : '#94a3b8',
-                fontSize: '.72rem', fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '.4rem',
+                padding: '.4rem .85rem', borderRadius: 8, border: 'none',
+                background: active ? tab.color : 'rgba(255,255,255,.06)',
+                color: active ? '#fff' : SEC_TXT,
+                fontSize: '.78rem', fontWeight: 700, cursor: 'pointer',
                 fontFamily: 'Cairo, sans-serif',
-                boxShadow: active ? `0 2px 8px ${tab.color}55` : 'none',
+                boxShadow: active ? `0 2px 8px ${tab.color}44` : 'none',
                 transition: 'all .15s',
               }}>
-                <i className={`fas ${tab.icon}`} style={{ fontSize: '.65rem' }} />
+                <i className={`fas ${tab.icon}`} style={{ fontSize: '.68rem' }} />
                 {tab.label}
               </button>
             )
           })}
         </div>
 
-        {/* Action description + button */}
         <div style={{
-          padding: '.5rem .9rem .8rem',
+          padding: '.5rem 1rem .85rem',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
         }}>
-          <div style={{ fontSize: '.72rem', color: '#64748b' }}>
+          <div style={{ fontSize: '.75rem', color: DIM_TXT }}>
             {activeTab === 'deposit'       && 'إضافة إيداع أو دخل جديد إلى حسابك'}
             {activeTab === 'expense'       && 'تسجيل مصروف أو نفقة جديدة'}
             {activeTab === 'debt-creditor' && 'تسجيل دين جديد ليك على شخص آخر'}
@@ -285,12 +283,12 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
           <button onClick={handleOp} style={{
             background: OP_TABS.find(t => t.key === activeTab)?.color ?? '#2563eb',
             color: '#fff', border: 'none', borderRadius: 8,
-            padding: '.5rem 1.2rem', fontSize: '.78rem', fontWeight: 700,
+            padding: '.5rem 1.3rem', fontSize: '.83rem', fontWeight: 700,
             cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
             display: 'flex', alignItems: 'center', gap: '.4rem',
             whiteSpace: 'nowrap',
           }}>
-            <i className="fas fa-plus" style={{ fontSize: '.7rem' }} />
+            <i className="fas fa-plus" style={{ fontSize: '.72rem' }} />
             حفظ العملية
           </button>
         </div>
