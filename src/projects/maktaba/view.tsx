@@ -74,7 +74,7 @@ export default function MaktabaView() {
   return (
     <div style={{
       minHeight: '100dvh', display: 'flex', direction: 'rtl',
-      background: '#1a2535', fontFamily: "'Cairo', system-ui, sans-serif",
+      background: '#0f1a2e', fontFamily: "'Cairo', system-ui, sans-serif",
       color: '#e2e8f0',
     }}>
       {/* Mobile backdrop */}
