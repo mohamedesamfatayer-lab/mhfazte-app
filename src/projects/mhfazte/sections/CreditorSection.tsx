@@ -32,7 +32,7 @@ export default function CreditorSection({ onAdd, onPayment }: Props) {
   }, [])
 
   const filtered = debts.filter(d => !search || d.name.includes(search))
-  const fmt = (n: number) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2 })
+  const fmt = (n: number) => String(Math.round(Number(n) || 0))
 
   async function deleteDebt(id: string) {
     await createClient().from('mhfazte_debts').delete().eq('id', id)

@@ -81,7 +81,7 @@ export default function DebtsTab() {
               </div>
               <div style={{ textAlign: 'left' }}>
                 <div style={{ fontWeight: 800, fontSize: 16, color: debt.type === 'له' ? '#f87171' : '#34d399' }}>
-                  {Number(debt.remaining).toLocaleString('en-US')}
+                  {String(Math.round(Number(debt.remaining) || 0))}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--a-dim)' }}>{debt.currency}</div>
               </div>

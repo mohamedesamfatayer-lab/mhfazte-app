@@ -23,7 +23,7 @@ function numDate(str: string | null | undefined): string {
 }
 
 function fmtN(n: number): string {
-  return Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })
+  return String(Math.round(Number(n) || 0))
 }
 
 export function printDebtStatement(debt: DebtInfo, payments: Payment[]) {

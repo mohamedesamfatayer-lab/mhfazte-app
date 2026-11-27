@@ -56,7 +56,7 @@ export default function HomeTab() {
             <div>
               <div style={{ color: 'var(--a-dim)', fontSize: 12, marginBottom: 4 }}>الرصيد</div>
               <div style={{ color: 'var(--a-text)', fontSize: 24, fontWeight: 800 }}>
-                {Number(amt).toLocaleString('en-US')}
+                {String(Math.round(Number(amt) || 0))}
               </div>
             </div>
             <div style={{

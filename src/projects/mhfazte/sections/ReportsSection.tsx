@@ -59,7 +59,7 @@ export default function ReportsSection() {
       return name.includes(personSearch.trim())
     })
 
-  const fmt = (n: number) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2 })
+  const fmt = (n: number) => String(Math.round(Number(n) || 0))
 
   const isOut = (t: Tx) => t.type === 'expense' || t.type === 'debt_payment' || t.type === 'withdraw'
   const isIn = (t: Tx) => t.type === 'deposit' || t.type === 'debt_receive'

@@ -40,7 +40,7 @@ export default function DashboardSection({ onNav }: { onNav: (s: Section) => voi
     load()
   }, [])
 
-  const fmt = (n: number) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const fmt = (n: number) => String(Math.round(Number(n) || 0))
 
   const statCards = [
     { label: 'مبيعات الشهر',   val: `${fmt(stats.sales)} ر.س`,  icon: 'fa-chart-line',       color: '#22c55e', bg: 'rgba(34,197,94,.15)' },

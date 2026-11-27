@@ -75,23 +75,28 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
     load()
   }, [])
 
-  const fmt = (n: number) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const fmt = (n: number) => String(Math.round(Number(n) || 0))
 
-  const fmtMap = (m: Record<string, number>) =>
-    Object.entries(m).filter(([, v]) => v > 0).map(([c, v]) => `${fmt(v)} ${CUR_LABELS[c] ?? c}`).join('\n') || '0.00'
+  // Returns array of {amount, cur} for multi-currency display
+  const toEntries = (m: Record<string, number>) =>
+    Object.entries(m).filter(([, v]) => v > 0).map(([c, v]) => ({ amt: fmt(v), cur: CUR_LABELS[c] ?? c }))
 
   const netByCur: Record<string, number> = {}
   new Set([...Object.keys(creditorTotal), ...Object.keys(debtorTotal)]).forEach(c => {
     netByCur[c] = (creditorTotal[c] ?? 0) - (debtorTotal[c] ?? 0)
   })
-  const netStr = Object.entries(netByCur).filter(([, v]) => v !== 0)
-    .map(([c, v]) => `${fmt(Math.abs(v))} ${CUR_LABELS[c] ?? c}`).join('\n') || '0.00'
 
-  const totalCredStr = fmtMap(creditorTotal)
-  const totalDebtStr = fmtMap(debtorTotal)
-  const expStr = fmtMap(expThisMonth)
-  const balStr = Object.entries(balances).filter(([, v]) => v !== 0)
-    .map(([c, v]) => `${fmt(v)} ${CUR_LABELS[c] ?? c}`).join('\n') || '0.00'
+  const credEntries  = toEntries(creditorTotal)
+  const debtEntries  = toEntries(debtorTotal)
+  const expEntries   = toEntries(expThisMonth)
+  const netEntries   = Object.entries(netByCur).filter(([, v]) => v !== 0)
+    .map(([c, v]) => ({ amt: fmt(Math.abs(v)), cur: CUR_LABELS[c] ?? c }))
+  const balEntries   = Object.entries(balances).filter(([, v]) => v !== 0)
+    .map(([c, v]) => ({ amt: fmt(v), cur: CUR_LABELS[c] ?? c }))
+
+  // For large cards (string with line breaks retained)
+  const totalCredStr = credEntries.length ? credEntries.map(e => `${e.amt} ${e.cur}`).join('\n') : '0'
+  const balStr       = balEntries.length  ? balEntries.map(e => `${e.amt} ${e.cur}`).join('\n')  : '0'
 
   const handleOp = () => {
     if (activeTab === 'deposit')       onDeposit()
@@ -100,13 +105,13 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
     if (activeTab === 'debt-debtor')   onDebt('debtor')
   }
 
-  // ── small stat cards ──────────────────────────────
+  // ── small stat cards (entries = [{amt, cur}] for inline display) ──
   const statCards = [
-    { label: 'ليا دائن (الكلي)', val: totalCredStr, icon: 'fa-hand-holding-heart', color: '#059669', bg: 'rgba(5,150,105,.18)' },
-    { label: 'عليا مدين (الكلي)', val: totalDebtStr, icon: 'fa-hand-holding-dollar', color: '#dc2626', bg: 'rgba(220,38,38,.15)' },
-    { label: 'صافي الديون', val: netStr, icon: 'fa-scale-balanced', color: '#2563eb', bg: 'rgba(37,99,235,.18)' },
-    { label: 'مصروفات الشهر', val: expStr, icon: 'fa-receipt', color: '#d97706', bg: 'rgba(217,119,6,.18)' },
-    { label: 'معاملات الشهر', val: txThisMonth.toString(), icon: 'fa-clock-rotate-left', color: '#7c3aed', bg: 'rgba(124,58,237,.18)' },
+    { label: 'ليا دائن (الكلي)',   entries: credEntries, icon: 'fa-hand-holding-heart',  color: '#059669', bg: 'rgba(5,150,105,.18)' },
+    { label: 'عليا مدين (الكلي)', entries: debtEntries, icon: 'fa-hand-holding-dollar', color: '#dc2626', bg: 'rgba(220,38,38,.15)' },
+    { label: 'صافي الديون',        entries: netEntries,  icon: 'fa-scale-balanced',       color: '#2563eb', bg: 'rgba(37,99,235,.18)' },
+    { label: 'مصروفات الشهر',      entries: expEntries,  icon: 'fa-receipt',              color: '#d97706', bg: 'rgba(217,119,6,.18)' },
+    { label: 'معاملات الشهر',      entries: [{ amt: txThisMonth.toString(), cur: '' }], icon: 'fa-clock-rotate-left', color: '#7c3aed', bg: 'rgba(124,58,237,.18)' },
   ]
 
   // Shared design tokens (matches Kababji sidebar style)
@@ -166,9 +171,15 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.7)', marginBottom: '.25rem' }}>ليا دائن (الكلي)</div>
-              <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', lineHeight: 1.2, whiteSpace: 'pre-line' }}>
-                {loading ? '...' : totalCredStr}
-              </div>
+              {loading ? <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff' }}>...</div>
+                : credEntries.length === 0 ? <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff' }}>0</div>
+                : credEntries.map((e, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '.3rem', justifyContent: 'flex-end' }}>
+                    <span style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>{e.amt}</span>
+                    <span style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.8)', fontWeight: 700 }}>{e.cur}</span>
+                  </div>
+                ))
+              }
             </div>
           </div>
           <div style={{ marginTop: '.6rem', fontSize: '.68rem', color: 'rgba(255,255,255,.6)' }}>
@@ -194,9 +205,15 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '.68rem', color: SEC_TXT, marginBottom: '.25rem' }}>رصيد الحساب الحالي</div>
-              <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', lineHeight: 1.2, whiteSpace: 'pre-line' }}>
-                {loading ? '...' : balStr}
-              </div>
+              {loading ? <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff' }}>...</div>
+                : balEntries.length === 0 ? <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff' }}>0</div>
+                : balEntries.map((e, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '.3rem', justifyContent: 'flex-end' }}>
+                    <span style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>{e.amt}</span>
+                    <span style={{ fontSize: '.82rem', color: SEC_TXT, fontWeight: 700 }}>{e.cur}</span>
+                  </div>
+                ))
+              }
             </div>
           </div>
           <button onClick={onDeposit} style={{
@@ -215,26 +232,34 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
       <div style={{ display: 'flex', gap: '.55rem', margin: '0 .9rem .8rem', overflowX: 'auto', paddingBottom: '.1rem' }}>
         {statCards.map(s => (
           <div key={s.label} style={{
-            flex: '0 0 135px',
+            flex: '0 0 auto', minWidth: 150,
             background: CARD_BG,
-            borderRadius: 10, padding: '.7rem .8rem',
+            borderRadius: 10, padding: '.65rem .8rem',
             border: BORDER,
-            position: 'relative',
+            display: 'flex', alignItems: 'center', gap: '.6rem',
+            direction: 'rtl',
           }}>
+            {/* Icon */}
             <div style={{
-              position: 'absolute', top: '.65rem', left: '.65rem',
-              width: 30, height: 30, borderRadius: 8,
+              width: 32, height: 32, borderRadius: 8, flexShrink: 0,
               background: s.bg,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <i className={`fas ${s.icon}`} style={{ color: s.color, fontSize: '.75rem' }} />
+              <i className={`fas ${s.icon}`} style={{ color: s.color, fontSize: '.78rem' }} />
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '.68rem', color: SEC_TXT, marginBottom: '.3rem', paddingLeft: 36 }}>&nbsp;</div>
-              <div style={{ fontSize: '.65rem', color: DIM_TXT, marginBottom: '.3rem' }}>{s.label}</div>
-              <div style={{ fontSize: '.98rem', fontWeight: 800, color: '#fff', lineHeight: 1.3, whiteSpace: 'pre-line' }}>
-                {loading ? '...' : s.val}
-              </div>
+            {/* Text */}
+            <div style={{ textAlign: 'right', minWidth: 0 }}>
+              <div style={{ fontSize: '.63rem', color: DIM_TXT, marginBottom: '.15rem', whiteSpace: 'nowrap' }}>{s.label}</div>
+              {loading ? (
+                <div style={{ fontSize: '.95rem', fontWeight: 800, color: '#fff' }}>...</div>
+              ) : s.entries.length === 0 ? (
+                <div style={{ fontSize: '.95rem', fontWeight: 800, color: '#fff' }}>0</div>
+              ) : s.entries.map((e, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '.25rem', justifyContent: 'flex-end' }}>
+                  <span style={{ fontSize: '.95rem', fontWeight: 800, color: '#fff' }}>{e.amt}</span>
+                  {e.cur && <span style={{ fontSize: '.68rem', color: SEC_TXT, fontWeight: 600 }}>{e.cur}</span>}
+                </div>
+              ))}
             </div>
           </div>
         ))}
