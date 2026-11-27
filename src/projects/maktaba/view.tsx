@@ -86,65 +86,65 @@ export default function MaktabaView() {
 
       {/* ══ Sidebar ══ */}
       <aside style={{
-        width: 220, minWidth: 220, height: '100dvh',
-        background: '#141c2b', display: 'flex', flexDirection: 'column',
-        borderLeft: '1px solid rgba(255,255,255,.07)', overflowY: 'auto',
+        width: 240, minWidth: 240, height: '100dvh',
+        background: '#0d1521', display: 'flex', flexDirection: 'column',
+        borderLeft: '1px solid rgba(255,255,255,.06)', overflowY: 'auto',
         position: 'fixed' as const,
         top: 0, right: 0, bottom: 0,
         zIndex: 50,
         transform: sidebarOpen ? 'translateX(0)' : 'translateX(100%)',
         transition: 'transform .25s ease',
       }}>
-        {/* Back + Brand */}
-        <div style={{ padding: '.7rem .9rem', borderBottom: '1px solid rgba(255,255,255,.07)' }}>
-          <Link href="/" style={{
-            textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '.5rem',
-            marginBottom: '.6rem', padding: '.45rem .7rem', borderRadius: 8,
-            background: 'rgba(37,99,235,.18)', border: '1px solid rgba(37,99,235,.35)',
-            color: '#60a5fa', fontSize: '.75rem', fontWeight: 700,
-          }}>
-            <i className="fas fa-arrow-right" style={{ fontSize: '.65rem' }} /> القائمة الرئيسية
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+        {/* Brand header */}
+        <div style={{ padding: '1rem 1rem .8rem', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', marginBottom: '.8rem' }}>
             <div style={{
-              width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+              width: 40, height: 40, borderRadius: 11, flexShrink: 0,
               background: 'linear-gradient(135deg,#14532d,#16a34a)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 10px rgba(22,163,74,.35)',
+              boxShadow: '0 4px 12px rgba(22,163,74,.35)',
             }}>
-              <i className="fas fa-book-open" style={{ color: '#bbf7d0', fontSize: '.9rem' }} />
+              <i className="fas fa-book-open" style={{ color: '#fff', fontSize: '1rem' }} />
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: '.95rem', color: '#fff' }}>المكتبة</div>
-              <div style={{ fontSize: '.58rem', color: '#475569' }}>نظام المحاسبة المتكامل</div>
+              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#fff', lineHeight: 1.2 }}>المكتبة</div>
+              <div style={{ fontSize: '.65rem', color: '#4b5563', marginTop: 2 }}>نظام المحاسبة المتكامل</div>
             </div>
           </div>
+          <Link href="/" style={{
+            textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '.5rem',
+            padding: '.5rem .75rem', borderRadius: 8,
+            background: 'rgba(37,99,235,.12)', border: '1px solid rgba(37,99,235,.25)',
+            color: '#60a5fa', fontSize: '.78rem', fontWeight: 600,
+          }}>
+            <i className="fas fa-arrow-right" style={{ fontSize: '.68rem' }} /> القائمة الرئيسية
+          </Link>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, paddingTop: '.3rem' }}>
+        <nav style={{ flex: 1, padding: '.5rem 0' }}>
           {NAV.map(group => (
             <div key={group.section}>
               {group.section && (
-                <div style={{ fontSize: '.58rem', color: '#475569', fontWeight: 700, padding: '.5rem .9rem .15rem', letterSpacing: .8 }}>
+                <div style={{ fontSize: '.62rem', color: '#4b5563', fontWeight: 700, padding: '.7rem 1rem .25rem', letterSpacing: 1 }}>
                   {group.section}
                 </div>
               )}
               {group.items.map(item => (
                 <button key={item.id} onClick={() => { setActive(item.id); setSidebarOpen(false) }} style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: '.55rem',
-                  padding: '.5rem .9rem',
-                  background: active === item.id ? `${item.color}18` : 'transparent',
-                  border: 'none', borderRight: `3px solid ${active === item.id ? item.color : 'transparent'}`,
-                  color: active === item.id ? '#fff' : '#6b7280',
-                  fontSize: '.78rem', fontWeight: active === item.id ? 700 : 500,
+                  width: 'calc(100% - 1rem)', display: 'flex', alignItems: 'center', gap: '.65rem',
+                  padding: '.6rem .75rem', margin: '1px .5rem',
+                  background: active === item.id ? 'rgba(255,255,255,.08)' : 'transparent',
+                  border: 'none', borderRadius: 8,
+                  color: active === item.id ? '#fff' : '#8899aa',
+                  fontSize: '.83rem', fontWeight: active === item.id ? 700 : 400,
                   cursor: 'pointer', fontFamily: 'Cairo,sans-serif',
                   textAlign: 'right', direction: 'rtl', transition: 'all .15s',
                 }}
                   onMouseEnter={e => { if (active !== item.id) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,.04)' }}
                   onMouseLeave={e => { if (active !== item.id) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                 >
-                  <i className={`fas ${item.icon}`} style={{ fontSize: '.75rem', width: 15, textAlign: 'center', color: active === item.id ? item.color : '#374151' }} />
+                  <i className={`fas ${item.icon}`} style={{ fontSize: '.85rem', width: 18, textAlign: 'center', color: active === item.id ? item.color : '#4b5563' }} />
                   {item.label}
                 </button>
               ))}
@@ -153,13 +153,13 @@ export default function MaktabaView() {
         </nav>
 
         {/* Logout */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', padding: '.7rem .9rem' }}>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', padding: '.75rem 1rem' }}>
           <button onClick={() => createClient().auth.signOut().then(() => { window.location.href = '/login' })} style={{
-            width: '100%', padding: '.38rem', borderRadius: 7,
-            border: '1px solid rgba(220,38,38,.4)', background: 'rgba(220,38,38,.1)',
-            color: '#f87171', fontSize: '.72rem', fontWeight: 700,
+            width: '100%', padding: '.5rem', borderRadius: 8,
+            border: '1px solid rgba(220,38,38,.35)', background: 'rgba(220,38,38,.1)',
+            color: '#f87171', fontSize: '.83rem', fontWeight: 700,
             cursor: 'pointer', fontFamily: 'Cairo,sans-serif',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem',
           }}>
             <i className="fas fa-right-from-bracket" />
             تسجيل الخروج
@@ -171,22 +171,22 @@ export default function MaktabaView() {
       <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
         {/* Breadcrumb */}
         <div style={{
-          background: '#141c2b', borderBottom: '1px solid rgba(255,255,255,.07)',
-          padding: '.5rem 1rem', display: 'flex', alignItems: 'center', gap: '.6rem',
+          background: '#0d1521', borderBottom: '1px solid rgba(255,255,255,.06)',
+          padding: '.6rem 1rem', display: 'flex', alignItems: 'center', gap: '.6rem',
           position: 'sticky', top: 0, zIndex: 10,
           direction: 'rtl',
         }}>
-          <div style={{ fontSize: '.78rem', flex: 1 }}>
-            <span style={{ color: '#16a34a', fontWeight: 700 }}>المكتبة</span>
+          <div style={{ fontSize: '.83rem', flex: 1 }}>
+            <span style={{ color: '#22c55e', fontWeight: 700 }}>المكتبة</span>
             <span style={{ color: 'rgba(255,255,255,.2)', margin: '0 .4rem' }}>/</span>
-            <span style={{ color: '#94a3b8' }}>{SECTION_LABELS[active]}</span>
+            <span style={{ color: '#8899aa' }}>{SECTION_LABELS[active]}</span>
           </div>
-          <span style={{ fontSize: '.68rem', color: '#374151' }}>
+          <span style={{ fontSize: '.7rem', color: '#4b5563' }}>
             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </span>
           <button onClick={() => setSidebarOpen(o => !o)} style={{
-            background: 'rgba(255,255,255,.07)', border: 'none', borderRadius: 7,
-            color: '#94a3b8', cursor: 'pointer', padding: '.3rem .5rem', fontSize: '1rem',
+            background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 7,
+            color: '#8899aa', cursor: 'pointer', padding: '.3rem .55rem', fontSize: '1rem',
           }}>
             <i className="fas fa-bars" />
           </button>

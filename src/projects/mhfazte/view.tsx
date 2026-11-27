@@ -156,15 +156,14 @@ export default function MhfazteView() {
         }} />
       )}
 
-      {/* ══ Right Sidebar (kababji style) ══════════════ */}
+      {/* ══ Right Sidebar ══════════════════════════════ */}
       <aside style={{
-        width: 220, minWidth: 220, height: '100%',
-        background: '#141c2b',
+        width: 240, minWidth: 240, height: '100%',
+        background: '#0d1521',
         display: 'flex', flexDirection: 'column',
         flexShrink: 0,
-        borderLeft: '1px solid rgba(255,255,255,.07)',
+        borderLeft: '1px solid rgba(255,255,255,.06)',
         overflowY: 'auto',
-        // Mobile: fixed overlay, hidden by default
         position: 'fixed' as const,
         top: 0, right: 0, bottom: 0,
         zIndex: 50,
@@ -172,44 +171,42 @@ export default function MhfazteView() {
         transition: 'transform .25s ease',
       }}>
 
-        {/* القائمة الرئيسية */}
-        <a href="/" style={{
-          display: 'flex', alignItems: 'center', gap: '.55rem',
-          padding: '.6rem .9rem', margin: '.6rem .7rem',
-          borderRadius: 9, textDecoration: 'none',
-          color: '#60a5fa', fontSize: '.78rem', fontWeight: 700,
-          background: 'rgba(37,99,235,.18)',
-          border: '1px solid rgba(37,99,235,.35)',
-        }}>
-          <i className="fas fa-arrow-right" style={{ fontSize: '.72rem' }} />
-          القائمة الرئيسية
-        </a>
-
-        {/* System header */}
-        <div style={{ padding: '.9rem 1rem .6rem', borderBottom: '1px solid rgba(255,255,255,.07)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+        {/* Brand header */}
+        <div style={{ padding: '1rem 1rem .8rem', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem', marginBottom: '.8rem' }}>
             <div style={{
-              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-              background: 'rgba(37,99,235,.3)',
+              width: 40, height: 40, borderRadius: 11, flexShrink: 0,
+              background: 'linear-gradient(135deg,#1d4ed8,#2563eb)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(37,99,235,.4)',
             }}>
-              <i className="fas fa-wallet" style={{ color: '#60a5fa', fontSize: '.95rem' }} />
+              <i className="fas fa-wallet" style={{ color: '#fff', fontSize: '1rem' }} />
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: '.92rem', color: '#fff' }}>محفظتي</div>
-              <div style={{ fontSize: '.6rem', color: '#64748b' }}>إدارة المال والديون</div>
+              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#fff', lineHeight: 1.2 }}>محفظتي</div>
+              <div style={{ fontSize: '.65rem', color: '#4b5563', marginTop: 2 }}>إدارة المال والديون</div>
             </div>
           </div>
+          <a href="/" style={{
+            display: 'flex', alignItems: 'center', gap: '.5rem',
+            padding: '.5rem .75rem', borderRadius: 8, textDecoration: 'none',
+            color: '#60a5fa', fontSize: '.78rem', fontWeight: 600,
+            background: 'rgba(37,99,235,.12)', border: '1px solid rgba(37,99,235,.25)',
+            transition: 'all .15s',
+          }}>
+            <i className="fas fa-arrow-right" style={{ fontSize: '.68rem' }} />
+            القائمة الرئيسية
+          </a>
         </div>
 
         {/* Nav items */}
-        <nav style={{ flex: 1, paddingTop: '.4rem' }}>
+        <nav style={{ flex: 1, padding: '.5rem 0' }}>
           {NAV_SECTIONS.map((sec, si) => (
             <div key={si}>
               {sec.title && (
                 <div style={{
-                  fontSize: '.58rem', color: '#475569', fontWeight: 700,
-                  padding: '.5rem 1rem .2rem', letterSpacing: .8, textTransform: 'uppercase',
+                  fontSize: '.62rem', color: '#4b5563', fontWeight: 700,
+                  padding: '.7rem 1rem .25rem', letterSpacing: 1,
                 }}>
                   {sec.title}
                 </div>
@@ -218,22 +215,23 @@ export default function MhfazteView() {
                 const isActive = active === item.id as Section
                 return (
                   <button key={item.id} onClick={() => { setActive(item.id as Section); setSidebarOpen(false) }} style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem',
-                    padding: '.55rem 1rem',
-                    background: isActive ? 'rgba(37,99,235,.2)' : 'transparent',
-                    borderRight: `3px solid ${isActive ? item.color : 'transparent'}`,
-                    color: isActive ? '#fff' : '#94a3b8',
-                    fontSize: '.8rem', fontWeight: isActive ? 700 : 500,
+                    width: '100%', display: 'flex', alignItems: 'center', gap: '.65rem',
+                    padding: '.6rem .75rem',
+                    margin: '1px .5rem', width: 'calc(100% - 1rem)',
+                    background: isActive ? 'rgba(255,255,255,.08)' : 'transparent',
+                    border: 'none', borderRadius: 8,
+                    color: isActive ? '#fff' : '#8899aa',
+                    fontSize: '.83rem', fontWeight: isActive ? 700 : 400,
                     cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
                     textAlign: 'right', direction: 'rtl',
                     transition: 'all .15s',
                   }}
-                    onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,.05)' }}
+                    onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,.04)' }}
                     onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                   >
                     <i className={`fas ${item.icon}`} style={{
-                      fontSize: '.82rem', width: 16, textAlign: 'center',
-                      color: isActive ? item.color : '#475569',
+                      fontSize: '.85rem', width: 18, textAlign: 'center',
+                      color: isActive ? item.color : '#4b5563',
                     }} />
                     {item.label}
                   </button>
@@ -244,25 +242,26 @@ export default function MhfazteView() {
         </nav>
 
         {/* ── إجراءات section ── */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', paddingBottom: '.5rem' }}>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', padding: '.5rem 0' }}>
           <div style={{
-            fontSize: '.58rem', color: '#475569', fontWeight: 700,
-            padding: '.6rem 1rem .3rem', letterSpacing: .8,
+            fontSize: '.62rem', color: '#4b5563', fontWeight: 700,
+            padding: '.5rem 1rem .25rem', letterSpacing: 1,
           }}>
             إجراءات
           </div>
           {ACTIONS.map(a => (
             <button key={a.label} onClick={a.fn} style={{
-              width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem',
-              padding: '.5rem 1rem', background: 'transparent', border: 'none',
-              color: '#94a3b8', fontSize: '.76rem', fontWeight: 500,
+              width: 'calc(100% - 1rem)', display: 'flex', alignItems: 'center', gap: '.65rem',
+              padding: '.55rem .75rem', margin: '1px .5rem',
+              background: 'transparent', border: 'none', borderRadius: 8,
+              color: '#8899aa', fontSize: '.83rem', fontWeight: 400,
               cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
               textAlign: 'right', direction: 'rtl', transition: 'all .15s',
             }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(255,255,255,.05)'; el.style.color = '#fff' }}
-              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.color = '#94a3b8' }}
+              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(255,255,255,.04)'; el.style.color = '#fff' }}
+              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.color = '#8899aa' }}
             >
-              <i className={`fas ${a.icon}`} style={{ fontSize: '.8rem', width: 16, textAlign: 'center', color: a.color }} />
+              <i className={`fas ${a.icon}`} style={{ fontSize: '.85rem', width: 18, textAlign: 'center', color: a.color }} />
               {a.label}
             </button>
           ))}
@@ -270,28 +269,28 @@ export default function MhfazteView() {
 
         {/* User */}
         {user && (
-          <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', padding: '.7rem 1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem' }}>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', padding: '.75rem 1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
               {user.avatar ? (
-                <img src={user.avatar} alt="" style={{ width: 30, height: 30, borderRadius: '50%', flexShrink: 0 }} />
+                <img src={user.avatar} alt="" style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0 }} />
               ) : (
                 <div style={{
-                  width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-                  background: 'rgba(37,99,235,.4)',
+                  width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+                  background: 'linear-gradient(135deg,#15803d,#22c55e)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '.8rem', fontWeight: 800, color: '#fff',
+                  fontSize: '.88rem', fontWeight: 800, color: '#fff',
                 }}>{user.name[0]}</div>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '.72rem', fontWeight: 700, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div>
-                <div style={{ fontSize: '.58rem', color: '#64748b' }}>مدير الحساب</div>
+                <div style={{ fontSize: '.78rem', fontWeight: 700, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div>
+                <div style={{ fontSize: '.63rem', color: '#4b5563' }}>مدير الحساب</div>
               </div>
               <button onClick={() => createClient().auth.signOut().then(() => { window.location.href = '/login' })} style={{
-                width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(220,38,38,.4)',
-                background: 'rgba(220,38,38,.15)', color: '#f87171',
+                width: 28, height: 28, borderRadius: 7, border: '1px solid rgba(220,38,38,.35)',
+                background: 'rgba(220,38,38,.12)', color: '#f87171',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
               }} title="تسجيل الخروج">
-                <i className="fas fa-right-from-bracket" style={{ fontSize: '.65rem' }} />
+                <i className="fas fa-right-from-bracket" style={{ fontSize: '.68rem' }} />
               </button>
             </div>
           </div>
@@ -303,20 +302,20 @@ export default function MhfazteView() {
 
         {/* Top bar */}
         <div style={{
-          flexShrink: 0, height: 48,
-          background: '#1e2d42',
+          flexShrink: 0, height: 50,
+          background: '#0d1521',
           display: 'flex', alignItems: 'center',
           padding: '0 1rem',
-          borderBottom: '1px solid rgba(255,255,255,.07)',
+          borderBottom: '1px solid rgba(255,255,255,.06)',
           direction: 'rtl',
           gap: '.6rem',
         }}>
-          <span style={{ fontWeight: 700, fontSize: '.82rem', color: '#2563eb' }}>محفظتي</span>
-          <span style={{ color: 'rgba(255,255,255,.2)', margin: '0 .4rem' }}>/</span>
-          <span style={{ fontSize: '.82rem', color: '#94a3b8', flex: 1 }}>{sectionLabel[active]}</span>
+          <span style={{ fontWeight: 700, fontSize: '.83rem', color: '#3b82f6' }}>محفظتي</span>
+          <span style={{ color: 'rgba(255,255,255,.2)', margin: '0 .3rem' }}>/</span>
+          <span style={{ fontSize: '.83rem', color: '#8899aa', flex: 1 }}>{sectionLabel[active]}</span>
           <button onClick={() => setSidebarOpen(o => !o)} style={{
-            background: 'rgba(255,255,255,.07)', border: 'none', borderRadius: 7,
-            color: '#94a3b8', cursor: 'pointer', padding: '.3rem .5rem', fontSize: '1rem',
+            background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 7,
+            color: '#8899aa', cursor: 'pointer', padding: '.3rem .55rem', fontSize: '1rem',
           }}>
             <i className="fas fa-bars" />
           </button>
