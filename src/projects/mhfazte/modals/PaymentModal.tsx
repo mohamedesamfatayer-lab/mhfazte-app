@@ -62,7 +62,7 @@ export default function PaymentModal({ debt, onClose, onSaved }: Props) {
   }, [debt.id])
 
   const paid = debt.amount - currentRemaining
-  const fmt = (n: number) => Number(n).toLocaleString('ar-EG', { minimumFractionDigits: 2 })
+  const fmt = (n: number) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2 })
   const cur = CUR_SHORT[debt.currency] ?? debt.currency
   const isDebtor = debt.type !== 'دائن'
 

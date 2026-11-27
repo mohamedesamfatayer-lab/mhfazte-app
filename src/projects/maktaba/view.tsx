@@ -182,7 +182,7 @@ export default function MaktabaView() {
             <span style={{ color: '#94a3b8' }}>{SECTION_LABELS[active]}</span>
           </div>
           <span style={{ fontSize: '.68rem', color: '#374151' }}>
-            {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </span>
           <button onClick={() => setSidebarOpen(o => !o)} style={{
             background: 'rgba(255,255,255,.07)', border: 'none', borderRadius: 7,

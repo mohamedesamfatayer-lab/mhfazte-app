@@ -42,7 +42,7 @@ export default function ExpensesSection({ onAdd }: { onAdd?: () => void }) {
   }, [])
 
   const fmt = (n: number, cur: string) =>
-    `${Number(n).toLocaleString('ar-EG', { minimumFractionDigits: 2 })} ${cur}`
+    `${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2 })} ${cur}`
 
   const todayByCur = expenses.filter(e => e.date === today)
     .reduce((acc, e) => { acc[e.currency] = (acc[e.currency] ?? 0) + Number(e.amount); return acc }, {} as Record<string, number>)
@@ -101,7 +101,7 @@ export default function ExpensesSection({ onAdd }: { onAdd?: () => void }) {
                 </div>
                 <div style={{ textAlign: 'left' }}>
                   <div className="expense-amount">
-                    {Number(e.amount).toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
+                    {Number(e.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </div>
                   <div style={{ fontSize: '.65rem', color: '#64748b' }}>{e.currency}</div>
                 </div>

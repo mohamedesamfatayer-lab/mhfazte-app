@@ -34,7 +34,7 @@ export default function ExpensesSection({ showToast }: { showToast: (m: string) 
   async function del(id: string) { if (!confirm('حذف المصروف؟')) return; await createClient().from('maktaba_expenses').delete().eq('id', id); showToast('🗑 تم الحذف'); load() }
 
   const total = list.reduce((a, r) => a + Number(r.amount), 0)
-  const fmt = (n: number) => Number(n).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const fmt = (n: number) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   const inp = (style?: any) => ({ background: '#1a2535', border: '1px solid rgba(255,255,255,.12)', borderRadius: 8, padding: '.45rem .7rem', color: '#e2e8f0', fontSize: '.8rem', fontFamily: 'Cairo,sans-serif', direction: 'rtl' as const, ...style })
 
   return (

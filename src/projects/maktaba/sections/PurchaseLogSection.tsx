@@ -33,7 +33,7 @@ export default function PurchaseLogSection({ onNav }: { onNav: (s: Section) => v
     setExpanded(id)
   }
 
-  const fmt = (n: number) => Number(n).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const fmt = (n: number) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   const filtered = invoices.filter(i => !search || i.num.includes(search) || (i.party_name ?? '').includes(search))
   const inp = (style?: any) => ({ background: '#1a2535', border: '1px solid rgba(255,255,255,.12)', borderRadius: 8, padding: '.4rem .7rem', color: '#e2e8f0', fontSize: '.78rem', fontFamily: 'Cairo,sans-serif', direction: 'rtl' as const, ...style })
 

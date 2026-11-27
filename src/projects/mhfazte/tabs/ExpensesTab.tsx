@@ -65,7 +65,7 @@ export default function ExpensesTab() {
               </div>
               <div style={{ textAlign: 'left' }}>
                 <div style={{ fontWeight: 800, fontSize: 15, color: '#f87171' }}>
-                  -{Number(exp.amount).toLocaleString('ar-EG')}
+                  -{Number(exp.amount).toLocaleString('en-US')}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--a-dim)' }}>{exp.currency}</div>
               </div>

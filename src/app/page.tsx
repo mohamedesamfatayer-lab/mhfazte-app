@@ -106,7 +106,7 @@ export default function PlatformHome() {
           </div>
           {me && (
             <span style={{ fontSize: '.7rem', color: '#64748b' }}>
-              {new Date().toLocaleDateString('ar-EG', { month: 'long', day: 'numeric' })}
+              {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
             </span>
           )}
         </div>

@@ -20,7 +20,7 @@ export default function BudgetSection() {
     load()
   }, [])
 
-  const fmt = (n: number) => Number(n).toLocaleString('ar-EG', { minimumFractionDigits: 2 })
+  const fmt = (n: number) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2 })
 
   return (
     <div>

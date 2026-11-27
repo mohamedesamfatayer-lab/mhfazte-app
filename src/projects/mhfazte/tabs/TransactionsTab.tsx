@@ -73,7 +73,7 @@ export default function TransactionsTab() {
               <div style={{ textAlign: 'left' }}>
                 <div style={{ fontWeight: 800, fontSize: 15, color: typeColor(tx.type) }}>
                   {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}
-                  {Number(tx.amount).toLocaleString('ar-EG')}
+                  {Number(tx.amount).toLocaleString('en-US')}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--a-dim)' }}>{tx.currency}</div>
               </div>

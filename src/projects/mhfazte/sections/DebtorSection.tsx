@@ -38,7 +38,7 @@ export default function DebtorSection({ onAdd, onPayment }: Props) {
     .filter(d => !search || d.name.includes(search))
     .filter(d => subTab === 'all' || d.subtype === subTab)
 
-  const fmt = (n: number) => Number(n).toLocaleString('ar-EG', { minimumFractionDigits: 2 })
+  const fmt = (n: number) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2 })
 
   const سلفTotals = debts.filter(d => d.subtype !== 'أقساط').reduce((acc, d) => {
     acc[d.currency] = (acc[d.currency] ?? 0) + Number(d.remaining); return acc

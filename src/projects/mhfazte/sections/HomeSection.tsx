@@ -75,7 +75,7 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
     load()
   }, [])
 
-  const fmt = (n: number) => Number(n).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const fmt = (n: number) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   const fmtMap = (m: Record<string, number>) =>
     Object.entries(m).filter(([, v]) => v > 0).map(([c, v]) => `${fmt(v)} ${CUR_LABELS[c] ?? c}`).join('\n') || '0.00'

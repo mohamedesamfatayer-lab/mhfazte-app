@@ -47,7 +47,7 @@ export default function HistorySection() {
   }, [])
 
   const filtered = filter === 'all' ? txs : txs.filter(t => t.type === filter)
-  const fmt = (n: number) => Number(n).toLocaleString('ar-EG', { minimumFractionDigits: 2 })
+  const fmt = (n: number) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2 })
   const isIncome = (t: Tx) => t.type === 'deposit' || t.type === 'debt_receive'
 
   async function deleteTx(id: string) {
