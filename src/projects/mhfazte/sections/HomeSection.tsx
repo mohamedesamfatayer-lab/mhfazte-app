@@ -155,34 +155,34 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
 
         {/* Green card – ليا دائن */}
         <div style={{
-          flex: 1,
+          flex: '0 0 auto', width: 220,
           background: 'linear-gradient(135deg,#14532d,#16a34a)',
-          borderRadius: 12, padding: '1rem 1.1rem',
+          borderRadius: 12, padding: '.85rem 1rem',
           boxShadow: '0 4px 20px rgba(22,163,74,.3)',
           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div style={{
-              width: 38, height: 38, borderRadius: 10,
+              width: 34, height: 34, borderRadius: 9, flexShrink: 0,
               background: 'rgba(255,255,255,.15)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <i className="fas fa-hand-holding-heart" style={{ color: '#fff', fontSize: '1rem' }} />
+              <i className="fas fa-hand-holding-heart" style={{ color: '#fff', fontSize: '.9rem' }} />
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.7)', marginBottom: '.25rem' }}>ليا دائن (الكلي)</div>
-              {loading ? <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff' }}>...</div>
-                : credEntries.length === 0 ? <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff' }}>0</div>
+              <div style={{ fontSize: '.65rem', color: 'rgba(255,255,255,.7)', marginBottom: '.2rem' }}>ليا دائن (الكلي)</div>
+              {loading ? <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>...</div>
+                : credEntries.length === 0 ? <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>0</div>
                 : credEntries.map((e, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '.3rem', justifyContent: 'flex-end' }}>
-                    <span style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>{e.amt}</span>
-                    <span style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.8)', fontWeight: 700 }}>{e.cur}</span>
+                  <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '.25rem', justifyContent: 'flex-end' }}>
+                    <span style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>{e.amt}</span>
+                    <span style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.8)', fontWeight: 700 }}>{e.cur}</span>
                   </div>
                 ))
               }
             </div>
           </div>
-          <div style={{ marginTop: '.6rem', fontSize: '.68rem', color: 'rgba(255,255,255,.6)' }}>
+          <div style={{ marginTop: '.5rem', fontSize: '.63rem', color: 'rgba(255,255,255,.55)' }}>
             إجمالي ما يستحق لك من الآخرين
           </div>
         </div>
@@ -191,28 +191,33 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
         <div style={{
           flex: 1,
           background: CARD_BG,
-          borderRadius: 12, padding: '1rem 1.1rem',
+          borderRadius: 12, padding: '.85rem 1rem',
           border: BORDER,
           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div style={{
-              width: 38, height: 38, borderRadius: 10,
+              width: 34, height: 34, borderRadius: 9, flexShrink: 0,
               background: 'rgba(37,99,235,.22)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <i className="fas fa-vault" style={{ color: '#60a5fa', fontSize: '1rem' }} />
+              <i className="fas fa-vault" style={{ color: '#60a5fa', fontSize: '.9rem' }} />
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '.68rem', color: SEC_TXT, marginBottom: '.25rem' }}>رصيد الحساب الحالي</div>
-              {loading ? <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff' }}>...</div>
-                : balEntries.length === 0 ? <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff' }}>0</div>
-                : balEntries.map((e, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '.3rem', justifyContent: 'flex-end' }}>
-                    <span style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>{e.amt}</span>
-                    <span style={{ fontSize: '.82rem', color: SEC_TXT, fontWeight: 700 }}>{e.cur}</span>
+            <div style={{ textAlign: 'right', flex: 1 }}>
+              <div style={{ fontSize: '.65rem', color: SEC_TXT, marginBottom: '.2rem' }}>رصيد الحساب الحالي</div>
+              {loading ? <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>...</div>
+                : balEntries.length === 0 ? <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>0</div>
+                : (
+                  /* all currencies on ONE line, separated by space */
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem 1rem', justifyContent: 'flex-end' }}>
+                    {balEntries.map((e, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '.25rem' }}>
+                        <span style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>{e.amt}</span>
+                        <span style={{ fontSize: '.75rem', color: SEC_TXT, fontWeight: 700 }}>{e.cur}</span>
+                      </div>
+                    ))}
                   </div>
-                ))
+                )
               }
             </div>
           </div>
