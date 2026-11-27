@@ -25,15 +25,23 @@ export default function AddExpenseModal({ onClose, onSaved }: Props) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setError('غير مسجل'); setLoading(false); return }
 
+    const amt = Number(amount)
+
     await supabase.from('mhfazte_expenses').insert({
       user_id: user.id, category, currency,
-      amount: Number(amount), date, note: note || null,
+      amount: amt, date, note: note || null,
     })
+
+    // Deduct from balance
+    const { data: acc } = await supabase.from('mhfazte_account').select('balances').eq('user_id', user.id).single()
+    const balances: Record<string, number> = (acc as any)?.balances ?? {}
+    balances[currency] = (balances[currency] ?? 0) - amt
+    await supabase.from('mhfazte_account').upsert({ user_id: user.id, balances }, { onConflict: 'user_id' })
 
     // Record transaction
     await supabase.from('mhfazte_transactions').insert({
       user_id: user.id, type: 'expense',
-      amount: Number(amount), currency, category,
+      amount: amt, currency, category,
       note: note || null, date,
     })
 

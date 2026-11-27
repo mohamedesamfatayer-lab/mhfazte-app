@@ -127,35 +127,36 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
       <div style={{
         background: '#0d1521',
         borderBottom: BORDER,
-        padding: '.6rem 1rem',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '.55rem 1rem',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.5rem',
+        flexWrap: 'wrap',
       }}>
-        <div>
-          <div style={{ fontSize: '.83rem', color: '#3b82f6', fontWeight: 700 }}>محفظتي — الرئيسية</div>
-          <div style={{ fontSize: '.65rem', color: DIM_TXT }}>إدارة المال والديون والمصروفات</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '.82rem', color: '#3b82f6', fontWeight: 700, whiteSpace: 'nowrap' }}>محفظتي — الرئيسية</div>
+          <div style={{ fontSize: '.63rem', color: DIM_TXT }}>إدارة المال والديون والمصروفات</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
-          <span style={{ fontSize: '.7rem', color: SEC_TXT }}>{todayAr()}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
+          <span style={{ fontSize: '.68rem', color: SEC_TXT, whiteSpace: 'nowrap' }}>{todayAr()}</span>
           <button onClick={onDeposit} style={{
             background: '#15803d', color: '#fff', border: 'none',
-            borderRadius: 8, padding: '.38rem .85rem',
+            borderRadius: 8, padding: '.35rem .8rem',
             fontSize: '.78rem', fontWeight: 700, cursor: 'pointer',
             fontFamily: 'Cairo, sans-serif',
-            display: 'flex', alignItems: 'center', gap: '.35rem',
+            display: 'flex', alignItems: 'center', gap: '.35rem', whiteSpace: 'nowrap',
           }}>
-            <i className="fas fa-plus" style={{ fontSize: '.68rem' }} />
+            <i className="fas fa-plus" style={{ fontSize: '.65rem' }} />
             إجراءات
-            <i className="fas fa-caret-down" style={{ fontSize: '.63rem' }} />
+            <i className="fas fa-caret-down" style={{ fontSize: '.6rem' }} />
           </button>
         </div>
       </div>
 
       {/* ── Two large featured cards ─────────────────── */}
-      <div style={{ display: 'flex', gap: '.75rem', margin: '.8rem .9rem .6rem', alignItems: 'stretch' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.75rem', margin: '.8rem .9rem .6rem' }}>
 
         {/* Green card – ليا دائن */}
         <div style={{
-          flex: '0 0 auto', width: 220,
+          flex: '1 1 180px',
           background: 'linear-gradient(135deg,#14532d,#16a34a)',
           borderRadius: 12, padding: '.85rem 1rem',
           boxShadow: '0 4px 20px rgba(22,163,74,.3)',
@@ -189,7 +190,7 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
 
         {/* Dark card – رصيد الحساب */}
         <div style={{
-          flex: 1,
+          flex: '2 1 240px',
           background: CARD_BG,
           borderRadius: 12, padding: '.85rem 1rem',
           border: BORDER,
@@ -302,9 +303,10 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
 
         <div style={{
           padding: '.5rem 1rem .85rem',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.75rem',
+          flexWrap: 'wrap',
         }}>
-          <div style={{ fontSize: '.75rem', color: DIM_TXT }}>
+          <div style={{ fontSize: '.75rem', color: DIM_TXT, flex: 1, minWidth: 120 }}>
             {activeTab === 'deposit'       && 'إضافة إيداع أو دخل جديد إلى حسابك'}
             {activeTab === 'expense'       && 'تسجيل مصروف أو نفقة جديدة'}
             {activeTab === 'debt-creditor' && 'تسجيل دين جديد ليك على شخص آخر'}
