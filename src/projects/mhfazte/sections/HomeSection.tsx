@@ -37,7 +37,16 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
   const [debtorTotal, setDebtorTotal]     = useState<Record<string, number>>({})
   const [loading, setLoading]             = useState(true)
   const [menuOpen, setMenuOpen]           = useState(false)
-  const [hidden, setHidden]               = useState<Set<string>>(new Set())
+  const [hidden, setHidden] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem('mhfazte_hidden_cards')
+      return saved ? new Set<string>(JSON.parse(saved)) : new Set<string>()
+    } catch { return new Set<string>() }
+  })
+
+  useEffect(() => {
+    localStorage.setItem('mhfazte_hidden_cards', JSON.stringify([...hidden]))
+  }, [hidden])
 
   useEffect(() => {
     async function load() {
