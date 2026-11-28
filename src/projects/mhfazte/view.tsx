@@ -327,6 +327,34 @@ export default function MhfazteView() {
           ))}
         </div>
 
+        {/* ── روابط سريعة ── */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', padding: '.6rem .75rem' }}>
+          <div style={{ fontSize: '.62rem', color: '#4b5563', fontWeight: 700, marginBottom: '.4rem', letterSpacing: 1 }}>
+            روابط سريعة
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.35rem' }}>
+            {[
+              { label: 'GitHub',   href: 'https://github.com/mohamedesamfatayer-lab/mhfazte-app', bg: 'rgba(255,255,255,.06)', border: 'rgba(255,255,255,.1)',  icon: 'fa-brands fa-github',  color: '#e2e8f0' },
+              { label: 'Vercel',   href: 'https://vercel.com/dashboard',                           bg: 'rgba(0,0,0,.3)',        border: 'rgba(255,255,255,.1)',  icon: 'fa-solid fa-triangle-exclamation', color: '#fff' },
+              { label: 'Supabase', href: 'https://supabase.com/dashboard',                         bg: 'rgba(62,207,142,.08)', border: 'rgba(62,207,142,.2)',  icon: 'fa-solid fa-database', color: '#3ecf8e' },
+              { label: 'Firebase', href: 'https://console.firebase.google.com',                    bg: 'rgba(255,160,0,.08)',  border: 'rgba(255,160,0,.2)',   icon: 'fa-solid fa-fire',     color: '#ffa000' },
+            ].map(l => (
+              <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer" style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.25rem',
+                padding: '.45rem .3rem', borderRadius: 8, textDecoration: 'none',
+                background: l.bg, border: `1px solid ${l.border}`,
+                transition: 'opacity .15s',
+              }}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '.75'}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
+              >
+                <i className={l.icon} style={{ fontSize: '.95rem', color: l.color }} />
+                <span style={{ fontSize: '.6rem', color: '#8899aa', fontWeight: 600 }}>{l.label}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+
         {/* User */}
         {user && (
           <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', padding: '.75rem 1rem' }}>
