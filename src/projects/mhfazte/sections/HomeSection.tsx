@@ -7,6 +7,7 @@ interface Props {
   onDeposit: () => void
   onExpense: () => void
   onDebt: (type: 'creditor' | 'debtor') => void
+  onSetBalance: () => void
 }
 
 const CUR_LABELS: Record<string, string> = { EGP: 'ج.م', SAR: 'ريال', USD: '$' }
@@ -27,7 +28,7 @@ function todayAr(): string {
   return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
 }
 
-export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
+export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance }: Props) {
   const [balances, setBalances]         = useState<Record<string, number>>({})
   const [creditorTotal, setCreditorTotal] = useState<Record<string, number>>({})
   const [debtorTotal, setDebtorTotal]   = useState<Record<string, number>>({})
@@ -222,13 +223,15 @@ export default function HomeSection({ onDeposit, onExpense, onDebt }: Props) {
               }
             </div>
           </div>
-          <button onClick={onDeposit} style={{
+          <button onClick={onSetBalance} style={{
             marginTop: '.7rem', background: 'rgba(255,255,255,.07)',
             border: BORDER, borderRadius: 8, padding: '.3rem .7rem',
             color: SEC_TXT, fontSize: '.68rem',
             cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
             alignSelf: 'flex-start',
+            display: 'flex', alignItems: 'center', gap: '.3rem',
           }}>
+            <i className="fas fa-pen-to-square" style={{ fontSize: '.6rem' }} />
             ضبط الرصيد
           </button>
         </div>

@@ -16,9 +16,10 @@ import DepositModal from './modals/DepositModal'
 import AddExpenseModal from './modals/AddExpenseModal'
 import AddDebtModal from './modals/AddDebtModal'
 import PaymentModal from './modals/PaymentModal'
+import SetBalanceModal from './modals/SetBalanceModal'
 
 type Section = 'home' | 'creditor' | 'debtor' | 'expenses' | 'history' | 'reports' | 'budget' | 'reminders' | 'recurring'
-type Modal = 'deposit' | 'expense' | 'debt-creditor' | 'debt-debtor' | null
+type Modal = 'deposit' | 'expense' | 'debt-creditor' | 'debt-debtor' | 'set-balance' | null
 
 interface DebtForPayment {
   id: string; name: string; remaining: number; amount: number; currency: string; subtype: string | null
@@ -328,7 +329,7 @@ export default function MhfazteView() {
           background: '#0f1a2e',
           direction: 'rtl',
         }}>
-          {active === 'home'      && <HomeSection key={refresh} onDeposit={() => setModal('deposit')} onExpense={() => setModal('expense')} onDebt={(t) => setModal(t === 'creditor' ? 'debt-creditor' : 'debt-debtor')} />}
+          {active === 'home'      && <HomeSection key={refresh} onDeposit={() => setModal('deposit')} onExpense={() => setModal('expense')} onDebt={(t) => setModal(t === 'creditor' ? 'debt-creditor' : 'debt-debtor')} onSetBalance={() => setModal('set-balance')} />}
           {active === 'creditor'  && <CreditorSection key={refresh} onAdd={() => setModal('debt-creditor')} onPayment={d => setPaymentDebt(d)} />}
           {active === 'debtor'    && <DebtorSection key={refresh} onAdd={() => setModal('debt-debtor')} onPayment={d => setPaymentDebt(d)} />}
           {active === 'expenses'  && <ExpensesSection key={refresh} onAdd={() => setModal('expense')} />}
@@ -341,8 +342,9 @@ export default function MhfazteView() {
       </div>
 
       {/* Modals */}
-      {modal === 'deposit' && <DepositModal onClose={() => setModal(null)} onSaved={onSaved} />}
-      {modal === 'expense' && <AddExpenseModal onClose={() => setModal(null)} onSaved={onSaved} />}
+      {modal === 'deposit'      && <DepositModal onClose={() => setModal(null)} onSaved={onSaved} />}
+      {modal === 'expense'      && <AddExpenseModal onClose={() => setModal(null)} onSaved={onSaved} />}
+      {modal === 'set-balance'  && <SetBalanceModal onClose={() => setModal(null)} onSaved={onSaved} />}
       {(modal === 'debt-creditor' || modal === 'debt-debtor') && (
         <AddDebtModal type={modal === 'debt-creditor' ? 'دائن' : 'مدين'} onClose={() => setModal(null)} onSaved={onSaved} />
       )}
