@@ -130,17 +130,8 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
         padding: '.6rem 1rem',
         display: 'flex', alignItems: 'center',
       }}>
-        {/* Left spacer — same width as right button for true centering */}
-        <div style={{ flex: 1 }} />
-
-        {/* Center: title + date */}
-        <div style={{ textAlign: 'center', flexShrink: 0 }}>
-          <div style={{ fontSize: '.85rem', color: '#3b82f6', fontWeight: 700 }}>محفظتي — الرئيسية</div>
-          <div style={{ fontSize: '.63rem', color: DIM_TXT, marginTop: '.15rem' }}>{todayAr()}</div>
-        </div>
-
         {/* Right: إجراءات button (aligned under hamburger) */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
           <div style={{ position: 'relative' }}>
             <button onClick={() => setMenuOpen(o => !o)} style={{
               background: '#15803d', color: '#fff', border: 'none',
@@ -186,6 +177,15 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
             )}
           </div>
         </div>
+
+        {/* Center: title + date */}
+        <div style={{ textAlign: 'center', flexShrink: 0 }}>
+          <div style={{ fontSize: '.85rem', color: '#3b82f6', fontWeight: 700 }}>محفظتي — الرئيسية</div>
+          <div style={{ fontSize: '.63rem', color: DIM_TXT, marginTop: '.15rem' }}>{todayAr()}</div>
+        </div>
+
+        {/* Left spacer */}
+        <div style={{ flex: 1 }} />
       </div>
 
       {/* ── Two large featured cards ─────────────────── */}
