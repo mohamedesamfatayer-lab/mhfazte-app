@@ -127,16 +127,20 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
       <div style={{
         background: '#0d1521',
         borderBottom: BORDER,
-        padding: '.55rem 1rem',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.5rem',
-        flexWrap: 'wrap',
+        padding: '.6rem 1rem',
+        display: 'flex', alignItems: 'center',
       }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '.82rem', color: '#3b82f6', fontWeight: 700, whiteSpace: 'nowrap' }}>محفظتي — الرئيسية</div>
-          <div style={{ fontSize: '.63rem', color: DIM_TXT }}>إدارة المال والديون والمصروفات</div>
+        {/* Left spacer — same width as right button for true centering */}
+        <div style={{ flex: 1 }} />
+
+        {/* Center: title + date */}
+        <div style={{ textAlign: 'center', flexShrink: 0 }}>
+          <div style={{ fontSize: '.85rem', color: '#3b82f6', fontWeight: 700 }}>محفظتي — الرئيسية</div>
+          <div style={{ fontSize: '.63rem', color: DIM_TXT, marginTop: '.15rem' }}>{todayAr()}</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
-          <span style={{ fontSize: '.68rem', color: SEC_TXT, whiteSpace: 'nowrap' }}>{todayAr()}</span>
+
+        {/* Right: إجراءات button (aligned under hamburger) */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
           <div style={{ position: 'relative' }}>
             <button onClick={() => setMenuOpen(o => !o)} style={{
               background: '#15803d', color: '#fff', border: 'none',

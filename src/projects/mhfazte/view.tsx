@@ -317,7 +317,12 @@ export default function MhfazteView() {
           }}>
             <i className="fas fa-bars" />
           </button>
-          <span style={{ fontSize: '.83rem', color: '#8899aa', flex: 1 }}>{sectionLabel[active]}</span>
+          <span style={{ fontSize: '.83rem', color: '#8899aa', flex: 1 }}>
+            {sectionLabel[active]}
+            {active === 'home' && (
+              <span style={{ fontSize: '.7rem', color: '#4b5563' }}> · إدارة المال والديون والمصروفات</span>
+            )}
+          </span>
           {active !== 'home' && (
             <button onClick={() => setActive('home')} style={{
               background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 7,
