@@ -12,13 +12,11 @@ interface Props {
 
 const CUR_LABELS: Record<string, string> = { EGP: 'ج.م', SAR: 'ريال', USD: '$' }
 
-type OpTab = 'deposit' | 'expense' | 'debt-creditor' | 'debt-debtor'
-
-const OP_TABS: { key: OpTab; label: string; icon: string; color: string }[] = [
-  { key: 'deposit',       label: 'إيداع',       icon: 'fa-arrow-down',         color: '#16a34a' },
-  { key: 'expense',       label: 'مصروف',       icon: 'fa-arrow-up',           color: '#dc2626' },
-  { key: 'debt-creditor', label: 'دين ليا (دائن)', icon: 'fa-hand-holding-heart', color: '#059669' },
-  { key: 'debt-debtor',   label: 'دين عليا (مدين)', icon: 'fa-hand-holding-dollar', color: '#d97706' },
+const ACTIONS: { key: string; label: string; icon: string; color: string }[] = [
+  { key: 'deposit',       label: 'إضافة رصيد',      icon: 'fa-plus-circle',        color: '#16a34a' },
+  { key: 'expense',       label: 'مصروف',            icon: 'fa-receipt',            color: '#dc2626' },
+  { key: 'debt-creditor', label: 'دين ليا (دائن)',   icon: 'fa-hand-holding-heart', color: '#059669' },
+  { key: 'debt-debtor',   label: 'دين عليا (مدين)',  icon: 'fa-hand-holding-dollar', color: '#d97706' },
 ]
 
 function todayAr(): string {
@@ -35,7 +33,7 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
   const [txThisMonth, setTxThisMonth]   = useState(0)
   const [expThisMonth, setExpThisMonth] = useState<Record<string, number>>({})
   const [loading, setLoading]           = useState(true)
-  const [activeTab, setActiveTab]       = useState<OpTab>('deposit')
+  const [menuOpen, setMenuOpen]         = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -99,11 +97,12 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
   const totalCredStr = credEntries.length ? credEntries.map(e => `${e.amt} ${e.cur}`).join('\n') : '0'
   const balStr       = balEntries.length  ? balEntries.map(e => `${e.amt} ${e.cur}`).join('\n')  : '0'
 
-  const handleOp = () => {
-    if (activeTab === 'deposit')       onDeposit()
-    if (activeTab === 'expense')       onExpense()
-    if (activeTab === 'debt-creditor') onDebt('creditor')
-    if (activeTab === 'debt-debtor')   onDebt('debtor')
+  function handleAction(key: string) {
+    setMenuOpen(false)
+    if (key === 'deposit')       onDeposit()
+    if (key === 'expense')       onExpense()
+    if (key === 'debt-creditor') onDebt('creditor')
+    if (key === 'debt-debtor')   onDebt('debtor')
   }
 
   // ── small stat cards (entries = [{amt, cur}] for inline display) ──
@@ -138,17 +137,50 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
           <span style={{ fontSize: '.68rem', color: SEC_TXT, whiteSpace: 'nowrap' }}>{todayAr()}</span>
-          <button onClick={onDeposit} style={{
-            background: '#15803d', color: '#fff', border: 'none',
-            borderRadius: 8, padding: '.35rem .8rem',
-            fontSize: '.78rem', fontWeight: 700, cursor: 'pointer',
-            fontFamily: 'Cairo, sans-serif',
-            display: 'flex', alignItems: 'center', gap: '.35rem', whiteSpace: 'nowrap',
-          }}>
-            <i className="fas fa-plus" style={{ fontSize: '.65rem' }} />
-            إجراءات
-            <i className="fas fa-caret-down" style={{ fontSize: '.6rem' }} />
-          </button>
+          <div style={{ position: 'relative' }}>
+            <button onClick={() => setMenuOpen(o => !o)} style={{
+              background: '#15803d', color: '#fff', border: 'none',
+              borderRadius: 8, padding: '.35rem .8rem',
+              fontSize: '.78rem', fontWeight: 700, cursor: 'pointer',
+              fontFamily: 'Cairo, sans-serif',
+              display: 'flex', alignItems: 'center', gap: '.35rem', whiteSpace: 'nowrap',
+            }}>
+              <i className="fas fa-plus" style={{ fontSize: '.65rem' }} />
+              إجراءات
+              <i className={`fas fa-caret-${menuOpen ? 'up' : 'down'}`} style={{ fontSize: '.6rem' }} />
+            </button>
+            {menuOpen && (
+              <>
+                <div onClick={() => setMenuOpen(false)} style={{
+                  position: 'fixed', inset: 0, zIndex: 99,
+                }} />
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + .4rem)', right: 0,
+                  background: '#1a2d44', border: '1px solid rgba(255,255,255,.1)',
+                  borderRadius: 10, padding: '.35rem',
+                  zIndex: 100, minWidth: 180,
+                  boxShadow: '0 8px 24px rgba(0,0,0,.5)',
+                }}>
+                  {ACTIONS.map(a => (
+                    <button key={a.key} onClick={() => handleAction(a.key)} style={{
+                      display: 'flex', alignItems: 'center', gap: '.55rem',
+                      width: '100%', padding: '.5rem .75rem', borderRadius: 7,
+                      border: 'none', background: 'transparent',
+                      color: '#e2e8f0', fontSize: '.82rem', fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
+                      textAlign: 'right', direction: 'rtl',
+                    }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,.07)'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                    >
+                      <i className={`fas ${a.icon}`} style={{ color: a.color, fontSize: '.8rem', width: 16, textAlign: 'center' }} />
+                      {a.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -272,61 +304,6 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
             </div>
           </div>
         ))}
-      </div>
-
-      {/* ── Add new operation ────────────────────────── */}
-      <div style={{ margin: '0 .9rem .9rem', background: CARD_BG, borderRadius: 12, border: BORDER }}>
-        <div style={{
-          padding: '.65rem 1rem', borderBottom: BORDER,
-          display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-        }}>
-          <span style={{ fontWeight: 700, fontSize: '.83rem', color: '#e2e8f0' }}>أضف عملية جديدة</span>
-        </div>
-
-        <div style={{ display: 'flex', gap: '.45rem', padding: '.65rem 1rem .45rem', flexWrap: 'wrap' }}>
-          {OP_TABS.map(tab => {
-            const active = activeTab === tab.key
-            return (
-              <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
-                display: 'flex', alignItems: 'center', gap: '.4rem',
-                padding: '.4rem .85rem', borderRadius: 8, border: 'none',
-                background: active ? tab.color : 'rgba(255,255,255,.06)',
-                color: active ? '#fff' : SEC_TXT,
-                fontSize: '.78rem', fontWeight: 700, cursor: 'pointer',
-                fontFamily: 'Cairo, sans-serif',
-                boxShadow: active ? `0 2px 8px ${tab.color}44` : 'none',
-                transition: 'all .15s',
-              }}>
-                <i className={`fas ${tab.icon}`} style={{ fontSize: '.68rem' }} />
-                {tab.label}
-              </button>
-            )
-          })}
-        </div>
-
-        <div style={{
-          padding: '.5rem 1rem .85rem',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.75rem',
-          flexWrap: 'wrap',
-        }}>
-          <div style={{ fontSize: '.75rem', color: DIM_TXT, flex: 1, minWidth: 120 }}>
-            {activeTab === 'deposit'       && 'إضافة إيداع أو دخل جديد إلى حسابك'}
-            {activeTab === 'expense'       && 'تسجيل مصروف أو نفقة جديدة'}
-            {activeTab === 'debt-creditor' && 'تسجيل دين جديد ليك على شخص آخر'}
-            {activeTab === 'debt-debtor'   && 'تسجيل دين جديد عليك لشخص آخر'}
-          </div>
-          <button onClick={handleOp} style={{
-            background: OP_TABS.find(t => t.key === activeTab)?.color ?? '#2563eb',
-            color: '#fff', border: 'none', borderRadius: 8,
-            padding: '.5rem 1.3rem', fontSize: '.83rem', fontWeight: 700,
-            cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
-            display: 'flex', alignItems: 'center', gap: '.4rem',
-            whiteSpace: 'nowrap',
-          }}>
-            <i className="fas fa-plus" style={{ fontSize: '.72rem' }} />
-            إضافة عملية
-          </button>
-        </div>
       </div>
 
     </div>
