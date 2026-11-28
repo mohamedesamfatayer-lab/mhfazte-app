@@ -216,7 +216,7 @@ export default function MhfazteView() {
                 const isActive = active === item.id as Section
                 return (
                   <button key={item.id} onClick={() => { setActive(item.id as Section); setSidebarOpen(false) }} style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: '.65rem',
+                    display: 'flex', alignItems: 'center', gap: '.65rem',
                     padding: '.6rem .75rem',
                     margin: '1px .5rem', width: 'calc(100% - 1rem)',
                     background: isActive ? 'rgba(255,255,255,.08)' : 'transparent',
