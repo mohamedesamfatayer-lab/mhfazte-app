@@ -151,7 +151,10 @@ export default function HistorySection() {
                       className="tx-act-btn"
                       title="تعديل"
                       onClick={() => isEditing ? setEditId(null) : openEdit(tx)}
-                      style={{ color: isEditing ? '#fbbf24' : '#60a5fa' }}
+                      style={{
+                        color: isEditing ? '#fbbf24' : '#60a5fa',
+                        background: isEditing ? 'rgba(251,191,36,.15)' : 'rgba(96,165,250,.15)',
+                      }}
                     >
                       <i className={`fas ${isEditing ? 'fa-xmark' : 'fa-pen'}`} />
                     </button>
