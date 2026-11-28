@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import ModalBase, { CurrencyToggle, BtnPrimary, BtnOutline, type Currency } from './ModalBase'
-import { loadExpenseCategories } from './ManageCategoriesModal'
+import { loadCategoriesFromDB, DEFAULT_EXPENSE_CATS } from './ManageCategoriesModal'
 import ManageCategoriesModal from './ManageCategoriesModal'
 
 const inp: React.CSSProperties = {
@@ -22,7 +22,11 @@ const lbl: React.CSSProperties = {
 interface Props { onClose: () => void; onSaved: () => void }
 
 export default function AddExpenseModal({ onClose, onSaved }: Props) {
-  const [categories, setCategories] = useState<string[]>(() => loadExpenseCategories())
+  const [categories, setCategories] = useState<string[]>(DEFAULT_EXPENSE_CATS)
+
+  useEffect(() => {
+    loadCategoriesFromDB().then(setCategories)
+  }, [])
   const [category, setCategory]     = useState('')
   const [currency, setCurrency]     = useState<Currency>('EGP')
   const [amount, setAmount]         = useState('')
@@ -62,7 +66,7 @@ export default function AddExpenseModal({ onClose, onSaved }: Props) {
     return (
       <ManageCategoriesModal
         onClose={() => setShowManage(false)}
-        onSaved={() => { setCategories(loadExpenseCategories()); setShowManage(false) }}
+        onSaved={() => { loadCategoriesFromDB().then(setCategories); setShowManage(false) }}
       />
     )
   }

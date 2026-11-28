@@ -37,16 +37,7 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
   const [debtorTotal, setDebtorTotal]     = useState<Record<string, number>>({})
   const [loading, setLoading]             = useState(true)
   const [menuOpen, setMenuOpen]           = useState(false)
-  const [hidden, setHidden] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem('mhfazte_hidden_cards')
-      return saved ? new Set<string>(JSON.parse(saved)) : new Set<string>()
-    } catch { return new Set<string>() }
-  })
-
-  useEffect(() => {
-    localStorage.setItem('mhfazte_hidden_cards', JSON.stringify([...hidden]))
-  }, [hidden])
+  const [hidden, setHidden] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     async function load() {
@@ -54,10 +45,14 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
       const { data: { user } } = await sb.auth.getUser()
       if (!user) return
       const [accRes, debtRes] = await Promise.all([
-        sb.from('mhfazte_account').select('balances').eq('user_id', user.id).single(),
+        sb.from('mhfazte_account').select('balances,hidden_cards').eq('user_id', user.id).single(),
         sb.from('mhfazte_debts').select('type,remaining,currency'),
       ])
-      if (accRes.data) setBalances((accRes.data as any).balances ?? {})
+      if (accRes.data) {
+        setBalances((accRes.data as any).balances ?? {})
+        const hc = (accRes.data as any).hidden_cards
+        if (Array.isArray(hc)) setHidden(new Set<string>(hc))
+      }
       if (debtRes.data) {
         const rows = debtRes.data as { type: string; remaining: number; currency: string }[]
         const c: Record<string, number> = {}
@@ -78,6 +73,13 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
     setHidden(prev => {
       const next = new Set(prev)
       next.has(id) ? next.delete(id) : next.add(id)
+      const list = [...next]
+      createClient().auth.getUser().then(({ data }) => {
+        if (data.user) {
+          createClient().from('mhfazte_account')
+            .upsert({ user_id: data.user.id, hidden_cards: list }, { onConflict: 'user_id' })
+        }
+      })
       return next
     })
   }

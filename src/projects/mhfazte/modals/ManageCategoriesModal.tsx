@@ -1,28 +1,29 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase'
 import ModalBase, { BtnOutline } from './ModalBase'
 
 export const DEFAULT_EXPENSE_CATS = [
   'طعام', 'مواصلات', 'فواتير', 'ملابس', 'صحة', 'ترفيه', 'تعليم', 'منزل', 'أخرى',
 ]
 
-const LS_KEY = 'mhfazte_expense_cats'
-
-export function loadExpenseCategories(): string[] {
-  if (typeof window === 'undefined') return DEFAULT_EXPENSE_CATS
-  try {
-    const raw = localStorage.getItem(LS_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed
-    }
-  } catch {}
+export async function loadCategoriesFromDB(): Promise<string[]> {
+  const sb = createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return DEFAULT_EXPENSE_CATS
+  const { data } = await sb.from('mhfazte_account').select('categories').eq('user_id', user.id).single()
+  if (data?.categories && Array.isArray(data.categories) && (data.categories as string[]).length > 0) {
+    return data.categories as string[]
+  }
   return DEFAULT_EXPENSE_CATS
 }
 
-function saveExpenseCategories(list: string[]) {
-  localStorage.setItem(LS_KEY, JSON.stringify(list))
+async function saveCategoriesToDB(list: string[]) {
+  const sb = createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return
+  await sb.from('mhfazte_account').upsert({ user_id: user.id, categories: list }, { onConflict: 'user_id' })
 }
 
 const inSt: React.CSSProperties = {
@@ -35,13 +36,17 @@ const inSt: React.CSSProperties = {
 interface Props { onClose: () => void; onSaved: () => void }
 
 export default function ManageCategoriesModal({ onClose, onSaved }: Props) {
-  const [cats, setCats]       = useState<string[]>(() => loadExpenseCategories())
+  const [cats, setCats]       = useState<string[]>(DEFAULT_EXPENSE_CATS)
   const [newCat, setNewCat]   = useState('')
   const [editIdx, setEditIdx] = useState<number | null>(null)
   const [editVal, setEditVal] = useState('')
 
-  function persist(list: string[]) {
-    saveExpenseCategories(list)
+  useEffect(() => {
+    loadCategoriesFromDB().then(setCats)
+  }, [])
+
+  async function persist(list: string[]) {
+    await saveCategoriesToDB(list)
     setCats(list)
     onSaved()
   }
