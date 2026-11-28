@@ -26,10 +26,10 @@ export default function ModalBase({ title, onClose, children }: {
       <div style={{
         background: '#1e2f45',
         borderRadius: '24px 24px 0 0',
-        padding: '1.5rem',
+        padding: '1rem 1.2rem 1.2rem',
         width: '100%', maxWidth: 430,
         margin: '0 auto',
-        maxHeight: '88vh', overflowY: 'auto',
+        maxHeight: '92vh', overflowY: 'auto',
         animation: 'slideUp .25s ease',
       }}>
         <div style={{ width: 40, height: 4, background: 'rgba(255,255,255,.15)', borderRadius: 4, margin: '0 auto 1.3rem' }} />
