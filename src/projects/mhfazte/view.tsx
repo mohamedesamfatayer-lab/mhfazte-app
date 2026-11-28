@@ -320,7 +320,7 @@ export default function MhfazteView() {
           <span style={{ fontSize: '.83rem', color: '#8899aa', flex: 1 }}>
             {sectionLabel[active]}
             {active === 'home' && (
-              <span style={{ fontSize: '.7rem', color: '#4b5563' }}> · إدارة المال والديون والمصروفات</span>
+              <span style={{ fontSize: '.7rem', color: '#4b5563', marginRight: '.6rem' }}>إدارة المال والديون والمصروفات</span>
             )}
           </span>
           {active !== 'home' && (
