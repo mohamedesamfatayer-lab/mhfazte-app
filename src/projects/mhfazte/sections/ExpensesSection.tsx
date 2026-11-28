@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import ManageCategoriesModal from '../modals/ManageCategoriesModal'
 
 interface Expense {
   id: string; category: string; amount: number; currency: string;
@@ -23,6 +24,7 @@ const CAT_ICONS: Record<string, { icon: string; bg: string; color: string }> = {
 export default function ExpensesSection({ onAdd }: { onAdd?: () => void }) {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
+  const [manageCats, setManageCats] = useState(false)
 
   const today = new Date().toISOString().slice(0, 10)
   const month = today.slice(0, 7)
@@ -62,12 +64,20 @@ export default function ExpensesSection({ onAdd }: { onAdd?: () => void }) {
     <div className="section-anim">
       <div className="page-header">
         <span className="page-header-title">المصروفات</span>
-        {onAdd && (
-          <button className="page-header-btn" onClick={onAdd}>
-            <i className="fas fa-plus" />
+        <div style={{ display: 'flex', gap: '.4rem' }}>
+          <button className="page-header-btn" title="إدارة الأنواع" onClick={() => setManageCats(true)}>
+            <i className="fas fa-tags" />
           </button>
-        )}
+          {onAdd && (
+            <button className="page-header-btn" onClick={onAdd}>
+              <i className="fas fa-plus" />
+            </button>
+          )}
+        </div>
       </div>
+      {manageCats && (
+        <ManageCategoriesModal onClose={() => setManageCats(false)} onSaved={() => {}} />
+      )}
 
       {/* Stats */}
       <div style={{ display: 'flex', gap: '.6rem', padding: '.7rem .8rem 0' }}>
