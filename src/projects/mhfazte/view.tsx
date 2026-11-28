@@ -65,6 +65,10 @@ export default function MhfazteView() {
   const [refresh, setRefresh] = useState(0)
   const [toast, setToast] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [monthExpenses, setMonthExpenses] = useState<Record<string, number>>({})
+  const [monthTxCount, setMonthTxCount] = useState(0)
+
+  const month = new Date().toISOString().slice(0, 7)
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => {
@@ -76,6 +80,27 @@ export default function MhfazteView() {
       }
     })
   }, [])
+
+  useEffect(() => {
+    async function loadStats() {
+      const sb = createClient()
+      const { data: { user: u } } = await sb.auth.getUser()
+      if (!u) return
+      const [expRes, txRes] = await Promise.all([
+        sb.from('mhfazte_expenses').select('amount,currency').eq('user_id', u.id).gte('date', `${month}-01`),
+        sb.from('mhfazte_transactions').select('id', { count: 'exact', head: true }).eq('user_id', u.id).gte('date', `${month}-01`),
+      ])
+      if (expRes.data) {
+        const totals: Record<string, number> = {}
+        for (const r of expRes.data as { amount: number; currency: string }[]) {
+          totals[r.currency] = (totals[r.currency] ?? 0) + Number(r.amount)
+        }
+        setMonthExpenses(totals)
+      }
+      setMonthTxCount((txRes as any).count ?? 0)
+    }
+    loadStats()
+  }, [refresh, month])
 
   const onSaved = () => setRefresh(r => r + 1)
 
@@ -241,6 +266,40 @@ export default function MhfazteView() {
             </div>
           ))}
         </nav>
+
+        {/* ── إحصائيات الشهر ── */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', padding: '.6rem .75rem' }}>
+          <div style={{ fontSize: '.62rem', color: '#4b5563', fontWeight: 700, marginBottom: '.4rem', letterSpacing: 1 }}>
+            إحصائيات الشهر
+          </div>
+          <div style={{ display: 'flex', gap: '.4rem' }}>
+            <div style={{
+              flex: 1, background: 'rgba(220,38,38,.1)', borderRadius: 8,
+              padding: '.45rem .5rem', border: '1px solid rgba(220,38,38,.18)',
+            }}>
+              <div style={{ fontSize: '.6rem', color: '#f87171', marginBottom: 2 }}>مصروفات الشهر</div>
+              <div style={{ fontSize: '.78rem', fontWeight: 800, color: '#fff', lineHeight: 1.3 }}>
+                {Object.entries(monthExpenses).length === 0
+                  ? '0'
+                  : Object.entries(monthExpenses).map(([c, v]) => {
+                      const lbl: Record<string,string> = { EGP: 'ج.م', SAR: 'ريال', USD: '$' }
+                      const fv = v % 1 === 0 ? String(v) : String(parseFloat(v.toFixed(2)))
+                      return `${fv} ${lbl[c] ?? c}`
+                    }).join(' · ')
+                }
+              </div>
+            </div>
+            <div style={{
+              flex: 1, background: 'rgba(139,92,246,.1)', borderRadius: 8,
+              padding: '.45rem .5rem', border: '1px solid rgba(139,92,246,.18)',
+            }}>
+              <div style={{ fontSize: '.6rem', color: '#a78bfa', marginBottom: 2 }}>معاملات الشهر</div>
+              <div style={{ fontSize: '.78rem', fontWeight: 800, color: '#fff', lineHeight: 1.3 }}>
+                {monthTxCount}
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* ── إجراءات section ── */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', padding: '.5rem 0' }}>
