@@ -176,6 +176,17 @@ export default function MaktabaView() {
           position: 'sticky', top: 0, zIndex: 10,
           direction: 'rtl',
         }}>
+          {active !== 'dashboard' && (
+            <button onClick={() => setActive('dashboard')} style={{
+              background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 7,
+              color: '#8899aa', cursor: 'pointer', padding: '.3rem .55rem', fontSize: '.85rem',
+              display: 'flex', alignItems: 'center', gap: '.3rem', fontFamily: 'Cairo, sans-serif',
+              flexShrink: 0,
+            }}>
+              <i className="fas fa-arrow-right" style={{ fontSize: '.75rem' }} />
+              <span style={{ fontSize: '.75rem', fontWeight: 600 }}>رجوع</span>
+            </button>
+          )}
           <div style={{ fontSize: '.83rem', flex: 1 }}>
             <span style={{ color: '#22c55e', fontWeight: 700 }}>المكتبة</span>
             <span style={{ color: 'rgba(255,255,255,.2)', margin: '0 .4rem' }}>/</span>

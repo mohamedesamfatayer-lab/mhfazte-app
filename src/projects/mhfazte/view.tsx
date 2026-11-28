@@ -311,6 +311,17 @@ export default function MhfazteView() {
           direction: 'rtl',
           gap: '.6rem',
         }}>
+          {active !== 'home' && (
+            <button onClick={() => setActive('home')} style={{
+              background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 7,
+              color: '#8899aa', cursor: 'pointer', padding: '.3rem .55rem', fontSize: '.85rem',
+              display: 'flex', alignItems: 'center', gap: '.3rem', fontFamily: 'Cairo, sans-serif',
+              flexShrink: 0,
+            }}>
+              <i className="fas fa-arrow-right" style={{ fontSize: '.75rem' }} />
+              <span style={{ fontSize: '.75rem', fontWeight: 600 }}>رجوع</span>
+            </button>
+          )}
           <span style={{ fontWeight: 700, fontSize: '.83rem', color: '#3b82f6' }}>محفظتي</span>
           <span style={{ color: 'rgba(255,255,255,.2)', margin: '0 .3rem' }}>/</span>
           <span style={{ fontSize: '.83rem', color: '#8899aa', flex: 1 }}>{sectionLabel[active]}</span>
