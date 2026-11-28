@@ -12,6 +12,7 @@ import ReportsSection from './sections/ReportsSection'
 import BudgetSection from './sections/BudgetSection'
 import RemindersSection from './sections/RemindersSection'
 import RecurringSection from './sections/RecurringSection'
+import { InstallButton } from '@/components/pwa/InstallButton'
 import DepositModal from './modals/DepositModal'
 import AddExpenseModal from './modals/AddExpenseModal'
 import AddDebtModal from './modals/AddDebtModal'
@@ -266,6 +267,9 @@ export default function MhfazteView() {
             </div>
           ))}
         </nav>
+
+        {/* ── تثبيت التطبيق ── */}
+        <InstallButton />
 
         {/* ── إحصائيات الشهر ── */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', padding: '.6rem .75rem' }}>
