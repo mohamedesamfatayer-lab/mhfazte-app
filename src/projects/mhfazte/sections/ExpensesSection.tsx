@@ -64,9 +64,16 @@ export default function ExpensesSection({ onAdd }: { onAdd?: () => void }) {
     <div className="section-anim">
       <div className="page-header">
         <span className="page-header-title">المصروفات</span>
-        <div style={{ display: 'flex', gap: '.4rem' }}>
-          <button className="page-header-btn" title="إدارة الأنواع" onClick={() => setManageCats(true)}>
-            <i className="fas fa-tags" />
+        <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
+          <button onClick={() => setManageCats(true)} style={{
+            display: 'flex', alignItems: 'center', gap: '.3rem',
+            padding: '.3rem .7rem', borderRadius: 8, border: 'none',
+            background: 'rgba(251,191,36,.15)', color: '#fbbf24',
+            fontSize: '.75rem', fontWeight: 700, cursor: 'pointer',
+            fontFamily: 'Cairo, sans-serif',
+          }}>
+            <i className="fas fa-tags" style={{ fontSize: '.7rem' }} />
+            فئات
           </button>
           {onAdd && (
             <button className="page-header-btn" onClick={onAdd}>
