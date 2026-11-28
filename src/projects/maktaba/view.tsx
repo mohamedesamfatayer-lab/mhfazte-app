@@ -176,6 +176,13 @@ export default function MaktabaView() {
           position: 'sticky', top: 0, zIndex: 10,
           direction: 'rtl',
         }}>
+          <button onClick={() => setSidebarOpen(o => !o)} style={{
+            background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 7,
+            color: '#8899aa', cursor: 'pointer', padding: '.3rem .55rem', fontSize: '1rem',
+          }}>
+            <i className="fas fa-bars" />
+          </button>
+          <span style={{ fontSize: '.83rem', color: '#8899aa', flex: 1 }}>{SECTION_LABELS[active]}</span>
           {active !== 'dashboard' && (
             <button onClick={() => setActive('dashboard')} style={{
               background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 7,
@@ -187,20 +194,6 @@ export default function MaktabaView() {
               <span style={{ fontSize: '.75rem', fontWeight: 600 }}>رجوع</span>
             </button>
           )}
-          <div style={{ fontSize: '.83rem', flex: 1 }}>
-            <span style={{ color: '#22c55e', fontWeight: 700 }}>المكتبة</span>
-            <span style={{ color: 'rgba(255,255,255,.2)', margin: '0 .4rem' }}>/</span>
-            <span style={{ color: '#8899aa' }}>{SECTION_LABELS[active]}</span>
-          </div>
-          <span style={{ fontSize: '.7rem', color: '#4b5563' }}>
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </span>
-          <button onClick={() => setSidebarOpen(o => !o)} style={{
-            background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 7,
-            color: '#8899aa', cursor: 'pointer', padding: '.3rem .55rem', fontSize: '1rem',
-          }}>
-            <i className="fas fa-bars" />
-          </button>
         </div>
 
         {/* Section content */}
