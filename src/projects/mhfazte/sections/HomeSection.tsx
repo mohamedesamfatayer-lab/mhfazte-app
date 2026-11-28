@@ -179,7 +179,7 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
         </div>
 
         {/* Center: title + date */}
-        <div style={{ textAlign: 'center', flexShrink: 0 }}>
+        <div style={{ textAlign: 'center', flexShrink: 0, margin: '0 1rem' }}>
           <div style={{ fontSize: '.85rem', color: '#3b82f6', fontWeight: 700 }}>محفظتي — الرئيسية</div>
           <div style={{ fontSize: '.63rem', color: DIM_TXT, marginTop: '.15rem' }}>{todayAr()}</div>
         </div>
