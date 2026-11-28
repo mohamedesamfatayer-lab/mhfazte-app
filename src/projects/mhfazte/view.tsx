@@ -313,25 +313,26 @@ export default function MhfazteView() {
         }}>
           <button onClick={() => setSidebarOpen(o => !o)} style={{
             background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 7,
-            color: '#8899aa', cursor: 'pointer', padding: '.3rem .55rem', fontSize: '1rem',
+            color: '#e2e8f0', cursor: 'pointer', padding: '.3rem .55rem', fontSize: '.9rem',
+            fontFamily: 'Cairo, sans-serif',
           }}>
             <i className="fas fa-bars" />
           </button>
-          <span style={{ fontSize: '.83rem', color: '#8899aa', flex: 1 }}>
+          <span style={{ fontSize: '.85rem', fontWeight: 600, color: '#e2e8f0', flex: 1, fontFamily: 'Cairo, sans-serif' }}>
             {sectionLabel[active]}
             {active === 'home' && (
-              <span style={{ fontSize: '.7rem', color: '#4b5563', marginRight: '.6rem' }}>إدارة المال والديون والمصروفات</span>
+              <span style={{ fontSize: '.75rem', fontWeight: 400, color: '#8899aa', marginRight: '.5rem' }}>إدارة المال والديون والمصروفات</span>
             )}
           </span>
           {active !== 'home' && (
             <button onClick={() => setActive('home')} style={{
               background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 7,
-              color: '#8899aa', cursor: 'pointer', padding: '.3rem .55rem', fontSize: '.85rem',
+              color: '#e2e8f0', cursor: 'pointer', padding: '.3rem .6rem', fontSize: '.8rem',
               display: 'flex', alignItems: 'center', gap: '.3rem', fontFamily: 'Cairo, sans-serif',
-              flexShrink: 0,
+              flexShrink: 0, fontWeight: 600,
             }}>
-              <i className="fas fa-arrow-right" style={{ fontSize: '.75rem' }} />
-              <span style={{ fontSize: '.75rem', fontWeight: 600 }}>رجوع</span>
+              <i className="fas fa-arrow-right" style={{ fontSize: '.72rem' }} />
+              رجوع
             </button>
           )}
         </div>
