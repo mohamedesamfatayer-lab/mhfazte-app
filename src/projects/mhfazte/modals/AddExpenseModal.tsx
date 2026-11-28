@@ -1,19 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import ModalBase, { FormGroup, inputSt, CurrencyToggle, BtnPrimary, BtnOutline, type Currency } from './ModalBase'
-import { loadExpenseCategories, DEFAULT_EXPENSE_CATS } from './ManageCategoriesModal'
+import { loadExpenseCategories } from './ManageCategoriesModal'
 
 interface Props { onClose: () => void; onSaved: () => void }
 
 export default function AddExpenseModal({ onClose, onSaved }: Props) {
-  const [categories, setCategories] = useState<string[]>(DEFAULT_EXPENSE_CATS)
+  const [categories] = useState<string[]>(() => loadExpenseCategories())
   const [category, setCategory] = useState('')
-
-  useEffect(() => {
-    loadExpenseCategories().then(setCategories)
-  }, [])
   const [currency, setCurrency] = useState<Currency>('EGP')
   const [amount, setAmount] = useState('')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
