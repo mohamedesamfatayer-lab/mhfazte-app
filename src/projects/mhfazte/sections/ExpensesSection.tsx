@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
@@ -42,7 +42,7 @@ export default function ExpensesSection({ onAdd }: { onAdd?: () => void }) {
   }, [])
 
   const fmt = (n: number, cur: string) =>
-    `${String(Math.round(Number(n) || 0))} ${cur}`
+    `${(() => { const v = Number(n) || 0; return v % 1 === 0 ? String(v) : String(parseFloat(v.toFixed(2))) })()} ${cur}`
 
   const todayByCur = expenses.filter(e => e.date === today)
     .reduce((acc, e) => { acc[e.currency] = (acc[e.currency] ?? 0) + Number(e.amount); return acc }, {} as Record<string, number>)
@@ -101,7 +101,7 @@ export default function ExpensesSection({ onAdd }: { onAdd?: () => void }) {
                 </div>
                 <div style={{ textAlign: 'left' }}>
                   <div className="expense-amount">
-                    {String(Math.round(Number(e.amount) || 0))}
+                    {(() => { const v = Number(e.amount) || 0; return v % 1 === 0 ? String(v) : String(parseFloat(v.toFixed(2))) })()}
                   </div>
                   <div style={{ fontSize: '.65rem', color: '#64748b' }}>{e.currency}</div>
                 </div>

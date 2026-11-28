@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
@@ -20,7 +20,7 @@ export default function BudgetSection() {
     load()
   }, [])
 
-  const fmt = (n: number) => String(Math.round(Number(n) || 0))
+  const fmt = (n: number) => (() => { const v = Number(n) || 0; return v % 1 === 0 ? String(v) : String(parseFloat(v.toFixed(2))) })()
 
   return (
     <div>

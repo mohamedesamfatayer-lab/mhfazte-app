@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
@@ -59,7 +59,7 @@ export default function ReportsSection() {
       return name.includes(personSearch.trim())
     })
 
-  const fmt = (n: number) => String(Math.round(Number(n) || 0))
+  const fmt = (n: number) => (() => { const v = Number(n) || 0; return v % 1 === 0 ? String(v) : String(parseFloat(v.toFixed(2))) })()
 
   const isOut = (t: Tx) => t.type === 'expense' || t.type === 'debt_payment' || t.type === 'withdraw'
   const isIn = (t: Tx) => t.type === 'deposit' || t.type === 'debt_receive'

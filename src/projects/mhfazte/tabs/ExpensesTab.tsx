@@ -65,7 +65,7 @@ export default function ExpensesTab() {
               </div>
               <div style={{ textAlign: 'left' }}>
                 <div style={{ fontWeight: 800, fontSize: 15, color: '#f87171' }}>
-                  -{String(Math.round(Number(exp.amount) || 0))}
+                  -{(() => { const v = Number(exp.amount) || 0; return v % 1 === 0 ? String(v) : String(parseFloat(v.toFixed(2))) })()}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--a-dim)' }}>{exp.currency}</div>
               </div>

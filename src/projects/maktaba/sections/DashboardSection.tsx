@@ -40,7 +40,7 @@ export default function DashboardSection({ onNav }: { onNav: (s: Section) => voi
     load()
   }, [])
 
-  const fmt = (n: number) => String(Math.round(Number(n) || 0))
+  const fmt = (n: number) => (() => { const v = Number(n) || 0; return v % 1 === 0 ? String(v) : String(parseFloat(v.toFixed(2))) })()
 
   const CARD_BG = '#131f30'
   const BORDER  = '1px solid rgba(255,255,255,.06)'

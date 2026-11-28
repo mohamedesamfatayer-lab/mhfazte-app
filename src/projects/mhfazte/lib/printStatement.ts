@@ -1,4 +1,4 @@
-interface Payment {
+﻿interface Payment {
   id: string; amount: number; date: string | null;
   note: string | null; ref?: string | null;
 }
@@ -23,7 +23,7 @@ function numDate(str: string | null | undefined): string {
 }
 
 function fmtN(n: number): string {
-  return String(Math.round(Number(n) || 0))
+  return (() => { const v = Number(n) || 0; return v % 1 === 0 ? String(v) : String(parseFloat(v.toFixed(2))) })()
 }
 
 export function printDebtStatement(debt: DebtInfo, payments: Payment[]) {

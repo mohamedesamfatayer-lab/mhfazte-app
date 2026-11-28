@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { inputSt, BtnPrimary } from './ModalBase'
@@ -62,7 +62,7 @@ export default function PaymentModal({ debt, onClose, onSaved }: Props) {
   }, [debt.id])
 
   const paid = debt.amount - currentRemaining
-  const fmt = (n: number) => String(Math.round(Number(n) || 0))
+  const fmt = (n: number) => (() => { const v = Number(n) || 0; return v % 1 === 0 ? String(v) : String(parseFloat(v.toFixed(2))) })()
   const cur = CUR_SHORT[debt.currency] ?? debt.currency
   const isDebtor = debt.type !== 'دائن'
 

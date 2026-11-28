@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
@@ -62,7 +62,7 @@ export default function HistorySection() {
   }, [])
 
   const filtered = filter === 'all' ? txs : txs.filter(t => t.type === filter)
-  const fmt = (n: number) => String(Math.round(Number(n) || 0))
+  const fmt = (n: number) => (() => { const v = Number(n) || 0; return v % 1 === 0 ? String(v) : String(parseFloat(v.toFixed(2))) })()
   const isIncome = (t: Tx) => t.type === 'deposit' || t.type === 'debt_receive'
 
   async function deleteTx(id: string) {

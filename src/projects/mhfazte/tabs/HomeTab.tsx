@@ -56,7 +56,7 @@ export default function HomeTab() {
             <div>
               <div style={{ color: 'var(--a-dim)', fontSize: 12, marginBottom: 4 }}>الرصيد</div>
               <div style={{ color: 'var(--a-text)', fontSize: 24, fontWeight: 800 }}>
-                {String(Math.round(Number(amt) || 0))}
+                {(() => { const v = Number(amt) || 0; return v % 1 === 0 ? String(v) : String(parseFloat(v.toFixed(2))) })()}
               </div>
             </div>
             <div style={{

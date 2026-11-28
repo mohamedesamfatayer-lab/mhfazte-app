@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
@@ -32,7 +32,7 @@ export default function CreditorSection({ onAdd, onPayment }: Props) {
   }, [])
 
   const filtered = debts.filter(d => !search || d.name.includes(search))
-  const fmt = (n: number) => String(Math.round(Number(n) || 0))
+  const fmt = (n: number) => (() => { const v = Number(n) || 0; return v % 1 === 0 ? String(v) : String(parseFloat(v.toFixed(2))) })()
 
   async function deleteDebt(id: string) {
     await createClient().from('mhfazte_debts').delete().eq('id', id)
