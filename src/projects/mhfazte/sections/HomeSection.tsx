@@ -324,7 +324,7 @@ export default function HomeSection({ onDeposit, onExpense, onDebt, onSetBalance
             whiteSpace: 'nowrap',
           }}>
             <i className="fas fa-plus" style={{ fontSize: '.72rem' }} />
-            حفظ العملية
+            إضافة عملية
           </button>
         </div>
       </div>
